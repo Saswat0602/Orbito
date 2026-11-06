@@ -38,6 +38,20 @@ export class TaskDependenciesSeederService {
       const dependenciesData = this.createLogicalDependencies(projectTasks);
 
       for (const dependencyData of dependenciesData) {
+        const existingDependency = await this.prisma.taskDependency.findUnique({
+          where: {
+            dependentTaskId_blockingTaskId: {
+              dependentTaskId: dependencyData.dependentTaskId,
+              blockingTaskId: dependencyData.blockingTaskId,
+            },
+          },
+        });
+
+        if (existingDependency) {
+          createdDependencies.push(existingDependency);
+          continue;
+        }
+
         try {
           // Use first user as creator (in real scenario, this would be the user creating the dependency)
           const creatorUser = users[0];
@@ -60,9 +74,7 @@ export class TaskDependenciesSeederService {
             `   ✓ Created dependency: "${dependentTask?.title}" ${dependencyData.type} "${blockingTask?.title}"`,
           );
         } catch (error) {
-          console.error(error);
-          // Skip if dependency already exists or there's a constraint violation
-          console.log(`   ⚠ Dependency creation skipped (might already exist)`);
+          console.warn(`   ⚠ Dependency creation skipped: ${error.message}`);
         }
       }
     }

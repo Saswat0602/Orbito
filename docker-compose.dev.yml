@@ -3,20 +3,20 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: orbito
-      POSTGRES_PASSWORD: orbito_secret
-      POSTGRES_DB: orbito
+      POSTGRES_USER: ${POSTGRES_USER:-root}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      POSTGRES_DB: ${POSTGRES_DB:-orbito}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U orbito -d orbito" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-root} -d ${POSTGRES_DB:-orbito}" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - orbito-network
     ports:
-      - "5435:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
 
   # Redis for BullMQ Queue
   redis:

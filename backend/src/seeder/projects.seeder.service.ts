@@ -36,6 +36,22 @@ export class ProjectsSeederService {
       }
 
       for (const projectData of projectsData) {
+        const existingProject = await this.prisma.project.findFirst({
+          where: {
+            workspaceId: workspace.id,
+            name: projectData.name,
+          },
+        });
+
+        if (existingProject) {
+          console.log(
+            `   ✓ Project already exists: ${existingProject.name} in ${workspace.name}`,
+          );
+          createdProjects.push(existingProject);
+          await this.addMembersToProject(existingProject.id, users, workspace.id as string);
+          continue;
+        }
+
         try {
           // Find a manager/admin user from workspace members to set as creator
           const workspaceMembers = await this.prisma.workspaceMember.findMany({
@@ -83,19 +99,17 @@ export class ProjectsSeederService {
             `   ✓ Created project: ${project.name} in ${workspace.name} with workflow: ${defaultWorkflow.name}`,
           );
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Project ${projectData.name} might already exist in ${workspace.name}, skipping...`,
+          console.warn(
+            `   ⚠ Failed to create project ${projectData.name}: ${error.message}`,
           );
-          // Try to find existing project
-          const existingProject = await this.prisma.project.findFirst({
+          const fallback = await this.prisma.project.findFirst({
             where: {
               workspaceId: workspace.id,
               name: projectData.name,
             },
           });
-          if (existingProject) {
-            createdProjects.push(existingProject);
+          if (fallback) {
+            createdProjects.push(fallback);
           }
         }
       }
@@ -371,6 +385,19 @@ export class ProjectsSeederService {
     // Add workspace members to project (limit to avoid too many members)
     const maxMembers = Math.min(workspaceMembers.length, 6);
     for (let i = 0; i < maxMembers; i++) {
+      const existing = await this.prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId: workspaceMembers[i].userId,
+            projectId,
+          },
+        },
+      });
+
+      if (existing) {
+        continue;
+      }
+
       try {
         await this.prisma.projectMember.create({
           data: {
@@ -381,9 +408,8 @@ export class ProjectsSeederService {
         });
         console.log(`   ✓ Added ${workspaceMembers[i].user.email} to project as ${memberRoles[i]}`);
       } catch (error) {
-        console.error(error);
-        console.log(
-          `   ⚠ User ${workspaceMembers[i].user.email} might already be a project member, skipping...`,
+        console.warn(
+          `   ⚠ Could not add ${workspaceMembers[i].user.email} to project: ${error.message}`,
         );
       }
     }

@@ -19,6 +19,22 @@ export class TaskCommentsSeederService {
 
     const createdComments: TaskComment[] = [];
 
+    // Check if task comments already exist
+    const existingTotalCount = await this.prisma.taskComment.count({
+      where: { taskId: { in: tasks.map((t) => t.id) } },
+    });
+
+    if (existingTotalCount > 0) {
+      console.log(`   ✓ Found ${existingTotalCount} existing task comments, reusing...`);
+      const existingComments = await this.prisma.taskComment.findMany({
+        where: { taskId: { in: tasks.map((t) => t.id) } },
+      });
+      console.log(
+        `✅ Task comments seeding completed. Found ${existingComments.length} comments.`,
+      );
+      return existingComments;
+    }
+
     // Add comments to selected tasks (not all tasks need comments)
     const tasksWithComments = tasks.filter((_, index) => index % 2 === 0).slice(0, 10); // Every 2nd task, max 10
 
@@ -63,14 +79,11 @@ export class TaskCommentsSeederService {
               createdComments.push(reply);
               console.log(`   ✓ Created reply by ${replyAuthor.firstName} to comment`);
             } catch (error) {
-              console.error(error);
-              // Ignore reply creation errors
-              console.error('Reply creation error:', error);
+              console.warn('   ⚠ Reply creation skipped:', error.message);
             }
           }
         } catch (_error) {
-          console.error(_error);
-          console.log(`   ⚠ Error creating comment on task ${task.title}: ${_error.message}`);
+          console.warn(`   ⚠ Error creating comment on task ${task.title}: ${_error.message}`);
         }
       }
     }

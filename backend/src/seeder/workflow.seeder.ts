@@ -20,6 +20,19 @@ export class WorkflowSeederService {
       const workflowsData = this.getWorkflowsDataForOrganization(organization);
 
       for (const workflowData of workflowsData) {
+        const existingWorkflow = await this.prisma.workflow.findFirst({
+          where: {
+            name: workflowData.name,
+            organizationId: organization.id,
+          },
+        });
+
+        if (existingWorkflow) {
+          console.log(`   ✓ Workflow already exists: ${existingWorkflow.name} in ${organization.name}`);
+          createdWorkflows.push(existingWorkflow);
+          continue;
+        }
+
         try {
           // Find organization owner to set as creator
           const orgWithOwner = await this.prisma.organization.findUnique({
@@ -42,19 +55,17 @@ export class WorkflowSeederService {
           createdWorkflows.push(workflow);
           console.log(`   ✓ Created workflow: ${workflow.name} in ${organization.name}`);
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Workflow ${workflowData.name} might already exist in ${organization.name}, skipping...`,
+          console.warn(
+            `   ⚠ Failed to create workflow ${workflowData.name}: ${error.message}`,
           );
-          // Try to find existing workflow
-          const existingWorkflow = await this.prisma.workflow.findFirst({
+          const fallback = await this.prisma.workflow.findFirst({
             where: {
               name: workflowData.name,
               organizationId: organization.id,
             },
           });
-          if (existingWorkflow) {
-            createdWorkflows.push(existingWorkflow);
+          if (fallback) {
+            createdWorkflows.push(fallback);
           }
         }
       }

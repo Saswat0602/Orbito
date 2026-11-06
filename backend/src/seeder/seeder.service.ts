@@ -49,6 +49,12 @@ export class SeederService {
       const organizations = await this.organizationsSeeder.seed(users);
       console.log('✅ Organizations seeded');
 
+      // 2.5 Seed Workflows and Task Statuses (depends on organizations)
+      const workflows = await this.workflowsSeeder.seed(organizations);
+      console.log('✅ Workflows seeded');
+      const taskStatuses = await this.taskStatusSeeder.seed(workflows, users);
+      console.log('✅ Task statuses seeded');
+
       // 3. Seed Workspaces (depends on organizations)
       const workspaces = await this.workspacesSeeder.seed(organizations, users);
       console.log('✅ Workspaces seeded');
@@ -56,6 +62,10 @@ export class SeederService {
       // 4. Seed Projects (depends on workspaces and users)
       const projects = await this.projectsSeeder.seed(workspaces, users);
       console.log('✅ Projects seeded');
+
+      // 4.5 Seed Sprints (depends on projects and users)
+      const sprints = await this.sprintsSeeder.seed(projects, users);
+      console.log('✅ Sprints seeded');
 
       // 5. Seed Inbox Rules (depends on projects with inboxes)
       await this.seedInboxRules();
@@ -92,7 +102,7 @@ export class SeederService {
         workspaces,
         projects,
         tasks,
-        // sprints,
+        sprints,
         labels,
         taskComments,
         taskDependencies,

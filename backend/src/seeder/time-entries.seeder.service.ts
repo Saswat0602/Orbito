@@ -20,6 +20,22 @@ export class TimeEntriesSeederService {
 
     const createdTimeEntries: TimeEntry[] = [];
 
+    // Check if time entries already exist for any of these tasks
+    const existingTotalCount = await this.prisma.timeEntry.count({
+      where: { taskId: { in: tasks.map((t) => t.id) } },
+    });
+
+    if (existingTotalCount > 0) {
+      console.log(`   ✓ Found ${existingTotalCount} existing time entries, reusing...`);
+      const existingEntries = await this.prisma.timeEntry.findMany({
+        where: { taskId: { in: tasks.map((t) => t.id) } },
+      });
+      console.log(
+        `✅ Time entries seeding completed. Found ${existingEntries.length} time entries.`,
+      );
+      return existingEntries;
+    }
+
     // Add time entries to tasks that have been worked on (about 60% of tasks)
     const tasksWithTime = tasks.filter(() => Math.random() < 0.6);
 
@@ -55,8 +71,7 @@ export class TimeEntriesSeederService {
 
           console.log(`   ✓ Logged ${hours}h ${minutes}m by ${user?.firstName} on: ${task.title}`);
         } catch (_error) {
-          console.error(_error);
-          console.log(`   ⚠ Error creating time entry for task ${task.title}: ${_error.message}`);
+          console.warn(`   ⚠ Error creating time entry for task ${task.title}: ${_error.message}`);
         }
       }
     }

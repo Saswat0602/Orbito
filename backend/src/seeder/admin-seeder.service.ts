@@ -31,33 +31,38 @@ export class AdminSeederService {
       language: 'en',
     };
 
-    let adminUser: User | null = null;
+    let adminUser = await this.prisma.user.findUnique({
+      where: { email: adminUserData.email },
+    });
 
-    try {
-      adminUser = await this.prisma.user.create({
-        data: {
-          ...adminUserData,
-          preferences: {
-            theme: 'light',
-            notifications: {
-              email: true,
-              push: true,
-              desktop: true,
-            },
-            dashboard: {
-              showCompletedTasks: false,
-              defaultView: 'list',
+    if (!adminUser) {
+      try {
+        adminUser = await this.prisma.user.create({
+          data: {
+            ...adminUserData,
+            preferences: {
+              theme: 'light',
+              notifications: {
+                email: true,
+                push: true,
+                desktop: true,
+              },
+              dashboard: {
+                showCompletedTasks: false,
+                defaultView: 'list',
+              },
             },
           },
-        },
-      });
-      console.log(`   ✓ Created admin user: ${adminUser.email}`);
-    } catch (error) {
-      console.error(error);
-      console.log(`   ⚠ Admin user ${adminUserData.email} might already exist, skipping...`);
-      adminUser = await this.prisma.user.findUnique({
-        where: { email: adminUserData.email },
-      });
+        });
+        console.log(`   ✓ Created admin user: ${adminUser.email}`);
+      } catch (error) {
+        console.warn(`   ⚠ Failed to create admin user: ${error.message}`);
+        adminUser = await this.prisma.user.findUnique({
+          where: { email: adminUserData.email },
+        });
+      }
+    } else {
+      console.log(`   ✓ Admin user already exists: ${adminUser.email}`);
     }
 
     // ✅ Create Default Organization

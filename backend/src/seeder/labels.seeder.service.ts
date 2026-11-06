@@ -33,6 +33,18 @@ export class LabelsSeederService {
       const creatorUser = projectMembers[0]?.user || users[0];
 
       for (const labelData of labelsData) {
+        const existingLabel = await this.prisma.label.findFirst({
+          where: {
+            name: labelData.name,
+            projectId: project.id,
+          },
+        });
+
+        if (existingLabel) {
+          createdLabels.push(existingLabel);
+          continue;
+        }
+
         try {
           const label = await this.prisma.label.create({
             data: {
@@ -46,20 +58,17 @@ export class LabelsSeederService {
           createdLabels.push(label);
           console.log(`   ✓ Created label: ${label.name} in ${project.name}`);
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Label ${labelData.name} might already exist in ${project.name}, skipping...`,
-            error instanceof Error ? error.message : String(error),
+          console.warn(
+            `   ⚠ Label ${labelData.name} might already exist in ${project.name}, skipping: ${error.message}`,
           );
-          // Try to find existing label
-          const existingLabel = await this.prisma.label.findFirst({
+          const fallback = await this.prisma.label.findFirst({
             where: {
               name: labelData.name,
               projectId: project.id,
             },
           });
-          if (existingLabel) {
-            createdLabels.push(existingLabel);
+          if (fallback) {
+            createdLabels.push(fallback);
           }
         }
       }

@@ -19,6 +19,22 @@ export class TaskWatchersSeederService {
 
     const createdWatchers: TaskWatcher[] = [];
 
+    // Check if task watchers already exist
+    const existingTotalCount = await this.prisma.taskWatcher.count({
+      where: { taskId: { in: tasks.map((t) => t.id) } },
+    });
+
+    if (existingTotalCount > 0) {
+      console.log(`   ✓ Found ${existingTotalCount} existing task watchers, reusing...`);
+      const existingWatchers = await this.prisma.taskWatcher.findMany({
+        where: { taskId: { in: tasks.map((t) => t.id) } },
+      });
+      console.log(
+        `✅ Task watchers seeding completed. Found ${existingWatchers.length} watchers.`,
+      );
+      return existingWatchers;
+    }
+
     // Add watchers to selected tasks (not all tasks need watchers)
     const tasksWithWatchers = tasks.filter((_, index) => index % 3 === 0).slice(0, 15); // Every 3rd task, max 15
 
@@ -36,6 +52,20 @@ export class TaskWatchersSeederService {
       const watchersToAdd = this.determineWatchers(task, availableUsers);
 
       for (const watcher of watchersToAdd) {
+        const existingWatcher = await this.prisma.taskWatcher.findUnique({
+          where: {
+            taskId_userId: {
+              taskId: task.id,
+              userId: watcher.id,
+            },
+          },
+        });
+
+        if (existingWatcher) {
+          createdWatchers.push(existingWatcher);
+          continue;
+        }
+
         try {
           // Use the first available user as creator (in real scenario, users add themselves as watchers)
           const creatorUser = availableUsers[0] || users[0];
@@ -54,9 +84,7 @@ export class TaskWatchersSeederService {
             `   ✓ Added ${watcher.firstName} ${watcher.lastName} as watcher for: ${task.title}`,
           );
         } catch (error) {
-          console.error(error);
-          // Skip if watcher already exists (unique constraint)
-          console.log(`   ⚠ ${watcher.firstName} might already be watching this task, skipping...`);
+          console.warn(`   ⚠ Watcher creation skipped: ${error.message}`);
         }
       }
     }

@@ -89,6 +89,21 @@ export class TasksSeederService {
 
       let taskNumber = 1;
       for (const taskWithStatus of tasksWithStatuses) {
+        const existingTask = await this.prisma.task.findUnique({
+          where: {
+            projectId_taskNumber: {
+              projectId: project.id,
+              taskNumber: taskNumber,
+            },
+          },
+        });
+
+        if (existingTask) {
+          createdTasks.push(existingTask);
+          taskNumber++;
+          continue;
+        }
+
         try {
           const task = await this.prisma.task.create({
             data: {
@@ -142,10 +157,21 @@ export class TasksSeederService {
           );
           taskNumber++;
         } catch (_error) {
-          console.error(_error);
-          console.log(
+          console.warn(
             `   ⚠ Error creating task ${taskWithStatus.taskData.title}: ${_error.message}`,
           );
+          const fallback = await this.prisma.task.findUnique({
+            where: {
+              projectId_taskNumber: {
+                projectId: project.id,
+                taskNumber: taskNumber,
+              },
+            },
+          });
+          if (fallback) {
+            createdTasks.push(fallback);
+          }
+          taskNumber++;
         }
       }
     }

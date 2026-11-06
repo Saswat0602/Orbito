@@ -22,7 +22,9 @@
     "prisma": "prisma",
     "seed": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts seed",
     "seed:admin": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts admin",
-    "seed:reset": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts reset"
+    "seed:clear": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts clear",
+    "seed:reset": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts reset",
+    "seed:demo": "ts-node -r tsconfig-paths/register src/seeder/demo-seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",
@@ -113,5 +115,8 @@
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/$1"
     }
+  },
+  "prisma": {
+    "seed": "ts-node -r tsconfig-paths/register src/seeder/seeder.command.ts seed"
   }
 }

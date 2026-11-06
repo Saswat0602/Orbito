@@ -28,6 +28,18 @@ export class TaskStatusSeederService {
         continue;
       }
       for (const statusData of statusesData) {
+        const existingStatus = await this.prisma.taskStatus.findFirst({
+          where: {
+            name: statusData.name,
+            workflowId: workflow.id,
+          },
+        });
+
+        if (existingStatus) {
+          createdStatuses.push(existingStatus);
+          continue;
+        }
+
         try {
           // Find workflow creator or use first user as default
           const workflowWithCreator = await this.prisma.workflow.findUnique({
@@ -50,19 +62,17 @@ export class TaskStatusSeederService {
             `   ✓ Created status: ${status.name} [${status.category}] in ${workflow.name}`,
           );
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Status ${statusData.name} might already exist in ${workflow.name}, skipping...`,
+          console.warn(
+            `   ⚠ Failed to create status ${statusData.name}: ${error.message}`,
           );
-          // Try to find existing status
-          const existingStatus = await this.prisma.taskStatus.findFirst({
+          const fallback = await this.prisma.taskStatus.findFirst({
             where: {
               name: statusData.name,
               workflowId: workflow.id,
             },
           });
-          if (existingStatus) {
-            createdStatuses.push(existingStatus);
+          if (fallback) {
+            createdStatuses.push(fallback);
           }
         }
       }
@@ -226,6 +236,17 @@ export class TaskStatusSeederService {
 
       // Create linear transitions (each status can move to the next one)
       for (let i = 0; i < statuses.length - 1; i++) {
+        const existing = await this.prisma.statusTransition.findUnique({
+          where: {
+            workflowId_fromStatusId_toStatusId: {
+              workflowId: workflow.id,
+              fromStatusId: statuses[i].id,
+              toStatusId: statuses[i + 1].id,
+            },
+          },
+        });
+        if (existing) continue;
+
         try {
           // Find workflow creator or use first user as default
           const workflowWithCreator = await this.prisma.workflow.findUnique({
@@ -245,8 +266,7 @@ export class TaskStatusSeederService {
             },
           });
         } catch (error) {
-          console.error(error);
-          // Transition might already exist, skip
+          // Transition might already exist, skip quietly
         }
       }
 
@@ -256,6 +276,17 @@ export class TaskStatusSeederService {
           statuses[i].category !== StatusCategory.DONE ||
           statuses[i - 1].category !== StatusCategory.TODO
         ) {
+          const existing = await this.prisma.statusTransition.findUnique({
+            where: {
+              workflowId_fromStatusId_toStatusId: {
+                workflowId: workflow.id,
+                fromStatusId: statuses[i].id,
+                toStatusId: statuses[i - 1].id,
+              },
+            },
+          });
+          if (existing) continue;
+
           try {
             // Find workflow creator or use first user as default
             const workflowWithCreator = await this.prisma.workflow.findUnique({
@@ -275,8 +306,7 @@ export class TaskStatusSeederService {
               },
             });
           } catch (error) {
-            console.error(error);
-            // Transition might already exist, skip
+            // Transition might already exist, skip quietly
           }
         }
       }

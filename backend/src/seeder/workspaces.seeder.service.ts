@@ -24,6 +24,20 @@ export class WorkspacesSeederService {
       const workspacesData = this.getWorkspacesDataForOrganization(organization);
 
       for (const workspaceData of workspacesData) {
+        const existingWorkspace = await this.prisma.workspace.findFirst({
+          where: {
+            slug: workspaceData.slug,
+            organizationId: organization.id,
+          },
+        });
+
+        if (existingWorkspace) {
+          console.log(`   ✓ Workspace already exists: ${existingWorkspace.name} in ${organization.name}`);
+          createdWorkspaces.push(existingWorkspace);
+          await this.addMembersToWorkspace(existingWorkspace.id, users, organization.id as string);
+          continue;
+        }
+
         try {
           // Find an admin user for this organization to set as creator
           const orgMembers = await this.prisma.organizationMember.findMany({
@@ -48,19 +62,17 @@ export class WorkspacesSeederService {
           createdWorkspaces.push(workspace);
           console.log(`   ✓ Created workspace: ${workspace.name} in ${organization.name}`);
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Workspace ${workspaceData.slug} might already exist in ${organization.name}, skipping...`,
+          console.warn(
+            `   ⚠ Failed to create workspace ${workspaceData.slug}: ${error.message}`,
           );
-          // Try to find existing workspace
-          const existingWorkspace = await this.prisma.workspace.findFirst({
+          const fallback = await this.prisma.workspace.findFirst({
             where: {
               slug: workspaceData.slug,
               organizationId: organization.id,
             },
           });
-          if (existingWorkspace) {
-            createdWorkspaces.push(existingWorkspace);
+          if (fallback) {
+            createdWorkspaces.push(fallback);
           }
         }
       }
@@ -195,6 +207,19 @@ export class WorkspacesSeederService {
 
     // Add organization members to workspace
     for (let i = 0; i < orgMembers.length && i < memberRoles.length; i++) {
+      const existing = await this.prisma.workspaceMember.findUnique({
+        where: {
+          userId_workspaceId: {
+            userId: orgMembers[i].userId,
+            workspaceId,
+          },
+        },
+      });
+
+      if (existing) {
+        continue;
+      }
+
       try {
         await this.prisma.workspaceMember.create({
           data: {
@@ -205,9 +230,8 @@ export class WorkspacesSeederService {
         });
         console.log(`   ✓ Added ${orgMembers[i].user.email} to workspace as ${memberRoles[i]}`);
       } catch (error) {
-        console.error(error);
-        console.log(
-          `   ⚠ User ${orgMembers[i].user.email} might already be a workspace member, skipping...`,
+        console.warn(
+          `   ⚠ Could not add ${orgMembers[i].user.email} to workspace: ${error.message}`,
         );
       }
     }

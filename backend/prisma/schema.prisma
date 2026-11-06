@@ -182,6 +182,8 @@ model OrganizationMember {
   updatedByUser  User?        @relation("OrganizationMemberUpdatedBy", fields: [updatedBy], references: [id])
 
   @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, role])
   @@map("organization_members")
 }
 
@@ -216,6 +218,9 @@ model Workspace {
 
   @@unique([organizationId, slug])
   @@index([parentWorkspaceId])
+  @@index([slug])
+  @@index([path])
+  @@index([organizationId, archive])
   @@map("workspaces")
 }
 
@@ -235,6 +240,8 @@ model WorkspaceMember {
   updatedByUser User?     @relation("WorkspaceMemberUpdatedBy", fields: [updatedBy], references: [id])
 
   @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@index([workspaceId, role])
   @@map("workspace_members")
 }
 
@@ -274,6 +281,8 @@ model Project {
   jiraSync        JiraSync?
 
   @@unique([workspaceId, slug])
+  @@index([workspaceId, archive])
+  @@index([workspaceId, status])
   @@map("projects")
 }
 
@@ -293,6 +302,8 @@ model ProjectMember {
   updatedByUser User?    @relation("ProjectMemberUpdatedBy", fields: [updatedBy], references: [id])
 
   @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([projectId, role])
   @@map("project_members")
 }
 
@@ -361,6 +372,15 @@ model Task {
 
   @@unique([projectId, taskNumber])
   @@index([emailThreadId])
+  @@index([slug])
+  @@index([projectId, statusId])
+  @@index([projectId, sprintId])
+  @@index([projectId, isArchived])
+  @@index([projectId, priority])
+  @@index([projectId, dueDate])
+  @@index([parentTaskId])
+  @@index([createdBy])
+  @@index([createdAt])
   @@map("tasks")
 }
 
@@ -424,6 +444,7 @@ model TaskDependency {
   dependentTask   Task           @relation("DependentTask", fields: [dependentTaskId], references: [id], onDelete: Cascade)
 
   @@unique([dependentTaskId, blockingTaskId])
+  @@index([blockingTaskId])
   @@map("task_dependencies")
 }
 
@@ -444,6 +465,7 @@ model Workflow {
   updatedByUser  User?              @relation("WorkflowUpdatedBy", fields: [updatedBy], references: [id])
   Project        Project[]
 
+  @@index([organizationId])
   @@map("workflows")
 }
 
@@ -471,6 +493,7 @@ model TaskStatus {
   defaultInboxes  ProjectInbox[]
 
   @@unique([workflowId, name])
+  @@index([workflowId, position])
   @@map("task_statuses")
 }
 
@@ -516,6 +539,8 @@ model Sprint {
   tasks         Task[]
 
   @@unique([projectId, slug])
+  @@index([slug])
+  @@index([projectId, status])
   @@map("sprints")
 }
 
@@ -564,6 +589,7 @@ model TaskLabel {
   updatedByUser User?    @relation("TaskLabelUpdatedBy", fields: [updatedBy], references: [id])
 
   @@id([taskId, labelId])
+  @@index([labelId])
   @@map("task_labels")
 }
 
@@ -575,6 +601,7 @@ model TaskAssignee {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([taskId, userId])
+  @@index([userId])
   @@map("task_assignees")
 }
 
@@ -586,6 +613,7 @@ model TaskReporter {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([taskId, userId])
+  @@index([userId])
   @@map("task_reporters")
 }
 
@@ -603,6 +631,7 @@ model TaskWatcher {
   updatedByUser User?    @relation("TaskWatcherUpdatedBy", fields: [updatedBy], references: [id])
 
   @@unique([taskId, userId])
+  @@index([userId])
   @@map("task_watchers")
 }
 
@@ -631,6 +660,9 @@ model TaskComment {
   replies       TaskComment[] @relation("CommentReplies")
   task          Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([taskId, createdAt])
+  @@index([authorId])
+  @@index([parentCommentId])
   @@map("task_comments")
 }
 
@@ -689,6 +721,8 @@ model TimeEntry {
   createdByUser User?     @relation("TimeEntryCreatedBy", fields: [createdBy], references: [id])
   updatedByUser User?     @relation("TimeEntryUpdatedBy", fields: [updatedBy], references: [id])
 
+  @@index([taskId, date])
+  @@index([userId, date])
   @@map("time_entries")
 }
 
@@ -735,6 +769,10 @@ model Notification {
   createdByUser User?         @relation("NotificationCreatedBy", fields: [createdBy], references: [id])
   updatedByUser User?         @relation("NotificationUpdatedBy", fields: [updatedBy], references: [id])
 
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([organizationId])
   @@map("notifications")
 }
 
@@ -764,6 +802,9 @@ model ActivityLog {
   createdByUser  User?         @relation("ActivityLogCreatedBy", fields: [createdBy], references: [id])
   updatedByUser  User?         @relation("ActivityLogUpdatedBy", fields: [updatedBy], references: [id])
 
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("activity_logs")
 }
 
@@ -792,6 +833,9 @@ model AutomationRule {
   workspace      Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   executions     RuleExecution[]
 
+  @@index([projectId, triggerType, status])
+  @@index([workspaceId, triggerType, status])
+  @@index([organizationId, triggerType, status])
   @@map("automation_rules")
 }
 
@@ -813,6 +857,7 @@ model RuleExecution {
   createdByUser User?          @relation("RuleExecutionCreatedBy", fields: [createdBy], references: [id])
   updatedByUser User?          @relation("RuleExecutionUpdatedBy", fields: [updatedBy], references: [id])
 
+  @@index([ruleId, createdAt(sort: Desc)])
   @@map("rule_executions")
 }
 
@@ -1246,6 +1291,8 @@ model InboxMessage {
   ruleResults     MessageRuleResult[]
 
   @@unique([projectInboxId, imapUid])
+  @@index([projectInboxId, status])
+  @@index([fromEmail])
   @@index([threadId])
   @@index([status])
   @@index([emailDate])

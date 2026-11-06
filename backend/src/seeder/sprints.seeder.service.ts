@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Sprint, SprintStatus, Project, User } from '@prisma/client';
+import slugify from 'slugify';
 
 @Injectable()
 export class SprintsSeederService {
@@ -41,10 +42,29 @@ export class SprintsSeederService {
       const creatorUser = projectMembers[0]?.user || users[0];
 
       for (const sprintData of sprintsData) {
+        const sprintSlug = slugify(`${project.slug}-${sprintData.name}`, {
+          lower: true,
+          strict: true,
+        });
+
+        const existingSprint = await this.prisma.sprint.findFirst({
+          where: {
+            projectId: project.id,
+            OR: [{ name: sprintData.name }, { slug: sprintSlug }],
+          },
+        });
+
+        if (existingSprint) {
+          createdSprints.push(existingSprint);
+          console.log(`   ✓ Sprint already exists: ${existingSprint.name} in ${project.name}`);
+          continue;
+        }
+
         try {
           const sprint = await this.prisma.sprint.create({
             data: {
               ...sprintData,
+              slug: sprintSlug,
               projectId: project.id,
               createdBy: creatorUser.id,
               updatedBy: creatorUser.id,
@@ -54,19 +74,17 @@ export class SprintsSeederService {
           createdSprints.push(sprint);
           console.log(`   ✓ Created sprint: ${sprint.name} [${sprint.status}] in ${project.name}`);
         } catch (error) {
-          console.error(error);
-          console.log(
-            `   ⚠ Sprint ${sprintData.name} might already exist in ${project.name}, skipping...`,
+          console.warn(
+            `   ⚠ Failed to create sprint ${sprintData.name} in ${project.name}: ${error.message}`,
           );
-          // Try to find existing sprint
-          const existingSprint = await this.prisma.sprint.findFirst({
+          const fallback = await this.prisma.sprint.findFirst({
             where: {
-              name: sprintData.name,
               projectId: project.id,
+              OR: [{ name: sprintData.name }, { slug: sprintSlug }],
             },
           });
-          if (existingSprint) {
-            createdSprints.push(existingSprint);
+          if (fallback) {
+            createdSprints.push(fallback);
           }
         }
       }

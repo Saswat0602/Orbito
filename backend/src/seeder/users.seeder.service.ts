@@ -135,6 +135,16 @@ export class UsersSeederService {
 
     const createdUsers: User[] = [];
     for (const userData of usersData) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: userData.email },
+      });
+
+      if (existingUser) {
+        console.log(`   ✓ User already exists: ${existingUser.email}`);
+        createdUsers.push(existingUser);
+        continue;
+      }
+
       try {
         const user = await this.prisma.user.create({
           data: {
@@ -156,14 +166,12 @@ export class UsersSeederService {
         createdUsers.push(user);
         console.log(`   ✓ Created user: ${user.email}`);
       } catch (error) {
-        console.error(error);
-        console.log(`   ⚠ User ${userData.email} might already exist, skipping...`);
-        // Try to find existing user
-        const existingUser = await this.prisma.user.findUnique({
+        console.warn(`   ⚠ Failed to create user ${userData.email}: ${error.message}`);
+        const fallback = await this.prisma.user.findUnique({
           where: { email: userData.email },
         });
-        if (existingUser) {
-          createdUsers.push(existingUser);
+        if (fallback) {
+          createdUsers.push(fallback);
         }
       }
     }
