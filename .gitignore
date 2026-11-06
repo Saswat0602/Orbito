@@ -97,3 +97,7 @@ Thumbs.db
 .temp/
 tmp/
 temp/
+
+# Planning Documentation
+plan/
+
