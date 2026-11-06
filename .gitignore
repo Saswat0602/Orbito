@@ -1,8 +1,11 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ==============================================================================
+# Orbito Monorepo - Root .gitignore
+# ==============================================================================
 
-# dependencies
-/node_modules
-/.pnp
+# Dependencies
+node_modules/
+**/node_modules/
+.pnp/
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,32 +13,87 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# Turborepo Cache
+.turbo/
+**/.turbo/
 
-# next.js
-/.next/
-/out/
+# Production & Build Artifacts
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
 
-# production
-/build
+# TypeScript Build Info & Declaration Maps
+*.tsbuildinfo
+**/*.tsbuildinfo
+next-env.d.ts
 
-# misc
-.DS_Store
+# Test Coverage & Reports
+coverage/
+**/coverage/
+.nyc_output/
+*.lcov
+
+# Environment Variables & Secrets (Keep .env.example)
+.env
+.env.*
+!.env.example
+!.env.*.example
 *.pem
+*.key
+*.cert
+*.crt
 
-# debug
+# Runtime Data, Uploads & Local Storage
+uploads/
+**/uploads/
+app_uploads/
+postgres_data/
+redis_data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Logs & Debugging
+logs/
+**/logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# vercel
-.vercel
+# IDEs & Developer Tooling
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Temporary & Cache Directories
+.cache/
+**/.cache/
+.temp/
+tmp/
+temp/

@@ -1,0 +1,76 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: orbito
+      POSTGRES_PASSWORD: orbito_secret
+      POSTGRES_DB: orbito
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U orbito -d orbito" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orbito-network
+    ports:
+      - "5435:5432"
+
+  # Redis for BullMQ Queue
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orbito-network
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  # Application (Backend + Frontend)
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://orbito:orbito_secret@postgres:5432/orbito
+      REDIS_HOST: redis
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/api
+    ports:
+      - "3000:3000" # Backend
+      - "3001:3001" # Frontend
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/backend/node_modules
+      - /app/frontend/node_modules
+      - app_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - orbito-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+
+networks:
+  orbito-network:
+    driver: bridge
