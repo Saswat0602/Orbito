@@ -6,10 +6,9 @@ export const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Send httpOnly and access_token cookies automatically
+  withCredentials: true,
 });
 
-// Request interceptor: Ensures credentials and tenancy headers are included
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     config.withCredentials = true;
@@ -35,13 +34,11 @@ const processQueue = (error: unknown = null) => {
   failedQueue = [];
 };
 
-// Response interceptor: Handles 401 Unauthorized via Cookie-based token refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Ignore 401s from login or refresh endpoints to avoid infinite loops
     if (
       originalRequest?.url?.includes(ENDPOINTS.auth.login) ||
       originalRequest?.url?.includes(ENDPOINTS.auth.refresh)
@@ -62,7 +59,6 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Cookie-based refresh: browser sends refresh_token cookie automatically
         await axios.post(
           `${API_BASE_URL}${ENDPOINTS.auth.refresh}`,
           {},

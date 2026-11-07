@@ -1,9 +1,3 @@
-/**
- * Centralized API Endpoints Directory for Orbito Platform
- *
- * All routes match the NestJS `@orbito/backend` router topology mounted under `/api`.
- * Use these constants across RTK Query, Axios clients, and custom hooks.
- */
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
@@ -12,7 +6,6 @@ export const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
 
 export const ENDPOINTS = {
-  // Authentication & Session
   auth: {
     login: '/auth/login',
     register: '/auth/register',

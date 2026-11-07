@@ -73,6 +73,12 @@ export const apiSlice = createApi({
     'Sprint',
     'Comment',
     'Automation',
+    'Notification',
+    'ActivityLog',
+    'Inbox',
+    'Integration',
+    'Label',
+    'TimeEntry',
   ],
   endpoints: () => ({}),
 });
