@@ -5,10 +5,10 @@ import { ENDPOINTS } from '../../api/endpoint';
 
 export const sprintsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getSprints: builder.query<Sprint[], { projectId: string }>({
-      query: ({ projectId }) => ({
+    getSprints: builder.query<Sprint[], { projectId?: string } | void>({
+      query: (arg) => ({
         url: ENDPOINTS.sprints.list,
-        params: { projectId },
+        params: arg?.projectId ? { projectId: arg.projectId } : undefined,
       }),
       providesTags: (result) =>
         result
@@ -21,7 +21,9 @@ export const sprintsApi = apiSlice.injectEndpoints({
         try {
           await cacheDataLoaded;
           const socket = getSocket();
-          socket.emit('join:project', { projectId: arg.projectId });
+          if (arg?.projectId) {
+            socket.emit('join:project', { projectId: arg.projectId });
+          }
 
           const onSprintStarted = (payload: { data: Sprint }) => {
             updateCachedData((draft) => {
@@ -45,7 +47,9 @@ export const sprintsApi = apiSlice.injectEndpoints({
           socket.on('sprint:completed', onSprintCompleted);
 
           await cacheEntryRemoved;
-          socket.emit('leave:project', { projectId: arg.projectId });
+          if (arg?.projectId) {
+            socket.emit('leave:project', { projectId: arg.projectId });
+          }
           socket.off('sprint:started', onSprintStarted);
           socket.off('sprint:completed', onSprintCompleted);
         } catch {
@@ -59,26 +63,57 @@ export const sprintsApi = apiSlice.injectEndpoints({
       providesTags: (_result, _err, id) => [{ type: 'Sprint', id }],
     }),
 
-    startSprint: builder.mutation<Sprint, string>({
-      query: (id) => ({
-        url: ENDPOINTS.sprints.start(id),
-        method: 'PATCH',
+    createSprint: builder.mutation<Sprint, Partial<Sprint>>({
+      query: (body) => ({
+        url: ENDPOINTS.sprints.create,
+        method: 'POST',
+        body,
       }),
-      invalidatesTags: (_result, _err, id) => [
-        { type: 'Sprint', id },
-        { type: 'Sprint', id: 'LIST' },
-      ],
+      invalidatesTags: [{ type: 'Sprint', id: 'LIST' }],
     }),
 
-    completeSprint: builder.mutation<Sprint, string>({
-      query: (id) => ({
-        url: ENDPOINTS.sprints.complete(id),
-        method: 'PATCH',
-      }),
-      invalidatesTags: (_result, _err, id) => [
-        { type: 'Sprint', id },
-        { type: 'Sprint', id: 'LIST' },
-      ],
+    startSprint: builder.mutation<
+      Sprint,
+      string | { id: string; payload?: { startDate?: string; endDate?: string; goal?: string } }
+    >({
+      query: (arg) => {
+        const id = typeof arg === 'string' ? arg : arg.id;
+        const body = typeof arg === 'string' ? undefined : arg.payload;
+        return {
+          url: ENDPOINTS.sprints.start(id),
+          method: 'PATCH',
+          body,
+        };
+      },
+      invalidatesTags: (_result, _err, arg) => {
+        const id = typeof arg === 'string' ? arg : arg.id;
+        return [
+          { type: 'Sprint', id },
+          { type: 'Sprint', id: 'LIST' },
+        ];
+      },
+    }),
+
+    completeSprint: builder.mutation<
+      Sprint,
+      string | { id: string; payload?: { moveToSprintId?: string } }
+    >({
+      query: (arg) => {
+        const id = typeof arg === 'string' ? arg : arg.id;
+        const body = typeof arg === 'string' ? undefined : arg.payload;
+        return {
+          url: ENDPOINTS.sprints.complete(id),
+          method: 'PATCH',
+          body,
+        };
+      },
+      invalidatesTags: (_result, _err, arg) => {
+        const id = typeof arg === 'string' ? arg : arg.id;
+        return [
+          { type: 'Sprint', id },
+          { type: 'Sprint', id: 'LIST' },
+        ];
+      },
     }),
 
     getSprintBurndown: builder.query<
@@ -95,6 +130,7 @@ export const sprintsApi = apiSlice.injectEndpoints({
 export const {
   useGetSprintsQuery,
   useGetSprintQuery,
+  useCreateSprintMutation,
   useStartSprintMutation,
   useCompleteSprintMutation,
   useGetSprintBurndownQuery,

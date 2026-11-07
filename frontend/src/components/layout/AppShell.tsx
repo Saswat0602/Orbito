@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
+import { TaskDetailDrawer } from '@/features/tasks';
 import { Toaster } from 'sonner';
 
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password', '/setup'];
@@ -36,6 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 overflow-hidden flex flex-col bg-[#09090b]">
         {children}
       </main>
+      <TaskDetailDrawer />
       <Toaster
         position="bottom-right"
         theme="dark"

@@ -3,16 +3,12 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   ListTodo,
   Target,
   FolderGit2,
-  Inbox,
-  Activity,
-  Zap,
-  Puzzle,
   Users,
   Shield,
   Settings,
@@ -23,6 +19,8 @@ import {
   Plus,
   Building2,
   Briefcase,
+  Check,
+  Activity,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
@@ -30,7 +28,9 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import {
   setActiveOrganization,
   setActiveWorkspace,
+  setActiveWorkspaceSlug,
   setActiveProject,
+  setActiveProjectSlug,
 } from '@/lib/store/slices/authSlice';
 import { useGetOrganizationsQuery } from '@/lib/store/api/organizationsApi';
 import { useGetWorkspacesQuery } from '@/lib/store/api/workspacesApi';
@@ -38,9 +38,18 @@ import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { Role } from '@/lib/rbac';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -66,41 +75,93 @@ export function Sidebar() {
     { skip: !activeOrgId }
   );
 
-  const activeWorkspaceId =
-    authState.activeWorkspaceId || workspaces[0]?.id || null;
+  const activeWorkspace = useMemo(() => {
+    return (
+      workspaces.find((w) => w.id === authState.activeWorkspaceId) ||
+      workspaces.find((w) => w.slug === authState.activeWorkspaceSlug) ||
+      workspaces[0] ||
+      null
+    );
+  }, [workspaces, authState.activeWorkspaceId, authState.activeWorkspaceSlug]);
+
+  const activeWorkspaceId = activeWorkspace?.id || null;
+  const activeWorkspaceSlug = activeWorkspace?.slug || authState.activeWorkspaceSlug || '';
 
   const { data: projects = [] } = useGetProjectsQuery(
     activeWorkspaceId ? { workspaceId: activeWorkspaceId } : undefined,
     { skip: !activeWorkspaceId }
   );
 
-  const activeProjectId = authState.activeProjectId || projects[0]?.id || null;
+  const activeProject = useMemo(() => {
+    return (
+      projects.find((p) => p.id === authState.activeProjectId) ||
+      projects.find((p) => p.slug === authState.activeProjectSlug) ||
+      projects[0] ||
+      null
+    );
+  }, [projects, authState.activeProjectId, authState.activeProjectSlug]);
+
+  const activeProjectSlug = activeProject?.slug || authState.activeProjectSlug || '';
 
   // Active names
   const activeOrgName = useMemo(() => {
-    return organizations.find((o) => o.id === activeOrgId)?.name || 'Select Org';
+    return organizations.find((o) => o.id === activeOrgId)?.name || 'Default Organization';
   }, [organizations, activeOrgId]);
 
   const activeWorkspaceName = useMemo(() => {
-    return workspaces.find((w) => w.id === activeWorkspaceId)?.name || 'Workspace';
-  }, [workspaces, activeWorkspaceId]);
+    return activeWorkspace?.name || 'Select Workspace';
+  }, [activeWorkspace]);
 
-  // Main Navigation Items
-  const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Tasks', href: '/tasks', icon: ListTodo },
-    { name: 'Sprints', href: '/sprints', icon: Target },
-    { name: 'Projects', href: '/projects', icon: FolderGit2 },
-    { name: 'Project Inbox', href: '/inbox', icon: Inbox },
-    { name: 'Activity Log', href: '/activity', icon: Activity },
-  ];
+  const activeProjectName = useMemo(() => {
+    return activeProject?.name || 'All Projects';
+  }, [activeProject]);
+
+  // Main Navigation Items scoped by Workspace / Project
+  const navigation = useMemo(() => {
+    if (!activeWorkspaceSlug) {
+      return [{ name: 'Overview', href: '/', icon: LayoutDashboard, exact: true }];
+    }
+
+    const baseWorkspaceUrl = `/${activeWorkspaceSlug}`;
+    const tasksUrl = activeProjectSlug
+      ? `${baseWorkspaceUrl}/${activeProjectSlug}/tasks`
+      : `${baseWorkspaceUrl}/projects`;
+    const sprintsUrl = activeProjectSlug
+      ? `${baseWorkspaceUrl}/${activeProjectSlug}/sprints`
+      : `${baseWorkspaceUrl}/projects`;
+
+    return [
+      { name: 'Dashboard', href: baseWorkspaceUrl, icon: LayoutDashboard, exact: true },
+      { name: 'Projects', href: `${baseWorkspaceUrl}/projects`, icon: FolderGit2, exact: false },
+      { name: 'Tasks', href: tasksUrl, icon: ListTodo, exact: false },
+      { name: 'Sprints', href: sprintsUrl, icon: Target, exact: false },
+      { name: 'Members', href: `${baseWorkspaceUrl}/members`, icon: Users, exact: false },
+      { name: 'Activity Log', href: `${baseWorkspaceUrl}/activities`, icon: Activity, exact: false },
+    ];
+  }, [activeWorkspaceSlug, activeProjectSlug]);
 
   // RBAC Management Links (Manager and above)
-  const managementLinks = [
-    { name: 'Automations', href: '/settings/automation', icon: Zap },
-    { name: 'Integrations', href: '/settings/integrations', icon: Puzzle },
-    { name: 'Members', href: '/settings/members', icon: Users },
-  ];
+  const managementLinks = useMemo(() => {
+    if (!activeWorkspaceSlug) return [];
+    const baseWorkspaceUrl = `/${activeWorkspaceSlug}`;
+    return [
+      { name: 'Workspace Settings', href: `${baseWorkspaceUrl}/settings`, icon: Settings },
+    ];
+  }, [activeWorkspaceSlug]);
+
+  const handleSelectWorkspace = (ws: typeof workspaces[0]) => {
+    dispatch(setActiveWorkspace(ws.id));
+    dispatch(setActiveWorkspaceSlug(ws.slug));
+    router.push(`/${ws.slug}`);
+  };
+
+  const handleSelectProject = (proj: typeof projects[0]) => {
+    dispatch(setActiveProject(proj.id));
+    dispatch(setActiveProjectSlug(proj.slug));
+    if (activeWorkspaceSlug) {
+      router.push(`/${activeWorkspaceSlug}/${proj.slug}/tasks`);
+    }
+  };
 
   const userInitials = useMemo(() => {
     if (!user) return 'OB';
@@ -115,7 +176,7 @@ export function Sidebar() {
       <button
         type="button"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="md:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 shadow-md"
+        className="md:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 shadow-md cursor-pointer"
         aria-label="Toggle navigation"
       >
         {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -137,9 +198,9 @@ export function Sidebar() {
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >
-        {/* Brand & Organization Switcher */}
-        <div className="p-4 border-b border-zinc-800/80">
-          <div className="flex items-center gap-2.5 mb-3">
+        {/* Brand & Organization */}
+        <div className="p-4 border-b border-zinc-800/80 space-y-3">
+          <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-950 font-bold shadow-sm">
               <svg
                 viewBox="0 0 24 24"
@@ -165,27 +226,80 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Organization & Workspace Pills */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-850 text-xs">
-              <div className="flex items-center gap-2 truncate">
-                <Building2 className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                <span className="truncate text-zinc-200 font-medium">
-                  {activeOrgName}
-                </span>
-              </div>
-              <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
-            </div>
+          {/* Interactive Workspace Switcher Dropdown */}
+          <div className="space-y-1.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-left hover:border-zinc-700 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Briefcase className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                    <span className="truncate text-zinc-200 font-medium">
+                      {activeWorkspaceName}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-zinc-900 border-zinc-800">
+                <DropdownMenuLabel className="text-[10px] uppercase text-zinc-500 font-semibold">
+                  Workspaces ({activeOrgName})
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-zinc-800" />
+                {workspaces.map((ws) => (
+                  <DropdownMenuItem
+                    key={ws.id}
+                    onClick={() => handleSelectWorkspace(ws)}
+                    className="flex items-center justify-between text-xs text-zinc-200 hover:bg-zinc-800 cursor-pointer"
+                  >
+                    <span className="truncate">{ws.name}</span>
+                    {ws.id === activeWorkspaceId && (
+                      <Check className="h-3.5 w-3.5 text-zinc-400" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-850 text-xs">
-              <div className="flex items-center gap-2 truncate">
-                <Briefcase className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                <span className="truncate text-zinc-300">
-                  {activeWorkspaceName}
-                </span>
-              </div>
-              <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
-            </div>
+            {/* Interactive Project Switcher Dropdown */}
+            {projects.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-850 text-xs text-left hover:border-zinc-700 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <FolderGit2 className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                      <span className="truncate text-zinc-300">
+                        {activeProjectName}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 bg-zinc-900 border-zinc-800">
+                  <DropdownMenuLabel className="text-[10px] uppercase text-zinc-500 font-semibold">
+                    Projects
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                  {projects.map((proj) => (
+                    <DropdownMenuItem
+                      key={proj.id}
+                      onClick={() => handleSelectProject(proj)}
+                      className="flex items-center justify-between text-xs text-zinc-200 hover:bg-zinc-800 cursor-pointer"
+                    >
+                      <span className="truncate">{proj.name}</span>
+                      {proj.id === activeProject?.id && (
+                        <Check className="h-3.5 w-3.5 text-zinc-400" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
@@ -197,10 +311,9 @@ export function Sidebar() {
               Workspace
             </span>
             {navigation.map((item) => {
-              const isActive =
-                item.href === '/'
-                  ? pathname === '/'
-                  : pathname?.startsWith(item.href);
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
               const Icon = item.icon;
 
               return (
@@ -225,7 +338,7 @@ export function Sidebar() {
           </div>
 
           {/* Management Links (RBAC: Manager & Owner only) */}
-          {(isManager || isOwner) && (
+          {(isManager || isOwner) && managementLinks.length > 0 && (
             <div className="space-y-1">
               <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                 Management
@@ -307,15 +420,8 @@ export function Sidebar() {
               </div>
             </div>
 
-            {/* Actions: Settings & Sign Out */}
+            {/* Actions: Sign Out */}
             <div className="flex items-center gap-1 shrink-0">
-              <Link
-                href="/settings"
-                className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-                title="Settings"
-              >
-                <Settings className="h-3.5 w-3.5" />
-              </Link>
               <button
                 type="button"
                 onClick={logout}

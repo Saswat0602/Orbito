@@ -61,7 +61,7 @@ export function can(
 
   switch (resource) {
     case 'admin_panel':
-      return role === Role.SUPER_ADMIN;
+      return false;
 
     case 'organizations':
     case 'billing':

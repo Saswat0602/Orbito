@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, Eye, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -90,89 +90,50 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8 bg-[#09090b]">
-      {/* Subtle background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-zinc-800/20 blur-[120px] pointer-events-none rounded-full" />
-
       <div className="w-full max-w-md relative z-10">
         <AuthHeader
           title="Create new password"
-          subtitle="Set a secure password to restore access to your account."
+          description="Set a secure password to restore access to your account."
         />
 
-        <Card className="border border-zinc-800/90 bg-zinc-900/90 shadow-2xl backdrop-blur-md">
-          <CardContent className="pt-6">
-            {!token ? (
-              <div className="text-center py-4 space-y-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-950/60 border border-rose-800/50 text-rose-400">
-                  <AlertTriangle className="h-6 w-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-zinc-100">
-                    Missing Reset Token
-                  </h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    This password reset link is invalid or incomplete.
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <Link href="/forgot-password">
-                    <Button variant="primary" className="w-full">
-                      Request a new reset link
-                    </Button>
-                  </Link>
-                </div>
+        <Card className="mt-8 border-zinc-800/80 bg-zinc-900/90 shadow-2xl backdrop-blur-md">
+          <CardContent className="pt-6 space-y-4">
+            {isCheckingToken ? (
+              <div className="py-8 flex flex-col items-center justify-center space-y-3">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-400 border-t-zinc-100" />
+                <p className="text-xs text-zinc-400">Verifying reset token...</p>
               </div>
-            ) : isCheckingToken ? (
-              <div className="text-center py-8 text-xs text-zinc-400">
-                Verifying reset link authenticity...
-              </div>
-            ) : !isTokenValid ? (
-              <div className="text-center py-4 space-y-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-950/60 border border-rose-800/50 text-rose-400">
-                  <AlertTriangle className="h-6 w-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-zinc-100">
-                    Link Expired or Invalid
-                  </h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    {tokenCheck?.message || 'This password reset link has expired.'}
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <Link href="/forgot-password">
-                    <Button variant="primary" className="w-full">
-                      Request a new link
-                    </Button>
-                  </Link>
-                </div>
+            ) : !token || !isTokenValid ? (
+              <div className="space-y-4 py-2">
+                <Alert variant="destructive">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertDescription className="text-xs">
+                      This reset link is invalid or has expired. Please request a new one.
+                    </AlertDescription>
+                  </div>
+                </Alert>
+                <Link href="/forgot-password" className="block">
+                  <Button variant="outline" className="w-full text-xs">
+                    Request New Link
+                  </Button>
+                </Link>
               </div>
             ) : isSuccess ? (
-              <div className="text-center py-4 space-y-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-950/60 border border-emerald-800/50 text-emerald-400">
+              <div className="py-6 flex flex-col items-center text-center space-y-3">
+                <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-zinc-100">
-                    Password Reset Complete
-                  </h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Your password has been securely updated. Redirecting to sign in...
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <Link href="/login">
-                    <Button variant="primary" className="w-full">
-                      Sign in now
-                    </Button>
-                  </Link>
-                </div>
+                <h3 className="text-sm font-semibold text-zinc-100">Password Changed</h3>
+                <p className="text-xs text-zinc-400">
+                  Redirecting to sign-in in a moment...
+                </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMessage && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{errorMessage}</AlertDescription>
+                  <Alert variant="destructive" className="py-2.5">
+                    <AlertDescription className="text-xs">{errorMessage}</AlertDescription>
                   </Alert>
                 )}
 
@@ -183,7 +144,7 @@ export default function ResetPasswordPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Minimum 8 characters"
+                    placeholder="At least 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="new-password"
@@ -194,8 +155,8 @@ export default function ResetPasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-zinc-400 hover:text-zinc-200 focus:outline-none transition-colors"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        className="cursor-pointer text-zinc-500 hover:text-zinc-300"
+                        tabIndex={-1}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -248,5 +209,19 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#09090b]">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

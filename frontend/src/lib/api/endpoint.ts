@@ -116,7 +116,7 @@ export const ENDPOINTS = {
 
   // LexoRank Ranking
   taskRanks: {
-    reorder: '/task-ranks/reorder',
+    reorder: (taskId: string) => `/task-ranks/${taskId}/reorder`,
     rebalance: '/task-ranks/rebalance',
   },
 

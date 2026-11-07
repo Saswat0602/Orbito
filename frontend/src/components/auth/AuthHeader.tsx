@@ -5,10 +5,11 @@ import Link from 'next/link';
 
 interface AuthHeaderProps {
   title: string;
-  subtitle: string;
+  subtitle?: string;
+  description?: string;
 }
 
-export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
+export function AuthHeader({ title, subtitle, description }: AuthHeaderProps) {
   return (
     <div className="flex flex-col items-center text-center space-y-2 mb-8">
       {/* Orbito Logo Mark */}
@@ -41,9 +42,11 @@ export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
         {title}
       </h1>
 
-      <p className="text-sm text-zinc-400 max-w-sm">
-        {subtitle}
-      </p>
+      {(subtitle || description) && (
+        <p className="text-sm text-zinc-400 max-w-sm">
+          {subtitle || description}
+        </p>
+      )}
     </div>
   );
 }

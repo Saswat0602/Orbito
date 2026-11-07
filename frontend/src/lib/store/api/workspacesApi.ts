@@ -33,6 +33,10 @@ export const workspacesApi = apiSlice.injectEndpoints({
       query: (id) => ENDPOINTS.workspaces.byId(id),
       providesTags: (_result, _error, id) => [{ type: 'Workspace', id }],
     }),
+    getWorkspaceBySlug: builder.query<Workspace, string>({
+      query: (slug) => ENDPOINTS.workspaces.bySlug(slug),
+      providesTags: (result) => (result ? [{ type: 'Workspace', id: result.id }] : ['Workspace']),
+    }),
     createWorkspace: builder.mutation<Workspace, CreateWorkspaceRequest>({
       query: (body) => ({
         url: ENDPOINTS.workspaces.create,
@@ -65,15 +69,43 @@ export const workspacesApi = apiSlice.injectEndpoints({
         { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
       ],
     }),
+    addWorkspaceMember: builder.mutation<
+      WorkspaceMember,
+      { workspaceId: string; email: string; role: string }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.workspaceMembers.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { workspaceId }) => [
+        { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
+      ],
+    }),
+    removeWorkspaceMember: builder.mutation<
+      void,
+      { workspaceId: string; memberId: string }
+    >({
+      query: ({ memberId }) => ({
+        url: ENDPOINTS.workspaceMembers.byId(memberId),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { workspaceId }) => [
+        { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
+      ],
+    }),
   }),
 });
 
 export const {
   useGetWorkspacesQuery,
   useGetWorkspaceQuery,
+  useGetWorkspaceBySlugQuery,
   useCreateWorkspaceMutation,
   useUpdateWorkspaceMutation,
   useDeleteWorkspaceMutation,
   useGetWorkspaceMembersQuery,
+  useAddWorkspaceMemberMutation,
+  useRemoveWorkspaceMemberMutation,
 } = workspacesApi;
 

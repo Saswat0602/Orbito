@@ -30,10 +30,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // If authenticated user visits login or register, redirect them to workspace/tasks
+  // If authenticated user visits login or register, redirect them to root workspace resolver
   if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
-    const tasksUrl = new URL('/tasks', request.url);
-    return NextResponse.redirect(tasksUrl);
+    const rootUrl = new URL('/', request.url);
+    return NextResponse.redirect(rootUrl);
   }
 
   return NextResponse.next();

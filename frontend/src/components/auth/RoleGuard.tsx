@@ -64,10 +64,10 @@ export function RoleGuard({
             </div>
 
             <div className="pt-2">
-              <Link href="/tasks">
+              <Link href="/">
                 <Button variant="outline" className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
-                  <span>Return to Tasks</span>
+                  <span>Return to Workspace</span>
                 </Button>
               </Link>
             </div>

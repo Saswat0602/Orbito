@@ -25,8 +25,7 @@ export function useAuthRbac() {
     isLoading: isMeLoading,
     isError: isMeError,
   } = useGetMeQuery(undefined, {
-    // Only query if not authenticated or user data missing
-    skip: !authState.isAuthenticated && !!authState.user,
+    skip: !!authState.user,
   });
 
   const [logoutMutation, { isLoading: isLoggingOut }] = useLogoutMutation();

@@ -7,11 +7,12 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  description?: string;
   children: ReactNode;
   className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, description, children, className }: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -29,8 +30,13 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
           className
         )}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-          <h3 className="text-lg font-semibold text-zinc-50 leading-none">{title}</h3>
+        <div className="flex items-start justify-between pb-4 border-b border-zinc-800 mb-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-zinc-50 leading-none">{title}</h3>
+            {description && (
+              <p className="text-xs text-zinc-400">{description}</p>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}

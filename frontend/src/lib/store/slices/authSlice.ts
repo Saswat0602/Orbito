@@ -6,7 +6,9 @@ interface AuthState {
   isAuthenticated: boolean;
   activeOrganizationId: string | null;
   activeWorkspaceId: string | null;
+  activeWorkspaceSlug: string | null;
   activeProjectId: string | null;
+  activeProjectSlug: string | null;
 }
 
 const initialState: AuthState = {
@@ -14,7 +16,9 @@ const initialState: AuthState = {
   isAuthenticated: false,
   activeOrganizationId: null,
   activeWorkspaceId: null,
+  activeWorkspaceSlug: null,
   activeProjectId: null,
+  activeProjectSlug: null,
 };
 
 export const authSlice = createSlice({
@@ -34,15 +38,23 @@ export const authSlice = createSlice({
     setActiveWorkspace: (state, action: PayloadAction<string | null>) => {
       state.activeWorkspaceId = action.payload;
     },
+    setActiveWorkspaceSlug: (state, action: PayloadAction<string | null>) => {
+      state.activeWorkspaceSlug = action.payload;
+    },
     setActiveProject: (state, action: PayloadAction<string | null>) => {
       state.activeProjectId = action.payload;
+    },
+    setActiveProjectSlug: (state, action: PayloadAction<string | null>) => {
+      state.activeProjectSlug = action.payload;
     },
     logOut: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.activeOrganizationId = null;
       state.activeWorkspaceId = null;
+      state.activeWorkspaceSlug = null;
       state.activeProjectId = null;
+      state.activeProjectSlug = null;
     },
   },
 });
@@ -51,7 +63,9 @@ export const {
   setCredentials,
   setActiveOrganization,
   setActiveWorkspace,
+  setActiveWorkspaceSlug,
   setActiveProject,
+  setActiveProjectSlug,
   logOut,
 } = authSlice.actions;
 

@@ -11,10 +11,10 @@ import { ENDPOINTS } from '../../api/endpoint';
 
 export const tasksApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getTasks: builder.query<Task[], TaskQueryParams>({
+    getTasks: builder.query<Task[], TaskQueryParams | void>({
       query: (params) => ({
         url: ENDPOINTS.tasks.list,
-        params,
+        params: params || undefined,
       }),
       providesTags: (result) =>
         result
@@ -28,7 +28,7 @@ export const tasksApi = apiSlice.injectEndpoints({
           await cacheDataLoaded;
           const socket = getSocket();
 
-          if (arg.projectId) {
+          if (arg?.projectId) {
             socket.emit('join:project', { projectId: arg.projectId });
           }
 
@@ -62,7 +62,7 @@ export const tasksApi = apiSlice.injectEndpoints({
           socket.on('task:deleted', onTaskDeleted);
 
           await cacheEntryRemoved;
-          if (arg.projectId) {
+          if (arg?.projectId) {
             socket.emit('leave:project', { projectId: arg.projectId });
           }
           socket.off('task:created', onTaskCreated);
@@ -148,9 +148,9 @@ export const tasksApi = apiSlice.injectEndpoints({
       ],
     }),
 
-    reorderTask: builder.mutation<Task, TaskReorderPayload>({
-      query: (payload) => ({
-        url: ENDPOINTS.taskRanks.reorder,
+    reorderTask: builder.mutation<Task, { taskId: string; payload: TaskReorderPayload }>({
+      query: ({ taskId, payload }) => ({
+        url: ENDPOINTS.taskRanks.reorder(taskId),
         method: 'PATCH',
         body: payload,
       }),

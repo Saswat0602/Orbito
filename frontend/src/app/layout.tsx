@@ -1,6 +1,7 @@
 'use client';
 
 import { StoreProvider } from '@/components/providers/StoreProvider';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { AppShell } from '@/components/layout/AppShell';
@@ -28,11 +29,13 @@ export default function RootLayout({
     <html lang="en" data-theme="dark" className="dark" suppressHydrationWarning>
       <body className="bg-[#09090b] text-zinc-100 antialiased min-h-screen">
         <StoreProvider>
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
-              <AppShell>{children}</AppShell>
-            </ThemeProvider>
-          </QueryClientProvider>
+          <AuthProvider>
+            <QueryClientProvider client={queryClient}>
+              <ThemeProvider>
+                <AppShell>{children}</AppShell>
+              </ThemeProvider>
+            </QueryClientProvider>
+          </AuthProvider>
         </StoreProvider>
       </body>
     </html>

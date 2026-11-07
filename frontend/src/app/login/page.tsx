@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
@@ -21,12 +21,16 @@ import {
   AlertDescription,
   GoogleButton,
 } from '@/components/ui';
-import { AuthHeader } from '@/components/auth/AuthHeader';
+import {
+  AuthHeader,
+  DevSeededAccounts,
+  type SeededAccount,
+} from '@/components/auth';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') || '/tasks';
+  const returnUrl = searchParams.get('returnUrl') || '/';
   const dispatch = useAppDispatch();
 
   const [email, setEmail] = useState('');
@@ -35,6 +39,33 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [login, { isLoading }] = useLoginMutation();
+
+  const executeLogin = async (targetEmail: string, targetPassword: string) => {
+    setErrorMessage(null);
+
+    try {
+      const response = await login({
+        email: targetEmail,
+        password: targetPassword,
+      }).unwrap();
+
+      dispatch(
+        setCredentials({
+          user: response.user,
+        })
+      );
+      toast.success(
+        `Welcome back to Orbito${response.user.firstName ? `, ${response.user.firstName}` : ''}!`
+      );
+      router.push(returnUrl);
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      const message =
+        error?.data?.message || 'Invalid email or password. Please try again.';
+      setErrorMessage(message);
+      toast.error('Authentication failed');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,147 +76,159 @@ export default function LoginPage() {
       return;
     }
 
-    try {
-      const response = await login({ email, password }).unwrap();
-      dispatch(
-        setCredentials({
-          user: response.user,
-          accessToken: response.access_token,
-          refreshToken: response.refresh_token,
-        })
-      );
-      toast.success('Signed in successfully');
-      router.push(returnUrl);
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string | string[] }; status?: number };
-      const rawMessage = error.data?.message;
-      const message = Array.isArray(rawMessage)
-        ? rawMessage.join(', ')
-        : rawMessage || 'Invalid email or password. Please verify your credentials.';
-      setErrorMessage(message);
+    await executeLogin(email, password);
+  };
+
+  const handleSelectAccount = (account: SeededAccount, autoSubmit = false) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    setErrorMessage(null);
+
+    if (autoSubmit) {
+      void executeLogin(account.email, account.password);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8 bg-[#09090b]">
-      {/* Subtle radial glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-zinc-800/20 blur-[120px] pointer-events-none rounded-full" />
-
-      <div className="w-full max-w-md relative z-10">
+    <div className="flex min-h-screen items-center justify-center p-4 py-8 bg-[#09090b]">
+      <Card className="w-full max-w-md border-zinc-800/80 bg-zinc-900/90 shadow-2xl backdrop-blur-md">
         <AuthHeader
-          title="Sign in to your account"
-          subtitle="Welcome back. Enter your credentials to access your workspaces."
+          title="Sign in to Orbito"
+          description="Enter your credentials to access your workspace."
         />
 
-        <Card className="border border-zinc-800/90 bg-zinc-900/90 shadow-2xl backdrop-blur-md">
-          <CardContent className="pt-6 space-y-5">
-            {/* Google OAuth Login Button */}
-            <GoogleButton label="Continue with Google" disabled={isLoading} />
+        <CardContent className="space-y-4 pt-4">
+          <GoogleButton
+            text="Continue with Google"
+            onClick={() => {
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/google`;
+            }}
+          />
 
-            {/* Visual Divider */}
-            <div className="relative flex items-center py-1">
-              <div className="flex-grow border-t border-zinc-800" />
-              <span className="flex-shrink mx-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                Or continue with email
-              </span>
-              <div className="flex-grow border-t border-zinc-800" />
+          <div className="relative flex items-center justify-center py-2">
+            <div className="w-full border-t border-zinc-800" />
+            <span className="absolute bg-zinc-900 px-3 text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+              Or with email
+            </span>
+          </div>
+
+          {errorMessage && (
+            <Alert variant="destructive" className="py-2.5">
+              <AlertDescription className="text-xs">
+                {errorMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Work Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                leftIcon={<Mail className="h-4 w-4 text-zinc-500" />}
+                disabled={isLoading}
+              />
             </div>
 
-            {/* Error Notification */}
-            {errorMessage && (
-              <Alert variant="destructive">
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              <div className="space-y-1.5">
-                <Label htmlFor="email" required>
-                  Email address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@work-email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  autoFocus
-                  required
-                  disabled={isLoading}
-                  leftIcon={<Mail className="h-4 w-4" />}
-                />
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" required>
-                    Password
-                  </Label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                leftIcon={<Lock className="h-4 w-4 text-zinc-500" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="cursor-pointer text-zinc-500 hover:text-zinc-300"
+                    tabIndex={-1}
+                    aria-label={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
                   >
-                    Forgot password?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                  disabled={isLoading}
-                  leftIcon={<Lock className="h-4 w-4" />}
-                  rightIcon={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-zinc-400 hover:text-zinc-200 focus:outline-none transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  }
-                />
-              </div>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                }
+                disabled={isLoading}
+              />
+            </div>
 
-              {/* Security & 7-Day Session Notice */}
-              <div className="flex items-center gap-2 py-1 text-xs text-zinc-400">
-                <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Encrypted 7-day session with automatic refresh rotation</span>
-              </div>
+            {/* High-contrast, bold Sign In Button */}
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full h-10 font-semibold text-zinc-950 bg-zinc-100 hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer"
+              isLoading={isLoading}
+            >
+              Sign In
+            </Button>
+          </form>
 
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full font-semibold tracking-tight"
-                isLoading={isLoading}
-              >
-                Sign In
-              </Button>
-            </form>
-          </CardContent>
+          {/* Seeded Accounts directly below the Sign In button */}
+          <DevSeededAccounts
+            onSelectAccount={handleSelectAccount}
+            selectedEmail={email}
+            isLoggingIn={isLoading}
+          />
 
-          <CardFooter className="flex justify-center border-t border-zinc-800/80 py-4 text-xs text-zinc-400">
-            <span>Don&apos;t have an account?</span>
+          {/* 7-Day Session Notice */}
+          <div className="flex items-center gap-2 pt-2 px-1 text-[11px] text-zinc-500">
+            <ShieldCheck className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+            <span>
+              Encrypted cookie session valid for up to 7 days with RTR.
+            </span>
+          </div>
+        </CardContent>
+
+        <CardFooter className="justify-center border-t border-zinc-800/60 py-4">
+          <p className="text-xs text-zinc-400">
+            Don&apos;t have an account?{' '}
             <Link
               href="/register"
-              className="ml-1.5 font-medium text-zinc-100 hover:underline hover:text-white transition-colors"
+              className="font-semibold text-zinc-200 hover:underline hover:text-white transition-colors"
             >
               Create an account
             </Link>
-          </CardFooter>
-        </Card>
-      </div>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#09090b]">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

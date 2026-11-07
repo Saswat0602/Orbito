@@ -43,6 +43,11 @@ export const projectsApi = apiSlice.injectEndpoints({
       providesTags: (_result, _err, idOrSlug) => [{ type: 'Project', id: idOrSlug }],
     }),
 
+    getProjectBySlug: builder.query<Project, string>({
+      query: (slug) => ENDPOINTS.projects.bySlug(slug),
+      providesTags: (result) => (result ? [{ type: 'Project', id: result.id }] : ['Project']),
+    }),
+
     getProjectGantt: builder.query<GanttTask[], string>({
       query: (projectId) => ENDPOINTS.gantt.project(projectId),
       providesTags: (_result, _err, projectId) => [{ type: 'Project', id: projectId }],
@@ -79,6 +84,7 @@ export const projectsApi = apiSlice.injectEndpoints({
 export const {
   useGetProjectsQuery,
   useGetProjectQuery,
+  useGetProjectBySlugQuery,
   useGetProjectGanttQuery,
   useGetProjectResourcesQuery,
   useCreateProjectMutation,

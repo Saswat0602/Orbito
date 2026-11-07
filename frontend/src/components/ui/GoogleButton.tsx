@@ -5,17 +5,21 @@ import { API_BASE_URL } from '@/lib/api/endpoint';
 
 interface GoogleButtonProps {
   label?: string;
+  text?: string;
   className?: string;
   onClick?: () => void;
   disabled?: boolean;
 }
 
 export function GoogleButton({
-  label = 'Continue with Google',
+  label,
+  text,
   className = '',
   onClick,
   disabled = false,
 }: GoogleButtonProps) {
+  const displayLabel = label || text || 'Continue with Google';
+
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -63,7 +67,7 @@ export function GoogleButton({
           fill="#EA4335"
         />
       </svg>
-      <span>{label}</span>
+      <span>{displayLabel}</span>
     </button>
   );
 }
