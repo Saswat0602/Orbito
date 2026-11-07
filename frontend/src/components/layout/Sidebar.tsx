@@ -13,39 +13,21 @@ import {
   Shield,
   Settings,
   LogOut,
-  ChevronDown,
   Menu,
   X,
-  Plus,
   Building2,
-  Briefcase,
-  Check,
   Activity,
+  Sliders,
+  Cpu,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import {
-  setActiveOrganization,
-  setActiveWorkspace,
-  setActiveWorkspaceSlug,
-  setActiveProject,
-  setActiveProjectSlug,
-} from '@/lib/store/slices/authSlice';
 import { useGetOrganizationsQuery } from '@/lib/store/api/organizationsApi';
 import { useGetWorkspacesQuery } from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
-import { Role } from '@/lib/rbac';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { WorkspaceProjectSwitcher } from './WorkspaceProjectSwitcher';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -151,19 +133,16 @@ export function Sidebar() {
     ];
   }, [activeWorkspaceSlug]);
 
-  const handleSelectWorkspace = (ws: typeof workspaces[0]) => {
-    dispatch(setActiveWorkspace(ws.id));
-    dispatch(setActiveWorkspaceSlug(ws.slug));
-    router.push(`/${ws.slug}`);
-  };
-
-  const handleSelectProject = (proj: typeof projects[0]) => {
-    dispatch(setActiveProject(proj.id));
-    dispatch(setActiveProjectSlug(proj.slug));
-    if (activeWorkspaceSlug) {
-      router.push(`/${activeWorkspaceSlug}/${proj.slug}/tasks`);
-    }
-  };
+  // RBAC Administration Links (Super Admin only)
+  const adminLinks = useMemo(() => {
+    return [
+      { name: 'System Overview', href: '/admin', icon: Shield, exact: true, badge: 'Root' },
+      { name: 'User Directory', href: '/admin/users', icon: Users, exact: false },
+      { name: 'Organizations', href: '/admin/organizations', icon: Building2, exact: false },
+      { name: 'System & SSO', href: '/admin/settings', icon: Sliders, exact: false },
+      { name: 'Queue & Workers', href: '/admin/queues', icon: Cpu, exact: false, badge: 'BullMQ' },
+    ];
+  }, []);
 
   const userInitials = useMemo(() => {
     if (!user) return 'OB';
@@ -200,7 +179,7 @@ export function Sidebar() {
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >
-        {/* Brand & Organization */}
+        {/* Brand & Unified Hierarchy Switcher Header */}
         <div className="p-4 border-b border-zinc-800/80 space-y-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-zinc-100 text-zinc-950 font-bold shadow-sm">
@@ -228,81 +207,19 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Interactive Workspace Switcher Dropdown */}
-          <div className="space-y-1.5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-left hover:border-zinc-700 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <Briefcase className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                    <span className="truncate text-zinc-200 font-medium">
-                      {activeWorkspaceName}
-                    </span>
-                  </div>
-                  <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 bg-zinc-900 border-zinc-800">
-                <DropdownMenuLabel className="text-[10px] uppercase text-zinc-500 font-semibold">
-                  Workspaces ({activeOrgName})
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-zinc-800" />
-                {workspaces.map((ws) => (
-                  <DropdownMenuItem
-                    key={ws.id}
-                    onClick={() => handleSelectWorkspace(ws)}
-                    className="flex items-center justify-between text-xs text-zinc-200 hover:bg-zinc-800 cursor-pointer"
-                  >
-                    <span className="truncate">{ws.name}</span>
-                    {ws.id === activeWorkspaceId && (
-                      <Check className="h-3.5 w-3.5 text-zinc-400" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Interactive Project Switcher Dropdown */}
-            {projects.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-850 text-xs text-left hover:border-zinc-700 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <FolderGit2 className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                      <span className="truncate text-zinc-300">
-                        {activeProjectName}
-                      </span>
-                    </div>
-                    <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 bg-zinc-900 border-zinc-800">
-                  <DropdownMenuLabel className="text-[10px] uppercase text-zinc-500 font-semibold">
-                    Projects
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-zinc-800" />
-                  {projects.map((proj) => (
-                    <DropdownMenuItem
-                      key={proj.id}
-                      onClick={() => handleSelectProject(proj)}
-                      className="flex items-center justify-between text-xs text-zinc-200 hover:bg-zinc-800 cursor-pointer"
-                    >
-                      <span className="truncate">{proj.name}</span>
-                      {proj.id === activeProject?.id && (
-                        <Check className="h-3.5 w-3.5 text-zinc-400" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+          {/* Unified High-Craft Workspace & Project Switcher */}
+          <WorkspaceProjectSwitcher
+            organizations={organizations}
+            workspaces={workspaces}
+            projects={projects}
+            activeOrgId={activeOrgId}
+            activeWorkspace={activeWorkspace}
+            activeProject={activeProject}
+            activeOrgName={activeOrgName}
+            activeWorkspaceName={activeWorkspaceName}
+            activeProjectName={activeProjectName}
+            onItemSelect={() => setIsMobileOpen(false)}
+          />
         </div>
 
         {/* Navigation Links Scrollable Body */}
@@ -374,29 +291,52 @@ export function Sidebar() {
           {/* Super Admin Console (RBAC: SUPER_ADMIN only) */}
           {isSuperAdmin && (
             <div className="space-y-1">
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                Administration
-              </span>
-              <Link
-                href="/admin"
-                onClick={() => setIsMobileOpen(false)}
-                className={`
-                  flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors
-                  ${
-                    pathname?.startsWith('/admin')
-                      ? 'bg-rose-950/80 text-rose-200 border border-rose-800'
-                      : 'text-rose-400 hover:bg-rose-950/40 hover:text-rose-300'
-                  }
-                `}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Shield className="h-4 w-4 shrink-0" />
-                  <span>Admin Console</span>
-                </div>
-                <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
-                  Root
-                </Badge>
-              </Link>
+              <div className="flex items-center justify-between px-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Administration
+                </span>
+                <span className="text-[9px] font-semibold tracking-wider text-rose-500 bg-rose-950/60 border border-rose-900/60 px-1 py-0.2 rounded-sm">
+                  ROOT
+                </span>
+              </div>
+              {adminLinks.map((item) => {
+                const isActive = item.exact
+                  ? pathname === item.href
+                  : pathname?.startsWith(item.href);
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={`
+                      flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors
+                      ${
+                        isActive
+                          ? 'bg-rose-950/80 text-rose-200 border border-rose-800 shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{item.name}</span>
+                    </div>
+                    {item.badge && (
+                      <span
+                        className={`text-[9px] px-1 py-0.2 rounded-sm font-semibold uppercase tracking-wider ${
+                          isActive
+                            ? 'bg-rose-900/90 text-rose-100'
+                            : 'bg-zinc-800 text-zinc-400'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

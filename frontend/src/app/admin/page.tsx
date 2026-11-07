@@ -1,23 +1,30 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
-  ShieldAlert,
   Users,
   Building2,
   Server,
-  ToggleLeft,
-  ToggleRight,
   Activity,
+  Layers,
+  FolderGit2,
+  ListTodo,
+  Cpu,
+  Sliders,
+  ArrowRight,
+  ShieldCheck,
   CheckCircle2,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Role } from '@/lib/rbac';
 import { RoleGuard } from '@/components/auth/RoleGuard';
+import {
+  useGetAdminDashboardStatsQuery,
+  useGetQueueHealthQuery,
+} from '@/lib/store/api/adminApi';
 import { useGetRegistrationStatusQuery } from '@/lib/store/api/authApi';
 import { useGetOrganizationsQuery } from '@/lib/store/api/organizationsApi';
-import { useGetUsersQuery } from '@/lib/store/api/usersApi';
 import {
   Card,
   CardHeader,
@@ -29,10 +36,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export default function AdminConsolePage() {
-  const { data: registrationStatus, isLoading: isRegLoading } =
-    useGetRegistrationStatusQuery();
+  const { data: stats, isLoading: isStatsLoading } = useGetAdminDashboardStatsQuery();
+  const { data: queueHealth } = useGetQueueHealthQuery();
+  const { data: registrationStatus } = useGetRegistrationStatusQuery();
   const { data: organizations = [] } = useGetOrganizationsQuery();
-  const { data: users = [] } = useGetUsersQuery();
 
   return (
     <RoleGuard requiredRole={Role.SUPER_ADMIN}>
@@ -44,13 +51,28 @@ export default function AdminConsolePage() {
               <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
                 System Administration
               </h1>
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-[10px] uppercase font-bold tracking-wider">
                 Root Access
               </Badge>
             </div>
             <p className="text-xs text-zinc-400">
-              Manage multi-tenant organizations, system registrations, and cluster topology.
+              Platform-wide telemetry, multi-tenant governance, background workers, and security settings.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link href="/admin/settings">
+              <Button variant="outline" size="sm" className="h-8 text-xs border-zinc-800 text-zinc-300 hover:bg-zinc-850">
+                <Sliders className="h-3.5 w-3.5 mr-1.5" />
+                System Settings
+              </Button>
+            </Link>
+            <Link href="/admin/queues">
+              <Button variant="outline" size="sm" className="h-8 text-xs border-zinc-800 text-zinc-300 hover:bg-zinc-850">
+                <Cpu className="h-3.5 w-3.5 mr-1.5" />
+                Queue Monitor
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -64,54 +86,152 @@ export default function AdminConsolePage() {
               <Building2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {organizations.length}
+              {stats?.totalOrganizations ?? organizations.length}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1">Active tenant containers</p>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              +{stats?.newOrgsThisWeek ?? 0} provisioned this week
+            </p>
           </Card>
 
           <Card className="border-zinc-800 bg-zinc-900/60 p-5">
             <div className="flex items-center justify-between pb-2">
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Registered Users
+                Platform Users
               </span>
               <Users className="h-4 w-4 text-zinc-400" />
             </div>
-            <div className="text-2xl font-bold text-zinc-100">{users.length}</div>
-            <p className="text-[11px] text-zinc-500 mt-1">Platform-wide accounts</p>
-          </Card>
-
-          <Card className="border-zinc-800 bg-zinc-900/60 p-5">
-            <div className="flex items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                System Health
-              </span>
-              <Activity className="h-4 w-4 text-emerald-400" />
+            <div className="text-2xl font-bold text-zinc-100">
+              {stats?.totalUsers ?? '...'}
             </div>
-            <div className="text-2xl font-bold text-emerald-400">Operational</div>
-            <p className="text-[11px] text-zinc-500 mt-1">All services responding</p>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              {stats?.activeUsers ?? 0} active accounts
+            </p>
           </Card>
 
           <Card className="border-zinc-800 bg-zinc-900/60 p-5">
             <div className="flex items-center justify-between pb-2">
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Public Sign-Ups
+                Workspaces & Projects
               </span>
-              <Server className="h-4 w-4 text-zinc-400" />
+              <FolderGit2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {registrationStatus?.enabled ? 'Enabled' : 'Restricted'}
+              {stats ? `${stats.totalWorkspaces} / ${stats.totalProjects}` : '...'}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1">Registration gate</p>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              Active operational clusters
+            </p>
+          </Card>
+
+          <Card className="border-zinc-800 bg-zinc-900/60 p-5">
+            <div className="flex items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Total Tasks Processed
+              </span>
+              <ListTodo className="h-4 w-4 text-zinc-400" />
+            </div>
+            <div className="text-2xl font-bold text-zinc-100">
+              {stats?.totalTasks ?? '...'}
+            </div>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              +{stats?.newTasksThisWeek ?? 0} created this week
+            </p>
           </Card>
         </div>
 
-        {/* Organizations Registry Table */}
+        {/* Admin Navigation Hub Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/admin/users" className="group">
+            <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="h-9 w-9 rounded-md bg-blue-950/60 border border-blue-900/60 flex items-center justify-center text-blue-400">
+                  <Users className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors">
+                  User Directory
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Search, filter, update roles, toggle active/suspended status, and manage password resets.
+                </p>
+              </div>
+              <div className="flex items-center text-xs text-zinc-400 group-hover:text-zinc-200 mt-4 font-medium">
+                Manage Users <ArrowRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/admin/organizations" className="group">
+            <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="h-9 w-9 rounded-md bg-emerald-950/60 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors">
+                  Tenant Organizations
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Multi-tenant governance, ownership transfers, audit logs, and archive toggles.
+                </p>
+              </div>
+              <div className="flex items-center text-xs text-zinc-400 group-hover:text-zinc-200 mt-4 font-medium">
+                Manage Tenants <ArrowRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/admin/settings" className="group">
+            <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="h-9 w-9 rounded-md bg-purple-950/60 border border-purple-900/60 flex items-center justify-center text-purple-400">
+                  <Sliders className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors">
+                  System & SSO
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Configure OpenID Connect (OIDC), public sign-up registration gate, and SMTP mailer.
+                </p>
+              </div>
+              <div className="flex items-center text-xs text-zinc-400 group-hover:text-zinc-200 mt-4 font-medium">
+                Manage Settings <ArrowRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/admin/queues" className="group">
+            <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="h-9 w-9 rounded-md bg-amber-950/60 border border-amber-900/60 flex items-center justify-center text-amber-400">
+                  <Cpu className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-amber-400 transition-colors">
+                  Queue & Workers
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  BullMQ telemetry, Redis cluster health, worker throughput, and BullBoard dashboard.
+                </p>
+              </div>
+              <div className="flex items-center text-xs text-zinc-400 group-hover:text-zinc-200 mt-4 font-medium">
+                Inspect Queues <ArrowRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Card>
+          </Link>
+        </div>
+
+        {/* Registered Tenants Preview */}
         <Card className="border-zinc-800 bg-zinc-900/80">
-          <CardHeader>
-            <CardTitle className="text-base">Registered Tenants</CardTitle>
-            <CardDescription className="text-xs">
-              Direct access and administrative audit for all organizations.
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <div>
+              <CardTitle className="text-base text-zinc-100">Registered Tenants</CardTitle>
+              <CardDescription className="text-xs text-zinc-400">
+                Active tenant containers running on the Orbito platform.
+              </CardDescription>
+            </div>
+            <Link href="/admin/organizations">
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-zinc-400 hover:text-zinc-100">
+                View All &rarr;
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {organizations.length === 0 ? (
@@ -120,7 +240,7 @@ export default function AdminConsolePage() {
               </div>
             ) : (
               <div className="divide-y divide-zinc-800/80">
-                {organizations.map((org) => (
+                {organizations.slice(0, 5).map((org) => (
                   <div
                     key={org.id}
                     className="flex items-center justify-between py-3 px-2 hover:bg-zinc-850/50 rounded-md transition-colors"
@@ -140,7 +260,7 @@ export default function AdminConsolePage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-[10px] border-zinc-800 text-zinc-400">
                         ID: {org.id.slice(0, 8)}...
                       </Badge>
                     </div>
@@ -154,4 +274,3 @@ export default function AdminConsolePage() {
     </RoleGuard>
   );
 }
-

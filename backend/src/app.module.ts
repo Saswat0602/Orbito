@@ -48,8 +48,8 @@ import { TaskRanksModule } from './modules/task-ranks/task-ranks.module';
 import { PublicModule } from './modules/public/public.module';
 import { HealthModule } from './modules/health/health.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { TrelloSyncModule } from './modules/trello-sync/trello-sync.module';
-import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
+// import { TrelloSyncModule } from './modules/trello-sync/trello-sync.module';
+// import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
 
 @Module({
   imports: [
@@ -80,8 +80,8 @@ import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
       {
         path: 'api',
         children: [
-          TrelloSyncModule,
-          JiraSyncModule,
+          // TrelloSyncModule,
+          // JiraSyncModule,
           AuthModule,
           UsersModule,
           OrganizationsModule,
@@ -159,8 +159,8 @@ import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
     EditorImagesModule,
     TaskRanksModule,
     AdminModule,
-    TrelloSyncModule,
-    JiraSyncModule,
+    // TrelloSyncModule,
+    // JiraSyncModule,
   ],
   controllers: [AppController],
   providers: [

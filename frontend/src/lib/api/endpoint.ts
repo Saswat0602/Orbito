@@ -316,6 +316,27 @@ export const ENDPOINTS = {
   health: {
     check: '/health',
   },
+
+  admin: {
+    dashboard: '/admin/dashboard',
+    users: '/admin/users',
+    userById: (id: string) => `/admin/users/${id}`,
+    updateUserRole: (id: string) => `/admin/users/${id}/role`,
+    updateUserStatus: (id: string) => `/admin/users/${id}/status`,
+    deleteUser: (id: string) => `/admin/users/${id}`,
+    resetUserPassword: (id: string) => `/admin/users/${id}/reset-password`,
+    organizations: '/admin/organizations',
+    organizationById: (id: string) => `/admin/organizations/${id}`,
+    toggleOrganizationArchive: (id: string) => `/admin/organizations/${id}/archive`,
+    transferOrganizationOwnership: (id: string) => `/admin/organizations/${id}/transfer-ownership`,
+    config: '/admin/config',
+    testSmtp: '/admin/config/test-smtp',
+  },
+
+  queues: {
+    health: '/queues/health',
+    ui: '/queues',
+  },
 } as const;
 
 export default ENDPOINTS;

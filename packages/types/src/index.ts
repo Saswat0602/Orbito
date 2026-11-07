@@ -22,3 +22,4 @@ export * from './notifications';
 export * from './activity';
 export * from './automations';
 export * from './socket';
+export * from './admin';
