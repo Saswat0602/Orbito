@@ -10,12 +10,17 @@ import { toast } from 'sonner';
 import { useRegisterMutation } from '@/lib/store/api/authApi';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setCredentials } from '@/lib/store/slices/authSlice';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Card, CardContent, CardFooter } from '@/components/ui/Card';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { GoogleButton } from '@/components/ui/GoogleButton';
+import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardContent,
+  CardFooter,
+  Alert,
+  AlertDescription,
+  GoogleButton,
+} from '@/components/ui';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 
 export default function RegisterPage() {
@@ -132,7 +137,7 @@ export default function RegisterPage() {
 
             {/* Error Notification */}
             {errorMessage && (
-              <Alert variant="error">
+              <Alert variant="destructive">
                 <AlertDescription>{errorMessage}</AlertDescription>
               </Alert>
             )}
