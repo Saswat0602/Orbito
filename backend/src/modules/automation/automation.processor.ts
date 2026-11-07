@@ -31,7 +31,6 @@ export class AutomationProcessor {
     let rule: any = null;
 
     try {
-      this.logger.log(`Executing automation rule ${ruleId} for trigger ${triggerType}`);
 
       // Get the rule details
       rule = await this.prisma.automationRule.findUnique({
@@ -66,7 +65,6 @@ export class AutomationProcessor {
         },
       });
 
-      this.logger.log(`Rule ${ruleId} executed successfully in ${executionTime}ms`);
       return { success: true, executionTime, result: actionResult };
     } catch (error) {
       console.error(error);

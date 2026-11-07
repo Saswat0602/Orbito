@@ -27,9 +27,6 @@ export class ProjectChartsService {
     userId: string,
     chartTypes: ProjectChartType[],
   ): Promise<ProjectChartDataResponse> {
-    this.logger.log(
-      `Fetching project chart data for ${projectSlug}, types: ${chartTypes.join(', ')}`,
-    );
 
     try {
       // Execute all chart requests in parallel
@@ -58,9 +55,6 @@ export class ProjectChartsService {
         results[type] = error ? { error } : data;
       });
 
-      this.logger.log(
-        `Successfully fetched project chart data for ${chartTypes.length} chart types`,
-      );
 
       return results;
     } catch (error) {

@@ -90,7 +90,6 @@ export class EmailReplyService {
     }
 
     try {
-      this.logger.log(`Sending comment ${commentId} as email reply`);
 
       const transporter = this.getTransporter(account);
       const emailMessageId = this.generateMessageId();
@@ -128,7 +127,6 @@ export class EmailReplyService {
       }
 
       const info = await transporter.sendMail(mailOptions);
-      this.logger.log(`Email sent successfully: ${info.messageId}`);
 
       await this.prisma.taskComment.update({
         where: { id: commentId },
@@ -372,7 +370,6 @@ export class EmailReplyService {
 
       await transporter.sendMail(mailOptions);
 
-      this.logger.log(`Auto-reply sent for message ${messageId}`);
     } catch (error) {
       this.logger.error(`Failed to send auto-reply for message ${messageId}:`, error.message);
     }
@@ -397,7 +394,6 @@ export class EmailReplyService {
       await transporter.verify();
 
       results.smtp = { success: true, message: 'SMTP connection successful' };
-      this.logger.log(`SMTP test passed for ${account.emailAddress}`);
     } catch (error) {
       this.logger.error(`SMTP test failed for ${account.emailAddress}:`, error.message);
       results.smtp = { success: false, message: `SMTP: ${error.message}` };
@@ -439,7 +435,6 @@ export class EmailReplyService {
       await client.logout();
 
       results.imap = { success: true, message: 'IMAP connection successful' };
-      this.logger.log(`IMAP test passed for ${account.emailAddress}`);
     } catch (error) {
       this.logger.error(`IMAP test failed for ${account.emailAddress}:`, error.message);
       results.imap = { success: false, message: `IMAP: ${error.message}` };

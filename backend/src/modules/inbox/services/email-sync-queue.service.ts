@@ -30,7 +30,6 @@ export class EmailSyncQueueService {
       },
     );
 
-    this.logger.log(`Manual sync job ${job.id} queued for project ${projectId}`);
     return job.id;
   }
 
@@ -47,7 +46,6 @@ export class EmailSyncQueueService {
       },
     );
 
-    this.logger.log(`Scheduled sync job ${job.id} queued for project ${projectId}`);
     return job.id;
   }
 
@@ -88,17 +86,14 @@ export class EmailSyncQueueService {
 
   async pauseQueue() {
     await this.emailSyncQueue.pause();
-    this.logger.log('Email sync queue paused');
   }
 
   async resumeQueue() {
     await this.emailSyncQueue.resume();
-    this.logger.log('Email sync queue resumed');
   }
 
   async cleanQueue() {
     await this.emailSyncQueue.clean(0, 100, JobStatus.COMPLETED);
     await this.emailSyncQueue.clean(0, 50, JobStatus.FAILED);
-    this.logger.log('Email sync queue cleaned');
   }
 }

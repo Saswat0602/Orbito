@@ -26,7 +26,7 @@ export function Modal({ isOpen, onClose, title, description, children, className
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl transition-all z-10 text-zinc-100",
+          "relative w-full max-w-lg rounded-md border border-zinc-800 bg-zinc-900 p-6 shadow-2xl transition-all z-10 text-zinc-100",
           className
         )}
       >

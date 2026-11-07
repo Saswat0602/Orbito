@@ -26,7 +26,6 @@ export class EmailProcessor implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      this.logger.log('Initializing EmailProcessor worker and SMTP transporter...');
 
       // Initialize SMTP first
       await this.initializeTransporter();
@@ -42,7 +41,6 @@ export class EmailProcessor implements OnModuleInit {
       // Ensure the queue is registered
       try {
         this.queueService.registerQueue('email');
-        this.logger.log('Queue "email" registered/verified successfully.');
       } catch (error) {
         this.logger.warn(
           `Notice: Queue "email" registration status: ${error instanceof Error ? error.message : String(error)}`,
@@ -69,9 +67,6 @@ export class EmailProcessor implements OnModuleInit {
       };
 
       adapter.createWorker('email', processor, workerConfig);
-      this.logger.log(
-        `SUCCESS: Email worker registered and listening on queue "${queuePrefix}:email"`,
-      );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(
@@ -122,9 +117,6 @@ export class EmailProcessor implements OnModuleInit {
       });
 
       await this.transporter.verify();
-      this.logger.log(
-        `SMTP transporter initialized and VERIFIED successfully for ${smtpHost}:${smtpPort}`,
-      );
     } catch (error) {
       const smtpHost = await this.getSmtpConfig('smtp_host', 'SMTP_HOST');
       if (smtpHost === 'smtp.example.com') {
@@ -176,14 +168,10 @@ export class EmailProcessor implements OnModuleInit {
           text,
         });
 
-        this.logger.log(`Email sent successfully to ${to} using template ${template}`);
         return { success: true, messageId: result.messageId };
       } else {
         // Log explicitly why it is being simulated
         this.logger.warn(`📧 EMAIL SIMULATION: Transporter not available. Check startup logs.`);
-        this.logger.log(
-          `📧 EMAIL SIMULATION - To: ${to}, Subject: ${subject}, Template: ${template}`,
-        );
         return { success: true, simulated: true };
       }
     } catch (error) {

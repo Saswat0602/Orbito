@@ -14,7 +14,6 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async checkDueDateReminders() {
-    this.logger.log('Checking for due date reminders...');
 
     try {
       const oneDayFromNow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -68,9 +67,6 @@ export class SchedulerService {
       }
 
       // Log results
-      this.logger.log(
-        `Sent ${tasksDueSoon.length} due date reminders (${urgentTasks.length} urgent)`,
-      );
     } catch (error) {
       this.logger.error('Failed to check due date reminders:', error);
     }
@@ -78,7 +74,6 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
   async checkOverdueTasks() {
-    this.logger.log('Checking for overdue tasks...');
 
     try {
       const overdueTasks = await this.prisma.task.findMany({
@@ -185,9 +180,6 @@ export class SchedulerService {
       // Send all emails concurrently
       await Promise.all(emailPromises);
 
-      this.logger.log(
-        `Sent overdue notifications to ${tasksByAssignee.size} users for ${overdueTasks.length} tasks`,
-      );
     } catch (error) {
       this.logger.error('Failed to check overdue tasks:', error);
     }
@@ -195,7 +187,6 @@ export class SchedulerService {
 
   @Cron('0 9 * * 1') // Monday at 9 AM
   async sendWeeklySummaries() {
-    this.logger.log('Sending weekly summaries...');
 
     try {
       // Get all active users who have been assigned tasks
@@ -225,7 +216,6 @@ export class SchedulerService {
         await this.emailService.sendWeeklySummaryEmail(user.id);
       }
 
-      this.logger.log(`Sent weekly summaries to ${activeUsers.length} users`);
     } catch (error) {
       this.logger.error('Failed to send weekly summaries:', error);
     }
@@ -233,7 +223,6 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async cleanupOldData() {
-    this.logger.log('Cleaning up old data...');
 
     try {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -267,11 +256,6 @@ export class SchedulerService {
         },
       });
 
-      this.logger.log(
-        `Cleanup completed: ${deletedNotifications.count} notifications, ` +
-          `${deletedActivityLogs.count} activity logs, ` +
-          `${deletedRuleExecutions.count} rule executions`,
-      );
     } catch (error) {
       this.logger.error('Failed to cleanup old data:', error);
     }
@@ -279,7 +263,6 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_6_HOURS)
   async updateSprintStatuses() {
-    this.logger.log('Updating sprint statuses...');
 
     try {
       const now = new Date();
@@ -310,10 +293,6 @@ export class SchedulerService {
         },
       });
 
-      this.logger.log(
-        `Sprint status updates: ${sprintsToActivate.count} activated, ` +
-          `${sprintsToComplete.count} completed`,
-      );
     } catch (error) {
       this.logger.error('Failed to update sprint statuses:', error);
     }
@@ -321,7 +300,6 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_WEEK)
   async generateAnalytics() {
-    this.logger.log('Generating weekly analytics...');
 
     try {
       const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -398,7 +376,6 @@ export class SchedulerService {
         );
       }
 
-      this.logger.log(`Generated analytics for ${organizations.length} organizations`);
     } catch (error) {
       this.logger.error('Failed to generate analytics:', error);
     }

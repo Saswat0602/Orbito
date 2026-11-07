@@ -21,7 +21,6 @@ export class QueueUIController {
     private readonly queueService: QueueService,
     private readonly configService: ConfigService,
   ) {
-    this.logger.log('QueueUIController instantiated');
     this.serverAdapter = new ExpressAdapter();
     this.serverAdapter.setBasePath('/api/queues');
     this.bullBoardEmail = this.configService.get<string>('BULL_BOARD_EMAIL', '');
@@ -94,7 +93,6 @@ export class QueueUIController {
               this.queueAdapters.push(new BullMQAdapter(bullQueue));
               this.registeredQueueNames.add(name);
               hasNewQueues = true;
-              this.logger.log(`Added queue "${name}" to Bull Board`);
             }
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -110,9 +108,6 @@ export class QueueUIController {
             serverAdapter: this.serverAdapter,
           });
           this.boardInitialized = true;
-          this.logger.log(
-            `Bull Board ${hasNewQueues ? 'updated' : 'initialized'} with ${this.queueAdapters.length} queues`,
-          );
         }
       }
     } catch (error) {

@@ -11,30 +11,24 @@ export class QueueStartupLoggerService {
    * Log queue module initialization start
    */
   logInitialization(): void {
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    this.logger.log('Queue Module Initialization');
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
   /**
    * Log requested backend
    */
   logRequestedBackend(backend: string, isDefault: boolean): void {
-    this.logger.log(`Requested backend: ${backend}${isDefault ? ' (default)' : ''}`);
   }
 
   /**
    * Log Redis connection check start
    */
   logRedisCheck(): void {
-    this.logger.log('Checking Redis connection...');
   }
 
   /**
    * Log successful Redis connection
    */
   logRedisSuccess(): void {
-    this.logger.log('✓ Redis connection successful');
   }
 
   /**
@@ -57,16 +51,12 @@ export class QueueStartupLoggerService {
    */
   logBackendSelected(backend: string, isFallback: boolean): void {
     const suffix = isFallback ? ' (fallback)' : '';
-    this.logger.log(`✓ Queue backend: ${backend}${suffix}`);
   }
 
   /**
    * Log initialization complete
    */
   logComplete(backend: string): void {
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    this.logger.log(`Queue module initialized with ${backend} backend`);
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
   /**

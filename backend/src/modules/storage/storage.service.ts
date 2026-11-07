@@ -32,12 +32,10 @@ export class StorageService implements OnModuleInit {
     const awsBucket = this.configService.get('AWS_BUCKET_NAME');
 
     if (awsAccessKey && awsSecretKey && awsBucket) {
-      this.logger.log('AWS credentials detected, checking S3 connection...');
       try {
         const connected = await this.checkS3Connection(awsBucket as string);
         this.useS3 = connected;
         if (connected) {
-          this.logger.log(`✅ S3 storage enabled for bucket: ${awsBucket}`);
         } else {
           this.logger.warn('❌ S3 connection check failed, falling back to local storage');
           if (!fs.existsSync(this.uploadDir)) {
@@ -52,7 +50,6 @@ export class StorageService implements OnModuleInit {
         }
       }
     } else {
-      this.logger.log('No AWS credentials found, using local storage');
       if (!fs.existsSync(this.uploadDir)) {
         fs.mkdirSync(this.uploadDir, { recursive: true });
       }
@@ -125,10 +122,8 @@ export class StorageService implements OnModuleInit {
 
     const key = `${safeFolder}/${safeFileName}`;
 
-    this.logger.log(`Saving file: ${key}, useS3=${this.useS3}`);
 
     if (this.useS3) {
-      this.logger.log('Uploading to S3 storage');
       await this.s3Service.uploadFile(file, key);
       return {
         url: null,

@@ -56,7 +56,6 @@ export class QueueService implements OnModuleDestroy {
 
     const queue = this.adapter.createQueue(name);
     this.queues.set(name, queue);
-    this.logger.log(`Queue "${name}" registered successfully`);
   }
 
   /**
@@ -142,7 +141,6 @@ export class QueueService implements OnModuleDestroy {
    * Close all queues and cleanup
    */
   async closeAll(): Promise<void> {
-    this.logger.log('Closing all queues...');
 
     await Promise.all(
       Array.from(this.queues.values()).map(async (queue) => {
@@ -160,7 +158,6 @@ export class QueueService implements OnModuleDestroy {
       await this.adapter.close();
     }
 
-    this.logger.log('All queues closed');
   }
 
   /**

@@ -125,13 +125,11 @@ export class QueueMetricsService {
       const metrics = this.metrics.get(queueName);
       if (metrics) {
         this.resetQueueMetrics(metrics);
-        this.logger.log(`Metrics reset for queue ${queueName}`);
       }
     } else {
       // Reset all metrics
       this.metrics.forEach((metrics) => this.resetQueueMetrics(metrics));
       this.activeJobs.clear();
-      this.logger.log('All metrics reset');
     }
   }
 

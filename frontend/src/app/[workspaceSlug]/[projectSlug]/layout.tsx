@@ -55,7 +55,7 @@ export default function ProjectLayout({
   if (isError || (!isLoading && !project)) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] p-6">
-        <div className="max-w-md w-full text-center space-y-4 p-8 rounded-xl border border-zinc-800 bg-zinc-900/60">
+        <div className="max-w-md w-full text-center space-y-4 p-8 rounded-md border border-zinc-800 bg-zinc-900/60">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-400">
             <FolderGit2 className="h-6 w-6" />
           </div>
@@ -66,7 +66,7 @@ export default function ProjectLayout({
           </p>
           <button
             onClick={() => router.push(`/${workspaceSlug}/projects`)}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors"
           >
             View Workspace Projects
           </button>
@@ -94,7 +94,7 @@ export default function ProjectLayout({
       <div className="border-b border-zinc-800/80 px-6 py-3 bg-zinc-950/60 shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+            <div className="h-8 w-8 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
               <FolderGit2 className="h-4 w-4" />
             </div>
             <div>
@@ -115,7 +115,7 @@ export default function ProjectLayout({
           </div>
 
           {/* Project View Tabs */}
-          <div className="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-lg border border-zinc-800/80">
+          <div className="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-md border border-zinc-800/80">
             {tabs.map((tab) => {
               const isActive = pathname === tab.href;
               const Icon = tab.icon;

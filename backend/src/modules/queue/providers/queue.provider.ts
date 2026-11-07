@@ -31,11 +31,6 @@ export class QueueProviderFactory {
     // Determine requested backend (default to bullmq)
     this.requestedBackend = this.config.backend || QueueBackend.BULLMQ;
 
-    this.logger.log(
-      `Queue initialization: Requested backend is "${this.requestedBackend}"${
-        !this.config.backend ? ' (default)' : ''
-      }`,
-    );
 
     try {
       // Handle BullMQ backend
@@ -69,16 +64,13 @@ export class QueueProviderFactory {
       throw new Error('BullMQ configuration is missing Redis connection details');
     }
 
-    this.logger.log('Checking Redis connection...');
 
     // Validate Redis connection
     this.redisAvailable = await this.redisValidator.checkConnection(this.config.bullmq.connection);
 
     if (this.redisAvailable) {
-      this.logger.log('✓ Redis connection successful');
       this.actualBackend = QueueBackend.BULLMQ;
       this.adapter = new BullMQAdapter(this.config.bullmq);
-      this.logger.log(`✓ Queue backend: ${this.actualBackend}`);
       return this.adapter;
     }
 
@@ -112,9 +104,6 @@ export class QueueProviderFactory {
     // Create adapter with config
     this.adapter = new BetterQueueAdapter(this.config.betterQueue);
 
-    this.logger.log(
-      `✓ Queue backend: ${this.actualBackend}${this.fallbackOccurred ? ' (fallback from BullMQ)' : ''}`,
-    );
 
     return this.adapter;
   }
@@ -127,7 +116,6 @@ export class QueueProviderFactory {
 
     // For now, we'll create a placeholder adapter
     // This will be implemented in a later step
-    this.logger.log(`✓ Queue backend: ${this.actualBackend}`);
 
     return Promise.reject(
       new Error('In-memory adapter not yet implemented. Use BullMQ with Redis for now.'),

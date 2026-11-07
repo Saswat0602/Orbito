@@ -23,7 +23,6 @@ export class BulkTaskImportProcessor implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      this.logger.log('Initializing BulkTaskImportProcessor worker...');
 
       const adapter = await Promise.resolve(this.queueService.getAdapter());
       if (!adapter) {
@@ -33,7 +32,6 @@ export class BulkTaskImportProcessor implements OnModuleInit {
 
       try {
         this.queueService.registerQueue('bulk-task-import');
-        this.logger.log('Queue "bulk-task-import" registered successfully.');
       } catch (error) {
         this.logger.warn(
           `Queue "bulk-task-import" registration: ${error instanceof Error ? error.message : String(error)}`,
@@ -57,9 +55,6 @@ export class BulkTaskImportProcessor implements OnModuleInit {
         prefix: queuePrefix,
       });
 
-      this.logger.log(
-        `Bulk task import worker registered on queue "${queuePrefix}:bulk-task-import"`,
-      );
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to initialize BulkTaskImportProcessor: ${msg}`);
@@ -69,16 +64,10 @@ export class BulkTaskImportProcessor implements OnModuleInit {
   async process(job: IJob<BulkTaskImportJobData>) {
     const { dto, userId } = job.data;
 
-    this.logger.log(
-      `Processing bulk import job ${job.id}: ${dto.tasks.length} tasks for project ${dto.projectId}`,
-    );
 
     try {
       const result = await this.tasksService.bulkCreate(dto, userId);
 
-      this.logger.log(
-        `Bulk import job ${job.id} completed: ${result.created} created, ${result.failed} failed`,
-      );
 
       return result;
     } catch (error) {

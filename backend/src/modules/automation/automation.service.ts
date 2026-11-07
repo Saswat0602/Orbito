@@ -468,7 +468,6 @@ export class AutomationService {
         },
       );
 
-      this.logger.log(`Queued automation rule ${ruleId} for trigger ${triggerType}`);
     } catch (error) {
       this.logger.error(`Failed to queue automation rule ${ruleId}:`, error);
     }

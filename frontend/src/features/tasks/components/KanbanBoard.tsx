@@ -60,7 +60,7 @@ function KanbanColumn({ id, label, color, tasks, onAddTask }: KanbanColumnProps)
   return (
     <div
       ref={setNodeRef}
-      className="flex flex-col flex-1 min-w-[280px] max-w-[360px] rounded-xl border border-zinc-850 bg-zinc-950/40 p-3 h-full"
+      className="flex flex-col flex-1 min-w-[280px] max-w-[360px] rounded-md border border-zinc-850 bg-zinc-950/40 p-3 h-full"
     >
       {/* Column Header */}
       <div className="flex items-center justify-between pb-3 px-1 border-b border-zinc-850 mb-3">
@@ -94,7 +94,7 @@ function KanbanColumn({ id, label, color, tasks, onAddTask }: KanbanColumnProps)
           ))}
 
           {tasks.length === 0 && (
-            <div className="h-28 flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-850 p-4 text-center">
+            <div className="h-28 flex flex-col items-center justify-center rounded-md border border-dashed border-zinc-850 p-4 text-center">
               <span className="text-[11px] text-zinc-600">No tasks in {label}</span>
               {onAddTask && (
                 <button

@@ -47,7 +47,7 @@ export function CompleteSprintModal({
       description="Close out this sprint cycle. Unfinished tasks will be moved back to the backlog."
     >
       <div className="space-y-4 pt-2">
-        <div className="p-4 rounded-lg bg-zinc-950/60 border border-zinc-800 text-xs text-zinc-300 space-y-1">
+        <div className="p-4 rounded-md bg-zinc-950/60 border border-zinc-800 text-xs text-zinc-300 space-y-1">
           <p>
             Completing this sprint will lock its burndown report and calculate team velocity.
           </p>

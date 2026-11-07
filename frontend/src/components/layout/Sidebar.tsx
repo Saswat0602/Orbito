@@ -201,7 +201,7 @@ export function Sidebar() {
         {/* Brand & Organization */}
         <div className="p-4 border-b border-zinc-800/80 space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-950 font-bold shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-zinc-100 text-zinc-950 font-bold shadow-sm">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -322,7 +322,7 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={`
-                    flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+                    flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors
                     ${
                       isActive
                         ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
@@ -353,7 +353,7 @@ export function Sidebar() {
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={`
-                      flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+                      flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors
                       ${
                         isActive
                           ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
@@ -379,7 +379,7 @@ export function Sidebar() {
                 href="/admin"
                 onClick={() => setIsMobileOpen(false)}
                 className={`
-                  flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors
+                  flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors
                   ${
                     pathname?.startsWith('/admin')
                       ? 'bg-rose-950/80 text-rose-200 border border-rose-800'
@@ -401,7 +401,7 @@ export function Sidebar() {
 
         {/* User Profile & Session Footer */}
         <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/50">
-          <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 border border-zinc-850">
+          <div className="flex items-center justify-between p-2 rounded-md bg-zinc-900/60 border border-zinc-850">
             <div className="flex items-center gap-2.5 min-w-0">
               <Avatar className="h-8 w-8 rounded-md border border-zinc-800">
                 <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold">

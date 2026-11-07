@@ -28,9 +28,6 @@ export class ProjectChartsService {
     projectSlug: string,
     chartTypes: ProjectChartType[],
   ): Promise<ProjectChartDataResponse> {
-    this.logger.log(
-      `Fetching project chart data for ${projectSlug}, types: ${chartTypes.join(', ')}`,
-    );
 
     try {
       // Check project visibility once before fetching all charts
@@ -50,9 +47,6 @@ export class ProjectChartsService {
         results[type] = data;
       });
 
-      this.logger.log(
-        `Successfully fetched project chart data for ${chartTypes.length} chart types`,
-      );
 
       return results;
     } catch (error) {

@@ -21,7 +21,6 @@ export class RecurringTasksCronService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateUpcomingRecurringTasks() {
-    this.logger.log('Starting recurring task generation cron job...');
 
     try {
       // Find all active recurring tasks
@@ -39,7 +38,6 @@ export class RecurringTasksCronService {
         },
       });
 
-      this.logger.log(`Found ${recurringTasks.length} active recurring tasks`);
 
       let generated = 0;
       let skipped = 0;
@@ -58,9 +56,6 @@ export class RecurringTasksCronService {
               where: { id: recurringTask.taskId },
               data: { isRecurring: false },
             });
-            this.logger.log(
-              `Deactivated completed recurrence for task ${recurringTask.task.title}`,
-            );
             continue;
           }
 
@@ -168,9 +163,6 @@ export class RecurringTasksCronService {
               });
 
               generated++;
-              this.logger.log(
-                `Generated task instance: ${newTask.slug} for ${new Date(recurringTask.nextOccurrence).toISOString()}`,
-              );
             } catch (error) {
               if (error.code === 'P2002' && retries > 1) {
                 retries--;
@@ -199,9 +191,6 @@ export class RecurringTasksCronService {
         }
       }
 
-      this.logger.log(
-        `Recurring task generation completed. Generated: ${generated}, Skipped: ${skipped}, Errors: ${errors}`,
-      );
     } catch (error) {
       this.logger.error(`Failed to run recurring task generation: ${error.message}`, error.stack);
     }

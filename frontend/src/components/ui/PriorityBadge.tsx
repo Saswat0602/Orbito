@@ -42,7 +42,7 @@ export const PriorityBadge: React.FC<PriorityBadgeProps> = ({ priority, size = '
 
     return (
         <span
-            className={`inline-flex items-center gap-1.5 ${sizeClasses[size]} ${config.lightBg} ${config.textColor} border ${config.borderColor} rounded-full font-bold uppercase tracking-wide`}
+            className={`inline-flex items-center gap-1.5 ${sizeClasses[size]} ${config.lightBg} ${config.textColor} border ${config.borderColor} rounded-sm font-semibold uppercase tracking-wider`}
         >
             <span className={`w-1.5 h-1.5 rounded-full ${config.color}`} />
             {config.label}

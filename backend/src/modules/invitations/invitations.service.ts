@@ -309,7 +309,6 @@ export class InvitationsService {
       }
     }
 
-    this.logger.log(`Created invitation for ${dto.inviteeEmail} (ID: ${invitation.id})`);
 
     return { ...invitation, emailSent };
   }
@@ -432,7 +431,6 @@ export class InvitationsService {
           });
         }
 
-        this.logger.log(`Added user ${user.email} directly to workspace ${workspace.id}`);
 
         return {
           type: 'direct_add',
@@ -524,7 +522,6 @@ export class InvitationsService {
           );
         }
 
-        this.logger.log(`Added user ${user.email} directly to project ${project.id}`);
 
         return {
           type: 'direct_add',
@@ -670,9 +667,6 @@ export class InvitationsService {
             data: { status: 'ACCEPTED' },
           });
 
-          this.logger.log(
-            `Auto-accepted project invitation ${projInvitation.id} for project ${projInvitation.project?.name}`,
-          );
         }
       }
     }
@@ -730,7 +724,6 @@ export class InvitationsService {
       data: { status: 'ACCEPTED' },
     });
 
-    this.logger.log(`Invitation ${invitation.id} accepted by user ${userId}`);
 
     return {
       message: 'Invitation accepted successfully',
@@ -765,7 +758,6 @@ export class InvitationsService {
       data: { status: 'DECLINED' },
     });
 
-    this.logger.log(`Invitation ${invitation.id} declined`);
 
     return { message: 'Invitation declined successfully' };
   }
@@ -1009,7 +1001,6 @@ export class InvitationsService {
       // Continue execution - the invitation was updated successfully
     }
 
-    this.logger.log(`Resent invitation ${invitationId} to ${updatedInvitation.inviteeEmail}`);
 
     return {
       message: emailSent

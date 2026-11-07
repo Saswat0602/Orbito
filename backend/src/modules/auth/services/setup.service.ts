@@ -39,7 +39,6 @@ export class SetupService {
           throw new ConflictException('System setup has already been completed');
         }
 
-        this.logger.log('Starting system setup...');
 
         const existingUser = await prismaTransaction.user.findUnique({
           where: { email: setupAdminDto.email },

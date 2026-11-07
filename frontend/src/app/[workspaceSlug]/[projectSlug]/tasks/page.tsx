@@ -90,7 +90,7 @@ export default function ProjectTasksPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 p-0.5 rounded-lg">
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 p-0.5 rounded-md">
             <button
               type="button"
               onClick={() => setViewMode('board')}

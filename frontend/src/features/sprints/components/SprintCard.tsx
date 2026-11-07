@@ -50,7 +50,7 @@ export function SprintCard({
     <Card className="border-zinc-800 bg-zinc-900/80 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-300">
+          <div className="h-7 w-7 rounded-md bg-zinc-800 flex items-center justify-center text-zinc-300">
             <Target className="h-4 w-4" />
           </div>
           <div>

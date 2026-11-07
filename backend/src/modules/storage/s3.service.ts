@@ -24,7 +24,6 @@ export class S3Service {
     const region = this.configService.get<string>('AWS_REGION');
     this.bucketName = this.configService.get<string>('AWS_BUCKET_NAME')!;
 
-    this.logger.log(`Initializing S3 client for bucket: ${this.bucketName}`);
 
     this.s3Client = new S3Client({
       region: region || 'ap-south-1',
@@ -42,7 +41,6 @@ export class S3Service {
   async uploadFile(file: Express.Multer.File, key: string): Promise<string> {
     const contentType = mime.getType(file.originalname) || 'application/octet-stream';
 
-    this.logger.log(`Uploading file to S3: ${key}, size: ${file.size} bytes`);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -53,7 +51,6 @@ export class S3Service {
 
     try {
       await this.s3Client.send(command);
-      this.logger.log(`Successfully uploaded to S3: ${key}`);
       // Return the public URL or generate a signed URL
       return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
     } catch (error) {

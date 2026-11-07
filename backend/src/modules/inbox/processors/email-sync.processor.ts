@@ -23,7 +23,6 @@ export class EmailSyncProcessor {
   async process(job: IJob<EmailSyncJobData>): Promise<any> {
     const { projectId, userId, type } = job.data;
 
-    this.logger.log(`Processing ${type} email sync for project ${projectId} (Job: ${job.id})`);
 
     try {
       // Update job progress
@@ -72,9 +71,6 @@ export class EmailSyncProcessor {
       await job.updateProgress(100);
 
       // Log success
-      this.logger.log(
-        `Successfully completed ${type} sync for project ${projectId} (${inbox.project.name}) - Job: ${job.id}`,
-      );
 
       return {
         success: true,

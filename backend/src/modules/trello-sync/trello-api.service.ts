@@ -157,7 +157,6 @@ export class TrelloApiService {
 
         const { data } = await client.get<TrelloCard[]>(`/boards/${safeBoardId}/cards`, { params });
 
-        this.logger.log(`Trello API yielded batch of ${data.length} cards for board ${boardId}`);
 
         if (data.length > 0) {
           yield data;

@@ -164,7 +164,7 @@ export function TaskDetailDrawer() {
             </div>
 
             {/* Properties Grid */}
-            <div className="grid grid-cols-2 gap-4 p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-850 text-xs">
+            <div className="grid grid-cols-2 gap-4 p-3.5 rounded-md bg-zinc-950/60 border border-zinc-850 text-xs">
               <div className="space-y-1">
                 <span className="text-zinc-500 text-[11px] font-medium">Priority</span>
                 <select

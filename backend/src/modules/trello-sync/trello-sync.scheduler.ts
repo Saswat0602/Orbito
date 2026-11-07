@@ -52,7 +52,6 @@ export class TrelloSyncScheduler {
         return;
       }
 
-      this.logger.log(`Processing ${actuallyDue.length} scheduled Trello sync(s)`);
 
       // Process each sync sequentially (to avoid hammering Trello API)
       for (const sync of actuallyDue) {

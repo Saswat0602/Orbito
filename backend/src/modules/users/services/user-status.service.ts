@@ -26,7 +26,6 @@ export class UserStatusService implements OnModuleInit {
   }
 
   onModuleInit() {
-    this.logger.log('UserStatusService initialized with EventsGateway');
   }
 
   /**

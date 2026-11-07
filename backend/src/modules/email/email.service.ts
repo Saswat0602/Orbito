@@ -46,7 +46,6 @@ export class EmailService {
         },
       });
 
-      this.logger.log(`Email queued for ${emailDto.to} with template ${emailDto.template}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to queue email for ${emailDto.to}: ${errorMessage}`);
@@ -72,7 +71,6 @@ export class EmailService {
     }));
 
     await this.emailQueue.addBulk(jobs);
-    this.logger.log(`Bulk email queued for ${bulkEmailDto.recipients.length} recipients`);
   }
 
   // Notification helpers
@@ -541,7 +539,6 @@ export class EmailService {
         priority: EmailPriority.HIGH, // Password reset is high priority
       });
 
-      this.logger.log(`Password reset email queued for ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send password reset email: ${error.message}`);
       throw error; // Re-throw to handle at caller level

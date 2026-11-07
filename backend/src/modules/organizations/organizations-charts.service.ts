@@ -64,9 +64,6 @@ export class OrganizationChartsService {
     chartTypes: ChartType[],
     filters: { workspaceId?: string; projectId?: string; minMemberCount?: number } = {},
   ): Promise<ChartDataResponse> {
-    this.logger.log(
-      `Fetching chart data for organization ${orgId}, types: ${chartTypes.join(', ')} with filters: ${JSON.stringify(filters)}`,
-    );
 
     try {
       // Execute all chart requests in parallel for better performance
@@ -91,7 +88,6 @@ export class OrganizationChartsService {
         results[type] = error ? { error } : data;
       });
 
-      this.logger.log(`Successfully fetched chart data for ${chartTypes.length} chart types`);
       console.log(results);
       return results;
     } catch (error) {

@@ -8,7 +8,6 @@ export class InboxRulesSeederService {
   constructor(private prisma: PrismaService) {}
 
   async seedDefaultInboxRules(projectInboxId: string, userId?: string) {
-    this.logger.log(`Seeding default inbox rules for inbox: ${projectInboxId}`);
 
     const defaultRules = [
       {
@@ -328,12 +327,10 @@ export class InboxRulesSeederService {
       }
     }
 
-    this.logger.log(`Inbox rules seeding completed: ${created} created, ${skipped} skipped`);
     return { created, skipped };
   }
 
   async seedRulesForAllInboxes() {
-    this.logger.log('Seeding default rules for all existing inboxes...');
 
     const inboxes = await this.prisma.projectInbox.findMany({
       include: {
@@ -360,9 +357,6 @@ export class InboxRulesSeederService {
       totalSkipped += result.skipped;
     }
 
-    this.logger.log(
-      `Total rules seeded: ${totalCreated} created, ${totalSkipped} skipped across ${inboxes.length} inboxes`,
-    );
     return { totalCreated, totalSkipped, inboxesProcessed: inboxes.length };
   }
 }

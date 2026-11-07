@@ -78,7 +78,7 @@ export function TaskCard({ task, isOverlay = false }: TaskCardProps) {
       ref={setNodeRef}
       style={style}
       className={`
-        group relative rounded-lg border bg-zinc-900/90 p-3.5 space-y-3 transition-all
+        group relative rounded-md border bg-zinc-900/90 p-3.5 space-y-3 transition-all
         cursor-pointer select-none
         ${
           isDragging

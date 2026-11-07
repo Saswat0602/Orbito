@@ -41,7 +41,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   afterInit() {
-    this.logger.log('EventsGateway initialized on /events namespace');
   }
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -93,7 +92,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userSockets.push(client.id);
       this.connectedUsers.set(client.userId, userSockets);
 
-      this.logger.log(`User ${client.userId} connected with socket ${client.id}`);
 
       // Join user to their personal room
       await client.join(`user:${client.userId}`);
@@ -143,7 +141,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.connectedUsers.set(client.userId, updatedSockets);
         }
 
-        this.logger.log(`User ${client.userId} disconnected socket ${client.id}`);
       }
 
       // Clean up room memberships
@@ -188,7 +185,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.organizationId = data.organizationId;
       await client.join(`org:${data.organizationId}`);
       client.emit('joined:organization', { organizationId: data.organizationId });
-      this.logger.log(`User ${client.userId} joined organization ${data.organizationId}`);
     } catch (error) {
       this.logger.error(`Error joining organization: ${error.message}`);
       client.emit('error', { message: 'Failed to join organization', details: error.message });
@@ -210,7 +206,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.workspaceId = data.workspaceId;
       await client.join(`workspace:${data.workspaceId}`);
       client.emit('joined:workspace', { workspaceId: data.workspaceId });
-      this.logger.log(`User ${client.userId} joined workspace ${data.workspaceId}`);
     } catch (error) {
       this.logger.error(`Error joining workspace: ${error.message}`);
       client.emit('error', { message: 'Failed to join workspace', details: error.message });
@@ -232,7 +227,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.projectId = data.projectId;
       await client.join(`project:${data.projectId}`);
       client.emit('joined:project', { projectId: data.projectId });
-      this.logger.log(`User ${client.userId} joined project ${data.projectId}`);
     } catch (error) {
       this.logger.error(`Error joining project: ${error.message}`);
       client.emit('error', { message: 'Failed to join project', details: error.message });
@@ -253,7 +247,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       await client.join(`task:${data.taskId}`);
       client.emit('joined:task', { taskId: data.taskId });
-      this.logger.log(`User ${client.userId} joined task ${data.taskId}`);
     } catch (error) {
       this.logger.error(`Error joining task: ${error.message}`);
       client.emit('error', { message: 'Failed to join task', details: error.message });
@@ -273,7 +266,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const organizationId = client.organizationId;
       client.organizationId = undefined;
       client.emit('left:organization', { organizationId });
-      this.logger.log(`User ${client.userId} left organization ${organizationId}`);
     } catch (error) {
       this.logger.error(`Error leaving organization: ${error.message}`);
       client.emit('error', { message: 'Failed to leave organization', details: error.message });
@@ -292,7 +284,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const workspaceId = client.workspaceId;
       client.workspaceId = undefined;
       client.emit('left:workspace', { workspaceId });
-      this.logger.log(`User ${client.userId} left workspace ${workspaceId}`);
     } catch (error) {
       this.logger.error(`Error leaving workspace: ${error.message}`);
       client.emit('error', { message: 'Failed to leave workspace', details: error.message });
@@ -311,7 +302,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const projectId = client.projectId;
       client.projectId = undefined;
       client.emit('left:project', { projectId });
-      this.logger.log(`User ${client.userId} left project ${projectId}`);
     } catch (error) {
       this.logger.error(`Error leaving project: ${error.message}`);
       client.emit('error', { message: 'Failed to leave project', details: error.message });
@@ -331,7 +321,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       await client.leave(`task:${data.taskId}`);
       client.emit('left:task', { taskId: data.taskId });
-      this.logger.log(`User ${client.userId} left task ${data.taskId}`);
     } catch (error) {
       this.logger.error(`Error leaving task: ${error.message}`);
       client.emit('error', { message: 'Failed to leave task', details: error.message });

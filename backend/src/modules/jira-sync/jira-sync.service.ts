@@ -71,7 +71,6 @@ export class JiraSyncService {
       },
     });
 
-    this.logger.log(`Jira project ${dto.jiraProjectKey} connected to project ${dto.projectId}`);
     return this.safeResponse(sync);
   }
 
@@ -352,9 +351,6 @@ export class JiraSyncService {
         }
       }
 
-      this.logger.log(
-        `Jira sync completed for project ${sync.projectId}: ${imported} imported/updated, ${failed} failed`,
-      );
 
       await this.prisma.jiraSync.update({
         where: { id: sync.id },
@@ -374,9 +370,6 @@ export class JiraSyncService {
           ? `${imported} synced, ${failed} skipped (check logs)`
           : `${imported} issues processed`;
 
-      this.logger.log(
-        `Jira sync complete for project ${sync.projectId}: ${message} in ${elapsed}ms`,
-      );
 
       return { success: true, issuesProcessed: imported, failedCount: failed, durationMs: elapsed };
     } catch (error) {
@@ -423,7 +416,6 @@ export class JiraSyncService {
   async disconnect(projectId: string) {
     await this.findSyncOrFail(projectId);
     await this.prisma.jiraSync.delete({ where: { projectId } });
-    this.logger.log(`Jira sync disconnected for project ${projectId}`);
     return { message: 'Jira sync disconnected successfully' };
   }
 
@@ -503,7 +495,6 @@ export class JiraSyncService {
       },
     });
 
-    this.logger.log(`Jira account connected to Orbito workspace ${workspaceId}`);
     return this.safeResponse(sync);
   }
 
@@ -726,9 +717,6 @@ export class JiraSyncService {
 
         // Trigger the newly batched runSync to handle the actual import and mappings!
         const result = await this.runSync(projectSync, userId);
-        this.logger.log(
-          `Imported ${result.issuesProcessed} issues from Jira project ${jiraProject.key} to project ${project.id}`,
-        );
       } catch (error) {
         this.logger.error(
           `Failed to import Jira project ${projectKey}: ${error.message}`,
@@ -819,7 +807,6 @@ export class JiraSyncService {
   async disconnectWorkspace(workspaceId: string) {
     await this.findWorkspaceSyncOrFail(workspaceId);
     await this.prisma.jiraSync.delete({ where: { workspaceId } });
-    this.logger.log(`Jira sync disconnected for workspace ${workspaceId}`);
     return { message: 'Jira workspace sync disconnected successfully' };
   }
 

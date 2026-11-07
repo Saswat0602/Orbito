@@ -43,7 +43,6 @@ export class S3UploadService {
 
       const url = `https://${this.bucketName}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${key}`;
 
-      this.logger.log(`File uploaded successfully: ${key}`);
       return { url, key };
     } catch (error) {
       this.logger.error(`Failed to upload file to S3:`, error.message);

@@ -49,7 +49,7 @@ export default function WorkspaceLayout({
   if (isError || (!isLoading && !workspace)) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] p-6">
-        <div className="max-w-md w-full text-center space-y-4 p-8 rounded-xl border border-zinc-800 bg-zinc-900/60">
+        <div className="max-w-md w-full text-center space-y-4 p-8 rounded-md border border-zinc-800 bg-zinc-900/60">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-400">
             <svg
               viewBox="0 0 24 24"
@@ -70,7 +70,7 @@ export default function WorkspaceLayout({
           </p>
           <button
             onClick={() => router.push('/')}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors"
           >
             Return to Overview
           </button>

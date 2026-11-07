@@ -112,7 +112,6 @@ export class OidcService {
         response_types: ['code'],
       });
       this.lastConfigHash = configHash;
-      this.logger.log(`OIDC client initialized for issuer: ${config.issuerUrl}`);
       return this.client;
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Unknown error';

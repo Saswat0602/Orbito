@@ -70,7 +70,6 @@ export class TrelloSyncService {
       },
     });
 
-    this.logger.log(`Trello board ${dto.trelloBoardId} connected to project ${dto.projectId}`);
     return this.safeResponse(sync);
   }
 
@@ -288,9 +287,6 @@ export class TrelloSyncService {
       });
 
       const elapsed = Date.now() - startTime;
-      this.logger.log(
-        `Trello sync complete for project ${sync.projectId}: ${updated} cards processed in ${elapsed}ms`,
-      );
 
       return { success: true, cardsProcessed: updated, durationMs: elapsed };
     } catch (error) {
@@ -337,7 +333,6 @@ export class TrelloSyncService {
   async disconnect(projectId: string) {
     await this.findSyncOrFail(projectId);
     await this.prisma.trelloSync.delete({ where: { projectId } });
-    this.logger.log(`Trello sync disconnected for project ${projectId}`);
     return { message: 'Trello sync disconnected successfully' };
   }
 
@@ -381,7 +376,6 @@ export class TrelloSyncService {
       },
     });
 
-    this.logger.log(`Trello workspace connected to Orbito workspace ${workspaceId}`);
     return this.safeResponse(sync);
   }
 
@@ -489,9 +483,6 @@ export class TrelloSyncService {
 
         // Delegate to the optimized batch sync logic
         const result = await this.runSync(syncRecord, userId);
-        this.logger.log(
-          `Imported ${result.cardsProcessed} cards from board ${board.name} to project ${project.id}`,
-        );
       } catch (error) {
         this.logger.error(`Failed to import board ${boardId}: ${error.message}`, error.stack);
         // Continue with next board
@@ -574,7 +565,6 @@ export class TrelloSyncService {
   async disconnectWorkspace(workspaceId: string) {
     await this.findWorkspaceSyncOrFail(workspaceId);
     await this.prisma.trelloSync.delete({ where: { workspaceId } });
-    this.logger.log(`Trello sync disconnected for workspace ${workspaceId}`);
     return { message: 'Trello workspace sync disconnected successfully' };
   }
   // ─────────────────────────────────────────────────────

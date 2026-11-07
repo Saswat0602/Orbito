@@ -28,9 +28,6 @@ export class WorkspaceChartsService {
     userId: string,
     chartTypes: WorkspaceChartType[],
   ): Promise<WorkspaceChartDataResponse> {
-    this.logger.log(
-      `Fetching workspace chart data for ${workspaceSlug}, types: ${chartTypes.join(', ')}`,
-    );
 
     try {
       // Execute all chart requests in parallel
@@ -68,9 +65,6 @@ export class WorkspaceChartsService {
         results[type] = error ? { error } : data;
       });
 
-      this.logger.log(
-        `Successfully fetched workspace chart data for ${chartTypes.length} chart types`,
-      );
 
       return results;
     } catch (error) {

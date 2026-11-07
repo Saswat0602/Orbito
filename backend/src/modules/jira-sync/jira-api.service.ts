@@ -319,25 +319,16 @@ export class JiraApiService {
       const client = this.buildClient(site, site.agent, email, apiToken);
       const { data } = await client.get(`/project/${encodeURIComponent(safeKey)}/statuses`);
 
-      this.logger.log(
-        `[DEBUG] Raw /project/${projectKey}/statuses response: ${JSON.stringify(data).substring(0, 2000)}`,
-      );
 
       // data is an array of issue-type → statuses; flatten and deduplicate
       const statusMap = new Map<string, JiraStatus>();
       for (const issueType of data) {
-        this.logger.log(
-          `[DEBUG] Issue type "${String(issueType.name)}" has statuses: ${JSON.stringify((issueType.statuses as JiraStatus[])?.map((s) => ({ id: s.id, name: s.name })))}`,
-        );
         for (const status of issueType.statuses as JiraStatus[]) {
           statusMap.set(status.id, status);
         }
       }
 
       const result = Array.from(statusMap.values());
-      this.logger.log(
-        `[DEBUG] Flattened statuses for ${projectKey}: ${JSON.stringify(result.map((s) => ({ id: s.id, name: s.name })))}`,
-      );
       return result;
     } catch (err) {
       this.logger.error(`Failed to fetch Jira statuses for project ${projectKey}: ${err.message}`);
@@ -383,21 +374,10 @@ export class JiraApiService {
         // Log the raw top-level response shape (first page only)
         if (startAt === 0) {
           const rawData = data as Record<string, unknown>;
-          this.logger.log(`[DEBUG] /search/jql response keys: ${Object.keys(rawData).join(', ')}`);
           const issuesList = rawData['issues'] as unknown[];
-          this.logger.log(
-            `[DEBUG] /search/jql total=${String(rawData['total'])}, issues count=${issuesList?.length ?? 'N/A'}, isLast=${String(rawData['isLast'])}`,
-          );
           if (issuesList && issuesList.length > 0) {
             const sample = issuesList[0] as Record<string, unknown>;
-            this.logger.log(`[DEBUG] Sample issue keys: ${Object.keys(sample).join(', ')}`);
             const sampleFields = sample['fields'] as Record<string, unknown> | undefined;
-            this.logger.log(
-              `[DEBUG] Sample issue.fields keys: ${Object.keys(sampleFields || {}).join(', ')}`,
-            );
-            this.logger.log(
-              `[DEBUG] Sample issue full dump: ${JSON.stringify(sample).substring(0, 3000)}`,
-            );
           } else {
             this.logger.warn(
               `[DEBUG] /search/jql returned 0 issues for project ${projectKey}. Full response: ${JSON.stringify(rawData).substring(0, 1000)}`,
@@ -406,9 +386,6 @@ export class JiraApiService {
         }
 
         const issues = (data.issues as JiraIssue[]) || [];
-        this.logger.log(
-          `Jira API returned ${issues.length} issues for project ${projectKey} (isLast: ${data.isLast}, total: ${data.total})`,
-        );
         results.push(...issues);
 
         if (
@@ -464,7 +441,6 @@ export class JiraApiService {
       }
       jql += ` ORDER BY created ASC`;
 
-      this.logger.log(`Executing Jira JQL: ${jql}`);
 
       while (true) {
         const { data } = await client.get('/search/jql', {
@@ -485,9 +461,6 @@ export class JiraApiService {
         });
 
         const issues = (data.issues as JiraIssue[]) || [];
-        this.logger.log(
-          `Jira API yielded batch of ${issues.length} issues for project ${projectKey} (startAt: ${startAt}, isLast: ${data.isLast}, total: ${data.total})`,
-        );
 
         if (issues.length > 0) {
           yield issues;

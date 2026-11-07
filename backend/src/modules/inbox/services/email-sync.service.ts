@@ -64,7 +64,6 @@ export class EmailSyncService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async syncAllInboxes() {
-    this.logger.log('Starting scheduled email sync for all inboxes');
 
     const now = new Date();
 
@@ -85,7 +84,6 @@ export class EmailSyncService {
       },
     });
 
-    this.logger.log(`Found ${accounts.length} inboxes ready for sync check`);
 
     for (const account of accounts) {
       try {
@@ -113,9 +111,6 @@ export class EmailSyncService {
         });
 
         const nextSyncTime = new Date(now.getTime() + syncIntervalMinutes * 60 * 1000);
-        this.logger.log(
-          `Successfully synced inbox for ${account.emailAddress}. Next sync at: ${nextSyncTime.toISOString()}`,
-        );
       } catch (error) {
         this.logger.error(`Failed to sync inbox for ${account.emailAddress}:`, error.message);
 
@@ -129,7 +124,6 @@ export class EmailSyncService {
       }
     }
 
-    this.logger.log('Completed scheduled email sync for all inboxes');
   }
 
   async syncInbox(account: EmailAccount & { projectInbox?: { projectId: string } | null }) {
@@ -142,12 +136,10 @@ export class EmailSyncService {
     });
 
     try {
-      this.logger.log(`Starting sync for ${account.emailAddress}`);
 
       // Fetch messages (already sorted by date, oldest first)
       const messages = await this.fetchMessagesBasic(account);
 
-      this.logger.log(`Processing ${messages.length} messages in chronological order`);
 
       // SINGLE PASS: Process messages sequentially in chronological order
       // This ensures parent emails are converted to tasks before replies arrive
@@ -172,7 +164,6 @@ export class EmailSyncService {
         }
       }
 
-      this.logger.log(`Sync complete: Processed ${processed} new messages`);
 
       // Update sync log
       await this.prisma.emailSyncLog.update({
@@ -193,7 +184,6 @@ export class EmailSyncService {
         },
       });
 
-      this.logger.log(`Sync completed for ${account.emailAddress}.`);
     } catch (error) {
       console.error(`Error syncing email account ${account.emailAddress}:`, error);
       // ... error handling ...
@@ -201,7 +191,6 @@ export class EmailSyncService {
   }
 
   private async fetchMessagesBasic(account: EmailAccount): Promise<EmailMessage[]> {
-    this.logger.log(`Fetching IMAP messages for ${account.emailAddress}`);
 
     let client: ImapFlow | null = null;
 
@@ -251,7 +240,6 @@ export class EmailSyncService {
         ),
       ]);
 
-      this.logger.log(`Connected to IMAP server for ${account.emailAddress}`);
 
       // Lock mailbox
       const mailbox = await client.getMailboxLock(account.imapFolder || 'INBOX');
@@ -328,7 +316,6 @@ export class EmailSyncService {
           }
         }
 
-        this.logger.log(`Fetched ${emailMessages.length} messages from ${account.emailAddress}`);
 
         // Sort messages by date (oldest first) to ensure original emails are processed before replies
         emailMessages.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -336,7 +323,6 @@ export class EmailSyncService {
         return emailMessages;
       } finally {
         mailbox.release();
-        this.logger.log('Mailbox lock released');
       }
     } catch (error: any) {
       console.error(error);
@@ -368,7 +354,6 @@ export class EmailSyncService {
               setTimeout(() => reject(new Error('IMAP logout timeout')), 5000),
             ),
           ]);
-          this.logger.log('IMAP client logged out');
         } catch (logoutError: any) {
           this.logger.warn(`Failed to logout IMAP client: ${logoutError.message}`);
         }
@@ -378,7 +363,6 @@ export class EmailSyncService {
 
   // Combined: Create InboxMessage AND immediately process for task/comment
   private async createAndProcessMessage(message: EmailMessage, account: EmailAccount) {
-    this.logger.log(`Processing message: ${message.subject} (${message.date.toISOString()})`);
 
     // Extract thread ID
     const existingMessage = await this.prisma.inboxMessage.findUnique({
@@ -503,7 +487,6 @@ export class EmailSyncService {
     ) {
       try {
         await this.emailReplyService.sendAutoReply(inboxMessage.id);
-        this.logger.log(`Global auto-reply sent for message ${message.messageId}`);
       } catch (error) {
         this.logger.error(
           `Failed to send global auto-reply for message ${message.messageId}:`,
@@ -512,9 +495,6 @@ export class EmailSyncService {
         // Don't throw - message processing succeeded, auto-reply is non-critical
       }
     } else if (ruleResult.autoReplySent) {
-      this.logger.log(
-        `Skipping global auto-reply for message ${message.messageId} - rule-based auto-reply already sent`,
-      );
     }
 
     // ⭐ Mark as read on IMAP server after successful processing
@@ -526,7 +506,6 @@ export class EmailSyncService {
       // Don't throw - message processing succeeded, mark as read is non-critical
     }
 
-    this.logger.log(`✅ Completed processing message ${message.messageId}`);
   }
 
   // Helper method to find or create user from email and add to all levels
@@ -575,11 +554,7 @@ export class EmailSyncService {
         },
       });
 
-      this.logger.log(
-        `Created new user from email: ${email} with username: ${uniqueUsername} (source: EMAIL_INBOX, secure random password generated)`,
-      );
     } else {
-      this.logger.log(`User ${email} already exists, skipping creation`);
     }
 
     // Add user to organization, workspace, and project with VIEWER role
@@ -602,7 +577,6 @@ export class EmailSyncService {
             role: 'VIEWER',
           },
         });
-        this.logger.log(`Added user ${email} to organization as VIEWER`);
       }
 
       // Add to workspace if not already a member
@@ -623,7 +597,6 @@ export class EmailSyncService {
             role: 'VIEWER',
           },
         });
-        this.logger.log(`Added user ${email} to workspace as VIEWER`);
       }
 
       // Add to project if not already a member
@@ -644,7 +617,6 @@ export class EmailSyncService {
             role: 'VIEWER',
           },
         });
-        this.logger.log(`Added user ${email} to project as VIEWER`);
       }
     });
 
@@ -740,7 +712,6 @@ export class EmailSyncService {
         const matches = this.evaluateRuleConditions(rule.conditions, message);
 
         if (matches) {
-          this.logger.log(`Rule "${rule.name}" matched for message ${message.messageId}`);
           if (rule.actions && typeof rule.actions === 'object' && !Array.isArray(rule.actions)) {
             const result = await this.executeRuleActions(
               rule.actions as Record<string, unknown>,
@@ -753,7 +724,6 @@ export class EmailSyncService {
           }
 
           if (rule.stopOnMatch) {
-            this.logger.log(`Stopping rule processing due to stopOnMatch`);
             break;
           }
         }
@@ -916,9 +886,6 @@ export class EmailSyncService {
       },
     });
 
-    this.logger.log(
-      `Rule result persisted for message ${message.messageId}: priority=${ruleResult.priority}, assignee=${ruleResult.assigneeId}, labels=${ruleResult.labelIds.join(',')}`,
-    );
 
     return { autoReplySent };
   }
@@ -934,7 +901,6 @@ export class EmailSyncService {
         return;
       }
       if (inboxMessage?.status === MessageStatus.IGNORED) {
-        this.logger.log(`Skipping message ${message.messageId} as its status is IGNORE`);
         return;
       }
 
@@ -979,7 +945,6 @@ export class EmailSyncService {
         if (existingComment?.task && existingComment.task.projectId === inbox.projectId) {
           existingTask = existingComment.task;
           if (existingTask) {
-            this.logger.log(`✅ Found parent task via comment match: ${existingTask.id}`);
           }
         }
       }
@@ -1010,16 +975,12 @@ export class EmailSyncService {
         if (existingInboxMessage?.task) {
           existingTask = existingInboxMessage.task;
           if (existingTask) {
-            this.logger.log(`✅ Found parent task via inbox message match: ${existingTask.id}`);
           }
         }
       }
 
       if (existingTask) {
         // Add as comment to existing task
-        this.logger.log(
-          `✅ Reply matched! Adding as comment to task ${existingTask.id} (threadId: ${message.threadId})`,
-        );
         const defaultAuthorId =
           repoterId || inbox.defaultAuthorId || existingTask.project.members[0]?.userId;
         await this.prisma.taskComment.create({
@@ -1050,7 +1011,6 @@ export class EmailSyncService {
           },
         });
 
-        this.logger.log(`Added message as comment to existing task ${existingTask.id}`);
         return;
       }
 
@@ -1097,7 +1057,6 @@ export class EmailSyncService {
           this.logger.warn(`   No existing tasks with email threads found in this project`);
         }
       } else {
-        this.logger.log(`📧 Creating new task from original email (not a reply)`);
       }
       const taskNumber = await EmailSyncUtils.getNextTaskNumber(
         String(inbox.projectId),
@@ -1126,9 +1085,6 @@ export class EmailSyncService {
         .flatMap((r) => r.labelIds)
         .filter((id): id is string => Boolean(id)); // Combine all labels from all rules
 
-      this.logger.log(
-        `Creating task with rule data: priority=${String(rulePriority)}, assignee=${String(ruleAssignee)}, taskType=${String(ruleTaskType)}, labels=[${ruleLabels.join(', ')}]`,
-      );
 
       const taskData: any = {
         projectId: inbox.projectId,
@@ -1186,7 +1142,6 @@ export class EmailSyncService {
         },
       });
 
-      this.logger.log(`Auto-created task ${task.id} from message ${message.messageId}`);
     } catch (error) {
       this.logger.error(`Failed to auto-create task:`, error.message);
     }
@@ -1212,7 +1167,6 @@ export class EmailSyncService {
           },
         });
 
-        this.logger.log(`Copied attachment ${inboxAttachment.filename} to task ${taskId}`);
       }
     } catch (error) {
       this.logger.error('Failed to copy attachments to task:', error);
@@ -1274,7 +1228,6 @@ export class EmailSyncService {
       };
 
       await transporter.sendMail(mailOptions);
-      this.logger.log(`Auto-reply sent to ${message.fromEmail} for message ${message.messageId}`);
     } catch (error) {
       this.logger.error(`Failed to send auto-reply:`, error.message);
     }
@@ -1296,7 +1249,6 @@ export class EmailSyncService {
 
   // Mark email as read on IMAP server using UID
   async markMessageAsReadOnServer(inboxMessageId: string): Promise<void> {
-    this.logger.log(`Marking message ${inboxMessageId} as read on IMAP server`);
 
     const message = await this.prisma.inboxMessage.findUnique({
       where: { id: inboxMessageId },
@@ -1349,7 +1301,6 @@ export class EmailSyncService {
 
       try {
         await client.messageFlagsAdd(String(message.imapUid), ['\\Seen'], { uid: true });
-        this.logger.log(`Marked message as read on server (UID: ${message.imapUid})`);
       } finally {
         mailbox.release();
       }
