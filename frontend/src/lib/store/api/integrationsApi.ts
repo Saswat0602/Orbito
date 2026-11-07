@@ -40,3 +40,4 @@ export const {
   useGetTrelloStatusQuery,
   useSyncTrelloMutation,
 } = integrationsApi;
+

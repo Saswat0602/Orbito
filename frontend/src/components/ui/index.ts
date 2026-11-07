@@ -1,33 +1,36 @@
-// Main UI Components
-export { Button } from "./button";
-export { IconButton } from "./IconButton";
-export {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardFooter,
-} from "./card";
-export { Badge } from "./badge";
-export { Input } from "./input";
-export { Label } from "./label";
-export { Select } from "./select";
-export { Modal } from "./Modal";
-export { LoadingSkeleton } from "./LoadingSkeleton";
-export { WorkspaceCardSkeleton } from "./WorkspaceCardSkeleton";
-export { EmptyState } from "./EmptyState";
-
-// Form Components
-export { Textarea } from "./textarea";
-
-// Specialized Badge Components
-export { PriorityBadge, StatusBadge, TagBadge } from "@/components/badges";
-export type { TaskStatus } from "@/components/badges";
-
-// Specialized Card Components
-export { StatCard, TaskCard, WorkspaceCard, QuickActionCard } from "@/components/cards";
-
-// Layout Components
-export { SectionHeader, ActivityItem } from "@/components/layout";
+// Canonical UI Primitives (@/components/ui)
+export * from "./alert";
+export * from "./avatar";
+export * from "./badge";
+export * from "./breadcrumb";
+export * from "./button";
+export * from "./calendar";
+export * from "./card";
+export * from "./checkbox";
+export * from "./collapsible";
+export * from "./command";
+export * from "./dialog";
+export * from "./dropdown-menu";
+export * from "./EmptyState";
+export * from "./form";
+export * from "./IconButton";
+export * from "./input";
+export * from "./label";
+export * from "./LoadingSkeleton";
+export * from "./Modal";
+export * from "./pagination";
+export * from "./popover";
+export * from "./RemovableBadge";
+export * from "./scroll-area";
+export * from "./select";
+export * from "./separator";
+export * from "./sheet";
+export * from "./skeleton";
+export * from "./sonner";
+export * from "./switch";
+export * from "./table";
+export * from "./tabs";
+export * from "./textarea";
+export * from "./tooltip";
+export * from "./WorkspaceCardSkeleton";
+export * from "./GoogleButton";

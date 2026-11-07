@@ -1,5 +1,6 @@
+import * as React from "react";
 import { ReactNode } from "react";
-import { HiX } from "react-icons/hi";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModalProps {
@@ -14,21 +15,32 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-backdrop">
-        <div className="modal-backdrop-blur" onClick={onClose} />
-        <span className="modal-spacer">&#8203;</span>
-        <div className={cn("modal-container", className)}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3 className="modal-title">{title}</h3>
-              <button onClick={onClose} className="modal-close-button">
-                <HiX size={20} />
-              </button>
-            </div>
-            {children}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={cn(
+          "relative w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl transition-all z-10 text-zinc-100",
+          className
+        )}
+      >
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
+          <h3 className="text-lg font-semibold text-zinc-50 leading-none">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
+        {children}
       </div>
     </div>
   );

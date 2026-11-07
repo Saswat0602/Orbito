@@ -47,3 +47,4 @@ export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
     </div>
   );
 }
+
