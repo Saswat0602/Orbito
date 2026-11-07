@@ -7,12 +7,13 @@ import type {
   TaskComment,
 } from '@orbito/types';
 import { getSocket } from '../../socket';
+import { ENDPOINTS } from '../../api/endpoint';
 
 export const tasksApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getTasks: builder.query<Task[], TaskQueryParams>({
       query: (params) => ({
-        url: '/tasks',
+        url: ENDPOINTS.tasks.list,
         params,
       }),
       providesTags: (result) =>
@@ -75,14 +76,14 @@ export const tasksApi = apiSlice.injectEndpoints({
 
     getGroupedTasks: builder.query<TaskGroupedResponse, TaskQueryParams>({
       query: (params) => ({
-        url: '/tasks/grouped',
+        url: ENDPOINTS.tasks.grouped,
         params,
       }),
       providesTags: [{ type: 'Task', id: 'LIST' }],
     }),
 
     getTask: builder.query<Task, string>({
-      query: (id) => `/tasks/${id}`,
+      query: (id) => ENDPOINTS.tasks.byId(id),
       providesTags: (_result, _err, id) => [{ type: 'Task', id }],
       async onCacheEntryAdded(id, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         try {
@@ -128,7 +129,7 @@ export const tasksApi = apiSlice.injectEndpoints({
 
     createTask: builder.mutation<Task, Partial<Task>>({
       query: (task) => ({
-        url: '/tasks',
+        url: ENDPOINTS.tasks.create,
         method: 'POST',
         body: task,
       }),
@@ -137,7 +138,7 @@ export const tasksApi = apiSlice.injectEndpoints({
 
     updateTask: builder.mutation<Task, { id: string; updates: Partial<Task> }>({
       query: ({ id, updates }) => ({
-        url: `/tasks/${id}`,
+        url: ENDPOINTS.tasks.byId(id),
         method: 'PATCH',
         body: updates,
       }),
@@ -149,7 +150,7 @@ export const tasksApi = apiSlice.injectEndpoints({
 
     reorderTask: builder.mutation<Task, TaskReorderPayload>({
       query: (payload) => ({
-        url: `/task-ranks/reorder`,
+        url: ENDPOINTS.taskRanks.reorder,
         method: 'PATCH',
         body: payload,
       }),
@@ -158,7 +159,7 @@ export const tasksApi = apiSlice.injectEndpoints({
 
     deleteTask: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/tasks/${id}`,
+        url: ENDPOINTS.tasks.byId(id),
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _err, id) => [
@@ -178,4 +179,3 @@ export const {
   useReorderTaskMutation,
   useDeleteTaskMutation,
 } = tasksApi;
-

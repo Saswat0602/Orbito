@@ -1,21 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { Mutex } from 'async-mutex';
+import { API_BASE_URL, ENDPOINTS } from '../../api/endpoint';
 
 const mutex = new Mutex();
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
-  prepareHeaders: (headers) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('orbito_access_token');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-    }
-    return headers;
-  },
+  credentials: 'include', // Automatically send and receive httpOnly & auth cookies
 });
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -27,45 +19,33 @@ export const baseQueryWithReauth: BaseQueryFn<
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
+    const url = typeof args === 'string' ? args : args.url;
+    // Skip reauth on login/refresh calls to prevent loops
+    if (url.includes(ENDPOINTS.auth.login) || url.includes(ENDPOINTS.auth.refresh)) {
+      return result;
+    }
+
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
       try {
-        const storedRefreshToken =
-          typeof window !== 'undefined' ? localStorage.getItem('orbito_refresh_token') : null;
-
+        // Cookie-based token refresh: browser sends refresh_token cookie automatically
         const refreshResult = await baseQuery(
           {
-            url: '/auth/refresh',
+            url: ENDPOINTS.auth.refresh,
             method: 'POST',
-            body: storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+            body: {},
           },
           api,
           extraOptions
         );
 
         if (refreshResult.data) {
-          const data = refreshResult.data as {
-            access_token?: string;
-            accessToken?: string;
-            refresh_token?: string;
-            refreshToken?: string;
-          };
-          const newAccessToken = data.access_token || data.accessToken;
-          const newRefreshToken = data.refresh_token || data.refreshToken;
-
-          if (newAccessToken && typeof window !== 'undefined') {
-            localStorage.setItem('orbito_access_token', newAccessToken);
-            if (newRefreshToken) {
-              localStorage.setItem('orbito_refresh_token', newRefreshToken);
-            }
-          }
-          // Retry initial query
+          // Retry the original query now that cookies are refreshed
           result = await baseQuery(args, api, extraOptions);
         } else {
-          // Refresh failed - log out
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('orbito_access_token');
-            localStorage.removeItem('orbito_refresh_token');
+          // Refresh cookie expired or invalid: redirect to login
+          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+            window.location.href = '/login';
           }
         }
       } finally {
@@ -96,4 +76,3 @@ export const apiSlice = createApi({
   ],
   endpoints: () => ({}),
 });
-

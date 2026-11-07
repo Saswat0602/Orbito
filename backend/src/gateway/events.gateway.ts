@@ -46,8 +46,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      // Extract token from handshake
-      const token = client.handshake.auth.token || client.handshake.query.token;
+      // Extract token from handshake (auth, query, or cookie)
+      let token = client.handshake.auth.token || client.handshake.query.token;
+      if (!token && client.handshake.headers.cookie) {
+        const cookieStr = client.handshake.headers.cookie;
+        const match = cookieStr.match(/(?:^|;\s*)access_token=([^;]+)/);
+        if (match) {
+          token = decodeURIComponent(match[1]);
+        }
+      }
 
       if (!token) {
         this.logger.warn(`Client ${client.id} attempted to connect without token`);

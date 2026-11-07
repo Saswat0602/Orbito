@@ -1,12 +1,13 @@
 import { apiSlice } from './apiSlice';
 import type { Sprint, SprintBurndownPoint } from '@orbito/types';
 import { getSocket } from '../../socket';
+import { ENDPOINTS } from '../../api/endpoint';
 
 export const sprintsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getSprints: builder.query<Sprint[], { projectId: string }>({
       query: ({ projectId }) => ({
-        url: `/sprints`,
+        url: ENDPOINTS.sprints.list,
         params: { projectId },
       }),
       providesTags: (result) =>
@@ -54,13 +55,13 @@ export const sprintsApi = apiSlice.injectEndpoints({
     }),
 
     getSprint: builder.query<Sprint, string>({
-      query: (id) => `/sprints/${id}`,
+      query: (id) => ENDPOINTS.sprints.byId(id),
       providesTags: (_result, _err, id) => [{ type: 'Sprint', id }],
     }),
 
     startSprint: builder.mutation<Sprint, string>({
       query: (id) => ({
-        url: `/sprints/${id}/start`,
+        url: ENDPOINTS.sprints.start(id),
         method: 'PATCH',
       }),
       invalidatesTags: (_result, _err, id) => [
@@ -71,7 +72,7 @@ export const sprintsApi = apiSlice.injectEndpoints({
 
     completeSprint: builder.mutation<Sprint, string>({
       query: (id) => ({
-        url: `/sprints/${id}/complete`,
+        url: ENDPOINTS.sprints.complete(id),
         method: 'PATCH',
       }),
       invalidatesTags: (_result, _err, id) => [
@@ -85,7 +86,7 @@ export const sprintsApi = apiSlice.injectEndpoints({
       { projectSlug: string; sprintId: string }
     >({
       query: ({ projectSlug, sprintId }) =>
-        `/projects/${projectSlug}/charts/sprint-burndown/${sprintId}`,
+        ENDPOINTS.projects.sprintBurndown(projectSlug, sprintId),
       providesTags: (_result, _err, { sprintId }) => [{ type: 'Sprint', id: sprintId }],
     }),
   }),
@@ -98,4 +99,3 @@ export const {
   useCompleteSprintMutation,
   useGetSprintBurndownQuery,
 } = sprintsApi;
-

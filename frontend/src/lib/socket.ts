@@ -1,16 +1,12 @@
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_URL } from './api/endpoint';
 
 let socket: Socket | null = null;
 
-export const getSocket = (token?: string): Socket => {
+export const getSocket = (): Socket => {
   if (!socket) {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
-    const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('orbito_access_token') || '' : '');
-
-    socket = io(`${socketUrl}/events`, {
-      auth: {
-        token: authToken,
-      },
+    socket = io(`${SOCKET_URL}/events`, {
+      withCredentials: true, // Automatically sends auth and session cookies
       transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,

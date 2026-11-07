@@ -1,5 +1,6 @@
 import { apiSlice } from './apiSlice';
 import type { Project } from '@orbito/types';
+import { ENDPOINTS } from '../../api/endpoint';
 
 export interface GanttTask {
   id: string;
@@ -25,7 +26,7 @@ export const projectsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProjects: builder.query<Project[], { workspaceId?: string } | void>({
       query: (params) => ({
-        url: '/projects',
+        url: ENDPOINTS.projects.list,
         params: params || {},
       }),
       providesTags: (result) =>
@@ -38,23 +39,23 @@ export const projectsApi = apiSlice.injectEndpoints({
     }),
 
     getProject: builder.query<Project, string>({
-      query: (idOrSlug) => `/projects/${idOrSlug}`,
+      query: (idOrSlug) => ENDPOINTS.projects.byId(idOrSlug),
       providesTags: (_result, _err, idOrSlug) => [{ type: 'Project', id: idOrSlug }],
     }),
 
     getProjectGantt: builder.query<GanttTask[], string>({
-      query: (projectId) => `/gantt/project/${projectId}`,
+      query: (projectId) => ENDPOINTS.gantt.project(projectId),
       providesTags: (_result, _err, projectId) => [{ type: 'Project', id: projectId }],
     }),
 
     getProjectResources: builder.query<ResourceAllocation[], string>({
-      query: (projectId) => `/gantt/project/${projectId}/resources`,
+      query: (projectId) => ENDPOINTS.gantt.resources(projectId),
       providesTags: (_result, _err, projectId) => [{ type: 'Project', id: projectId }],
     }),
 
     createProject: builder.mutation<Project, Partial<Project>>({
       query: (project) => ({
-        url: '/projects',
+        url: ENDPOINTS.projects.create,
         method: 'POST',
         body: project,
       }),
@@ -63,7 +64,7 @@ export const projectsApi = apiSlice.injectEndpoints({
 
     updateProject: builder.mutation<Project, { id: string; updates: Partial<Project> }>({
       query: ({ id, updates }) => ({
-        url: `/projects/${id}`,
+        url: ENDPOINTS.projects.byId(id),
         method: 'PATCH',
         body: updates,
       }),
@@ -83,4 +84,3 @@ export const {
   useCreateProjectMutation,
   useUpdateProjectMutation,
 } = projectsApi;
-

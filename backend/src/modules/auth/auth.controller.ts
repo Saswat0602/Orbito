@@ -54,20 +54,44 @@ export class AuthController {
     return this.configService.get<string>('JWT_SECRET') || 'fallback-secret';
   }
 
+  private setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    const encrypted = encryptCookieValue(refreshToken, this.getEncryptionSecret());
+    res.cookie('refresh_token', encrypted, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Strictly 7 days maximum session lifetime
+    });
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 1000, // 1 hour short-lived access
+    });
+  }
+
+  private clearAuthCookies(res: Response): void {
+    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('access_token', { path: '/' });
+  }
+
   private setRefreshTokenCookie(res: Response, refreshToken: string): void {
     const isProd = this.configService.get<string>('NODE_ENV') === 'production';
     const encrypted = encryptCookieValue(refreshToken, this.getEncryptionSecret());
     res.cookie('refresh_token', encrypted, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Strictly 7 days maximum session lifetime
     });
   }
 
   private clearRefreshTokenCookie(res: Response): void {
-    res.clearCookie('refresh_token', { path: '/' });
+    this.clearAuthCookies(res);
   }
 
   @Public()
@@ -89,7 +113,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
     const result = await this.authService.login(loginDto);
-    this.setRefreshTokenCookie(res, result.refresh_token);
+    this.setAuthCookies(res, result.access_token, result.refresh_token);
     return result;
   }
 
@@ -111,7 +135,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
     const result = await this.authService.register(registerDto);
-    this.setRefreshTokenCookie(res, result.refresh_token);
+    this.setAuthCookies(res, result.access_token, result.refresh_token);
     return result;
   }
 
@@ -164,7 +188,7 @@ export class AuthController {
       throw new UnauthorizedException('No refresh token provided');
     }
     const result = await this.authService.refreshToken(token);
-    this.setRefreshTokenCookie(res, result.refresh_token);
+    this.setAuthCookies(res, result.access_token, result.refresh_token);
     return result;
   }
 
@@ -181,7 +205,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string }> {
     await this.authService.logout(user.id);
-    this.clearRefreshTokenCookie(res);
+    this.clearAuthCookies(res);
     return { message: 'Logout successful' };
   }
 
