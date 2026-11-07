@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma, TaskComment, NotificationType, NotificationPriority } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
 import { EmailTemplate, EmailPriority } from '../email/dto/email.dto';
 import { ConfigService } from '@nestjs/config';
+import { EventsGateway } from '../../gateway/events.gateway';
 
 const AUTHOR_SELECT = {
   id: true,
@@ -40,6 +42,7 @@ export class TaskCommentsService {
     private notificationsService: NotificationsService,
     private emailService: EmailService,
     private configService: ConfigService,
+    @Optional() private eventsGateway?: EventsGateway,
   ) {}
 
   private getCommentIncludeClause(includeEmail = false) {
@@ -345,7 +348,7 @@ export class TaskCommentsService {
     // Verify task exists and is not archived
     const task = await this.prisma.task.findUnique({
       where: { id: resolvedTaskId },
-      select: { id: true, title: true, isArchived: true },
+      select: { id: true, title: true, isArchived: true, projectId: true },
     });
 
     if (!task) {
@@ -423,6 +426,14 @@ export class TaskCommentsService {
 
     if (comment.task.allowEmailReplies) {
       await this.emailReply.sendCommentAsEmail(comment.id);
+    }
+
+    if (this.eventsGateway && task.projectId) {
+      try {
+        this.eventsGateway.emitCommentAdded(task.projectId, resolvedTaskId, comment);
+      } catch (err) {
+        // Socket emission non-blocking
+      }
     }
 
     return comment;

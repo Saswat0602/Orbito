@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   BadRequestException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { Task, TaskPriority, TaskType, Prisma, ViewType, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -21,6 +22,7 @@ import { RecurrenceService } from './recurrence.service';
 import { TaskRanksService } from '../task-ranks/task-ranks.service';
 import { ReorderDto } from '../task-ranks/dto/reorder.dto';
 import { RecurrenceConfigDto } from './dto/recurrence-config.dto';
+import { EventsGateway } from '../../gateway/events.gateway';
 
 @Injectable()
 export class TasksService {
@@ -32,6 +34,7 @@ export class TasksService {
     private storageService: StorageService,
     private recurrenceService: RecurrenceService,
     private taskRanksService: TaskRanksService,
+    @Optional() private eventsGateway?: EventsGateway,
   ) {}
 
   /**
@@ -166,7 +169,7 @@ export class TasksService {
       sprintId = sprintResult?.id;
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const createdTask = await this.prisma.$transaction(async (tx) => {
       const { taskNumber, taskSlug } = await this.getNextTaskNumber(tx, createTaskDto.projectId);
       const { assigneeIds, reporterIds, description, isRecurring, recurrenceConfig, ...taskData } =
         createTaskDto;
@@ -331,6 +334,10 @@ export class TasksService {
 
       return task;
     });
+
+    const flattened = this.flattenTaskRelations(createdTask);
+    this.eventsGateway?.emitTaskCreated(createdTask.projectId, flattened);
+    return flattened;
   }
 
   async bulkCreate(
@@ -2815,7 +2822,9 @@ export class TasksService {
         },
       });
 
-      return this.flattenTaskRelations(updatedTask);
+      const result = this.flattenTaskRelations(updatedTask);
+      this.eventsGateway?.emitTaskUpdated(result.projectId, result.id, result);
+      return result;
     } catch (error: any) {
       if (error.code === 'P2025' || error instanceof NotFoundException) {
         if (error.code === 'P2025') {
@@ -2858,6 +2867,7 @@ export class TasksService {
       await this.prisma.task.delete({
         where: { id: task.id },
       });
+      this.eventsGateway?.emitTaskDeleted(task.projectId, task.id);
       return task;
     } catch (error: any) {
       this.logger.error('Failed to delete the task');

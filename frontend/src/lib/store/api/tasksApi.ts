@@ -1,0 +1,181 @@
+import { apiSlice } from './apiSlice';
+import type {
+  Task,
+  TaskQueryParams,
+  TaskGroupedResponse,
+  TaskReorderPayload,
+  TaskComment,
+} from '@orbito/types';
+import { getSocket } from '../../socket';
+
+export const tasksApi = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    getTasks: builder.query<Task[], TaskQueryParams>({
+      query: (params) => ({
+        url: '/tasks',
+        params,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Task' as const, id })),
+              { type: 'Task', id: 'LIST' },
+            ]
+          : [{ type: 'Task', id: 'LIST' }],
+      async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
+        try {
+          await cacheDataLoaded;
+          const socket = getSocket();
+
+          if (arg.projectId) {
+            socket.emit('join:project', { projectId: arg.projectId });
+          }
+
+          const onTaskCreated = (payload: { data: Task }) => {
+            updateCachedData((draft) => {
+              if (payload?.data && !draft.some((t) => t.id === payload.data.id)) {
+                draft.unshift(payload.data);
+              }
+            });
+          };
+
+          const onTaskUpdated = (payload: {
+            data: { taskId: string; updates: Partial<Task> };
+          }) => {
+            updateCachedData((draft) => {
+              const task = draft.find((t) => t.id === payload?.data?.taskId);
+              if (task && payload?.data?.updates) {
+                Object.assign(task, payload.data.updates);
+              }
+            });
+          };
+
+          const onTaskDeleted = (payload: { data: { taskId: string } }) => {
+            updateCachedData((draft) => {
+              return draft.filter((t) => t.id !== payload?.data?.taskId);
+            });
+          };
+
+          socket.on('task:created', onTaskCreated);
+          socket.on('task:updated', onTaskUpdated);
+          socket.on('task:deleted', onTaskDeleted);
+
+          await cacheEntryRemoved;
+          if (arg.projectId) {
+            socket.emit('leave:project', { projectId: arg.projectId });
+          }
+          socket.off('task:created', onTaskCreated);
+          socket.off('task:updated', onTaskUpdated);
+          socket.off('task:deleted', onTaskDeleted);
+        } catch {
+          // Socket gracefully handled
+        }
+      },
+    }),
+
+    getGroupedTasks: builder.query<TaskGroupedResponse, TaskQueryParams>({
+      query: (params) => ({
+        url: '/tasks/grouped',
+        params,
+      }),
+      providesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    getTask: builder.query<Task, string>({
+      query: (id) => `/tasks/${id}`,
+      providesTags: (_result, _err, id) => [{ type: 'Task', id }],
+      async onCacheEntryAdded(id, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
+        try {
+          await cacheDataLoaded;
+          const socket = getSocket();
+          socket.emit('join:task', { taskId: id });
+
+          const onTaskUpdated = (payload: {
+            data: { taskId: string; updates: Partial<Task> };
+          }) => {
+            if (payload?.data?.taskId === id) {
+              updateCachedData((draft) => {
+                Object.assign(draft, payload.data.updates);
+              });
+            }
+          };
+
+          const onCommentAdded = (payload: {
+            data: { taskId: string; comment: TaskComment };
+          }) => {
+            if (payload?.data?.taskId === id) {
+              updateCachedData((draft) => {
+                if (!draft.comments) draft.comments = [];
+                if (!draft.comments.some((c) => c.id === payload.data.comment.id)) {
+                  draft.comments.push(payload.data.comment);
+                }
+              });
+            }
+          };
+
+          socket.on('task:updated', onTaskUpdated);
+          socket.on('comment:added', onCommentAdded);
+
+          await cacheEntryRemoved;
+          socket.emit('leave:task', { taskId: id });
+          socket.off('task:updated', onTaskUpdated);
+          socket.off('comment:added', onCommentAdded);
+        } catch {
+          // Socket gracefully handled
+        }
+      },
+    }),
+
+    createTask: builder.mutation<Task, Partial<Task>>({
+      query: (task) => ({
+        url: '/tasks',
+        method: 'POST',
+        body: task,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    updateTask: builder.mutation<Task, { id: string; updates: Partial<Task> }>({
+      query: ({ id, updates }) => ({
+        url: `/tasks/${id}`,
+        method: 'PATCH',
+        body: updates,
+      }),
+      invalidatesTags: (_result, _err, { id }) => [
+        { type: 'Task', id },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    reorderTask: builder.mutation<Task, TaskReorderPayload>({
+      query: (payload) => ({
+        url: `/task-ranks/reorder`,
+        method: 'PATCH',
+        body: payload,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    deleteTask: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/tasks/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _err, id) => [
+        { type: 'Task', id },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+  }),
+});
+
+export const {
+  useGetTasksQuery,
+  useGetGroupedTasksQuery,
+  useGetTaskQuery,
+  useCreateTaskMutation,
+  useUpdateTaskMutation,
+  useReorderTaskMutation,
+  useDeleteTaskMutation,
+} = tasksApi;
+

@@ -4,6 +4,7 @@ import {
   ConflictException,
   BadRequestException,
   ForbiddenException,
+  Optional,
 } from '@nestjs/common';
 import { ActivityType, Sprint, SprintStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -11,6 +12,7 @@ import { CreateSprintDto } from './dto/create-sprint.dto';
 import { UpdateSprintDto } from './dto/update-sprint.dto';
 import { AccessControlService } from '../../common/access-control.utils';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { EventsGateway } from '../../gateway/events.gateway';
 
 @Injectable()
 export class SprintsService {
@@ -18,6 +20,7 @@ export class SprintsService {
     private prisma: PrismaService,
     private accessControl: AccessControlService,
     private activityLog: ActivityLogService,
+    @Optional() private eventsGateway?: EventsGateway,
   ) {}
 
   private async generateUniqueSlug(
@@ -664,13 +667,23 @@ export class SprintsService {
       throw new ConflictException('There is already an active sprint in this project');
     }
 
-    return this.update(id, { status: SprintStatus.ACTIVE }, userId);
+    const updated = await this.update(id, { status: SprintStatus.ACTIVE }, userId);
+
+    if (this.eventsGateway) {
+      try {
+        this.eventsGateway.emitSprintStarted(sprint.projectId, updated);
+      } catch (err) {
+        // Socket broadcast non-blocking
+      }
+    }
+
+    return updated;
   }
 
   async completeSprint(id: string, userId: string): Promise<Sprint> {
     const sprint = await this.prisma.sprint.findUnique({
       where: { id },
-      select: { id: true, status: true },
+      select: { id: true, status: true, projectId: true },
     });
 
     if (!sprint) {
@@ -681,7 +694,17 @@ export class SprintsService {
       throw new BadRequestException('Only active sprints can be completed');
     }
 
-    return this.update(id, { status: SprintStatus.COMPLETED }, userId);
+    const updated = await this.update(id, { status: SprintStatus.COMPLETED }, userId);
+
+    if (this.eventsGateway) {
+      try {
+        this.eventsGateway.emitSprintCompleted(sprint.projectId, updated);
+      } catch (err) {
+        // Socket broadcast non-blocking
+      }
+    }
+
+    return updated;
   }
 
   async remove(id: string, requestUserId: string): Promise<void> {

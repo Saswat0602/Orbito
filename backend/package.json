@@ -27,6 +27,7 @@
     "seed:demo": "ts-node -r tsconfig-paths/register src/seeder/demo-seed.ts"
   },
   "dependencies": {
+    "@orbito/types": "*",
     "@aws-sdk/client-s3": "^3.858.0",
     "@aws-sdk/s3-request-presigner": "^3.858.0",
     "@bull-board/api": "^6.16.4",

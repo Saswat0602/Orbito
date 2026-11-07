@@ -7,9 +7,10 @@ import { CryptoService } from 'src/common/crypto.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { UsersModule } from '../users/users.module';
 import { EmailModule } from '../email/email.module';
+import { GatewayModule } from '../../gateway/gateway.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, UsersModule, EmailModule],
+  imports: [PrismaModule, NotificationsModule, UsersModule, EmailModule, GatewayModule],
   controllers: [TaskCommentsController],
   providers: [TaskCommentsService, EmailReplyService, CryptoService],
   exports: [TaskCommentsService],

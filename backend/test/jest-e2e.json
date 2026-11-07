@@ -7,29 +7,19 @@
   "rootDir": "../",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": [
-      "ts-jest",
-      {
-        "tsconfig": {
-          "module": "commonjs",
-          "moduleResolution": "node"
-        }
-      }
-    ]
+    "^.+\\.(t|j)s$": "ts-jest"
   },
-  "extensionsToTreatAsEsm": [
-    ".ts"
-  ],
   "collectCoverageFrom": [
     "src/**/*.(t|j)s"
   ],
   "coverageDirectory": "./coverage",
   "testEnvironment": "node",
   "transformIgnorePatterns": [
-    "node_modules/(?!(mime|marked)/)"
+    "node_modules/(?!(mime|marked|sanitize-html|htmlparser2|entities)/)"
   ],
   "moduleNameMapper": {
-    "^src/(.*)$": "<rootDir>/src/$1"
+    "^src/(.*)$": "<rootDir>/src/$1",
+    "^sanitize-html$": "<rootDir>/test/__mocks__/sanitize-html.ts"
   },
   "testTimeout": 60000,
   "forceExit": true

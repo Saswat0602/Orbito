@@ -4,9 +4,10 @@ import { SprintsController } from './sprints.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AccessControlService } from '../../common/access-control.utils';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { GatewayModule } from '../../gateway/gateway.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, GatewayModule],
   controllers: [SprintsController],
   providers: [SprintsService, AccessControlService, ActivityLogService],
   exports: [SprintsService],
