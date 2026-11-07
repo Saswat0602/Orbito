@@ -5,10 +5,12 @@
   "private": true,
   "scripts": {
     "build": "npm run prisma:generate && nest build",
+    "dev": "npm run prisma:generate && nest start --watch",
     "start": "nest start",
-    "start:dev": "npm run prisma:generate && nest start --watch",
+    "start:dev": "npm run dev",
     "start:debug": "npm run prisma:generate && nest start --debug --watch",
     "start:prod": "npm run prisma:generate && node dist/main",
+    "clean": "rm -rf dist",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest",
     "test:watch": "jest --watch",

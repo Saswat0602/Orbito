@@ -1,6 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV",
+    "PORT",
+    "DATABASE_URL",
+    "JWT_SECRET",
+    "JWT_REFRESH_SECRET",
+    "NEXT_PUBLIC_API_BASE_URL",
+    "NEXT_PUBLIC_SOCKET_URL",
+    "CORS_ORIGIN",
+    "CORS_ORIGINS"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -8,6 +19,7 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
@@ -38,4 +50,3 @@
     }
   }
 }
-
