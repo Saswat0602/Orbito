@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import appConfig from './config/configuration';
@@ -58,6 +59,23 @@ import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
       cache: true,
       envFilePath: ['../.env', '.env'],
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 20, // max 20 requests per second
+      },
+      {
+        name: 'medium',
+        ttl: 10000,
+        limit: 80, // max 80 requests per 10 seconds
+      },
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 200, // max 200 requests per minute
+      },
+    ]),
     RouterModule.register([
       {
         path: 'api',
@@ -147,6 +165,10 @@ import { JiraSyncModule } from './modules/jira-sync/jira-sync.module';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

@@ -65,8 +65,10 @@ export function Sidebar() {
 
   const authState = useAppSelector((state) => state.auth);
 
-  // Fetch Tenancy hierarchy
-  const { data: organizations = [] } = useGetOrganizationsQuery();
+  // Fetch Tenancy hierarchy only when user session is active
+  const { data: organizations = [] } = useGetOrganizationsQuery(undefined, {
+    skip: !authState.isAuthenticated || !authState.user,
+  });
 
   const activeOrgId = authState.activeOrganizationId || organizations[0]?.id || null;
 

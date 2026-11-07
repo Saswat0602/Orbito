@@ -53,22 +53,45 @@ export class OidcService {
         this.settingsService.get('sso_redirect_uri'),
       ]);
 
-    // Auto-generate redirect URI from FRONTEND_URL or NEXT_PUBLIC_API_BASE_URL, fallback to saved
+    // Environment variable fallbacks (allows zero-config activation via .env)
+    const envEnabled =
+      this.configService.get<string>('SSO_ENABLED') ||
+      this.configService.get<string>('OIDC_ENABLED');
+    const envProvider =
+      this.configService.get<string>('SSO_PROVIDER_NAME') ||
+      this.configService.get<string>('OIDC_PROVIDER_NAME');
+    const envIssuer =
+      this.configService.get<string>('SSO_ISSUER_URL') ||
+      this.configService.get<string>('OIDC_ISSUER_URL');
+    const envClientId =
+      this.configService.get<string>('SSO_CLIENT_ID') ||
+      this.configService.get<string>('OIDC_CLIENT_ID');
+    const envClientSecret =
+      this.configService.get<string>('SSO_CLIENT_SECRET') ||
+      this.configService.get<string>('OIDC_CLIENT_SECRET');
+    const envRedirectUri =
+      this.configService.get<string>('SSO_REDIRECT_URI') ||
+      this.configService.get<string>('OIDC_REDIRECT_URI');
+
+    // Auto-generate redirect URI from backend host or NEXT_PUBLIC_API_BASE_URL
     const apiBaseUrl =
-      this.configService.get<string>('NEXT_PUBLIC_API_BASE_URL') ||
-      this.configService.get<string>('FRONTEND_URL') ||
-      '';
-    const autoRedirectUri = apiBaseUrl
-      ? `${apiBaseUrl.replace(/\/api\/?$/, '')}/api/auth/oidc/callback`
-      : '';
-    const redirectUri = savedRedirectUri || autoRedirectUri;
+      this.configService.get<string>('API_URL') ||
+      this.configService.get<string>('BACKEND_URL') ||
+      'http://localhost:3000';
+    const autoRedirectUri = `${apiBaseUrl.replace(/\/api\/?$/, '')}/api/auth/oidc/callback`;
+    const redirectUri = savedRedirectUri || envRedirectUri || autoRedirectUri;
+
+    const isEnabled =
+      enabled !== null && enabled !== undefined
+        ? enabled === 'true'
+        : envEnabled === 'true' || envEnabled === '1';
 
     return {
-      enabled: enabled === 'true',
-      providerName: providerName || 'SSO Provider',
-      issuerUrl: issuerUrl || '',
-      clientId: clientId || '',
-      clientSecret: clientSecret || '',
+      enabled: isEnabled,
+      providerName: providerName || envProvider || 'OpenID Connect',
+      issuerUrl: issuerUrl || envIssuer || '',
+      clientId: clientId || envClientId || '',
+      clientSecret: clientSecret || envClientSecret || '',
       redirectUri,
     };
   }

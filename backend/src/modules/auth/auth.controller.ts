@@ -448,12 +448,15 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3001';
+
     try {
       const storedState = String(req.cookies?.oidc_state || '');
       const storedNonce = String(req.cookies?.oidc_nonce || '');
 
       if (!code || !state || !storedState || !storedNonce) {
-        return res.redirect('/login?error=sso_invalid_state');
+        return res.redirect(`${frontendUrl}/login?error=sso_invalid_state`);
       }
 
       const authResult = await this.oidcService.handleCallback(
@@ -463,7 +466,7 @@ export class AuthController {
         storedNonce,
       );
 
-      // Clear OIDC cookies
+      // Clear OIDC temporary state cookies
       res.clearCookie('oidc_state');
       res.clearCookie('oidc_nonce');
 
@@ -476,16 +479,16 @@ export class AuthController {
       res.cookie('sso_auth', encryptedSso, {
         httpOnly: true,
         maxAge: 60000,
-        sameSite: 'strict',
+        sameSite: 'lax',
         secure: isProd,
       });
 
-      return res.redirect('/login?sso=callback');
+      return res.redirect(`${frontendUrl}/login?sso=callback`);
     } catch (error: unknown) {
       res.clearCookie('oidc_state');
       res.clearCookie('oidc_nonce');
       const message = error instanceof Error ? error.message : 'SSO authentication failed';
-      return res.redirect(`/login?error=sso_failed&message=${encodeURIComponent(message)}`);
+      return res.redirect(`${frontendUrl}/login?error=sso_failed&message=${encodeURIComponent(message)}`);
     }
   }
 
@@ -508,9 +511,13 @@ export class AuthController {
       const authResult = JSON.parse(decryptedSso) as Record<string, unknown>;
       res.clearCookie('sso_auth');
 
-      // Set refresh token as httpOnly cookie
-      if (authResult.refresh_token && typeof authResult.refresh_token === 'string') {
-        this.setRefreshTokenCookie(res, authResult.refresh_token);
+      // Set production auth cookies (access_token + refresh_token)
+      if (authResult.refresh_token && authResult.access_token) {
+        this.setAuthCookies(
+          res,
+          String(authResult.access_token),
+          String(authResult.refresh_token),
+        );
       }
 
       return res.json(authResult);

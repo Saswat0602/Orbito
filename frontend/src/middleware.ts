@@ -31,7 +31,20 @@ export function middleware(request: NextRequest) {
   }
 
   // If authenticated user visits login or register, redirect them to root workspace resolver
+  // BUT if there is an error/expired/logout parameter, clear invalid cookies and allow login
   if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
+    const hasError =
+      request.nextUrl.searchParams.has('error') ||
+      request.nextUrl.searchParams.has('expired') ||
+      request.nextUrl.searchParams.has('message');
+
+    if (hasError) {
+      const response = NextResponse.next();
+      response.cookies.delete('access_token');
+      response.cookies.delete('refresh_token');
+      return response;
+    }
+
     const rootUrl = new URL('/', request.url);
     return NextResponse.redirect(rootUrl);
   }

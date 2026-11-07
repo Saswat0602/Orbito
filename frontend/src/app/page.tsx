@@ -28,7 +28,9 @@ export default function RootRedirectPage() {
   const { user, isAuthenticated } = useAuthRbac();
   const authState = useAppSelector((state) => state.auth);
 
-  const { data: organizations = [] } = useGetOrganizationsQuery();
+  const { data: organizations = [] } = useGetOrganizationsQuery(undefined, {
+    skip: !authState.isAuthenticated || !authState.user,
+  });
   const activeOrgId = authState.activeOrganizationId || organizations[0]?.id;
 
   const {

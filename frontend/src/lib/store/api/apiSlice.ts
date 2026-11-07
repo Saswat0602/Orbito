@@ -18,42 +18,50 @@ export const baseQueryWithReauth: BaseQueryFn<
   await mutex.waitForUnlock();
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    const url = typeof args === 'string' ? args : args.url;
-    // Skip reauth on login/refresh calls to prevent loops
-    if (url.includes(ENDPOINTS.auth.login) || url.includes(ENDPOINTS.auth.refresh)) {
+  if (result.error) {
+    // 1. Connection refused or server offline: abort re-auth and do not spam
+    if (result.error.status === 'FETCH_ERROR') {
       return result;
     }
 
-    if (!mutex.isLocked()) {
-      const release = await mutex.acquire();
-      try {
-        // Cookie-based token refresh: browser sends refresh_token cookie automatically
-        const refreshResult = await baseQuery(
-          {
-            url: ENDPOINTS.auth.refresh,
-            method: 'POST',
-            body: {},
-          },
-          api,
-          extraOptions
-        );
-
-        if (refreshResult.data) {
-          // Retry the original query now that cookies are refreshed
-          result = await baseQuery(args, api, extraOptions);
-        } else {
-          // Refresh cookie expired or invalid: redirect to login
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login';
-          }
-        }
-      } finally {
-        release();
+    // 2. Unauthorized (401): attempt synchronized cookie refresh
+    if (result.error.status === 401) {
+      const url = typeof args === 'string' ? args : args.url;
+      // Skip reauth on login/refresh calls to prevent loops
+      if (url.includes(ENDPOINTS.auth.login) || url.includes(ENDPOINTS.auth.refresh)) {
+        return result;
       }
-    } else {
-      await mutex.waitForUnlock();
-      result = await baseQuery(args, api, extraOptions);
+
+      if (!mutex.isLocked()) {
+        const release = await mutex.acquire();
+        try {
+          // Cookie-based token refresh: browser sends refresh_token cookie automatically
+          const refreshResult = await baseQuery(
+            {
+              url: ENDPOINTS.auth.refresh,
+              method: 'POST',
+              body: {},
+            },
+            api,
+            extraOptions
+          );
+
+          if (refreshResult.data) {
+            // Retry the original query now that cookies are refreshed
+            result = await baseQuery(args, api, extraOptions);
+          } else {
+            // Refresh cookie expired or invalid: redirect to login with error parameter to clear cookies
+            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
+          }
+        } finally {
+          release();
+        }
+      } else {
+        await mutex.waitForUnlock();
+        result = await baseQuery(args, api, extraOptions);
+      }
     }
   }
 

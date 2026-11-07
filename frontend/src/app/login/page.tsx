@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useLoginMutation } from '@/lib/store/api/authApi';
+import { useLoginMutation, useExchangeSsoMutation } from '@/lib/store/api/authApi';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setCredentials } from '@/lib/store/slices/authSlice';
 import {
@@ -39,6 +39,39 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [login, { isLoading }] = useLoginMutation();
+  const [exchangeSso, { isLoading: isExchangingSso }] = useExchangeSsoMutation();
+
+  // Handle SSO / OIDC callback exchange
+  const ssoParam = searchParams.get('sso');
+  const errorParam = searchParams.get('error');
+  const messageParam = searchParams.get('message');
+
+  useEffect(() => {
+    if (errorParam) {
+      setErrorMessage(
+        messageParam || 'SSO authentication failed. Please try again or use email.'
+      );
+    } else if (ssoParam === 'callback') {
+      const handleSsoExchange = async () => {
+        try {
+          const response = await exchangeSso().unwrap();
+          dispatch(
+            setCredentials({
+              user: response.user,
+            })
+          );
+          toast.success(
+            `Welcome to Orbito${response.user.firstName ? `, ${response.user.firstName}` : ''}!`
+          );
+          router.replace(returnUrl);
+        } catch {
+          setErrorMessage('Failed to complete SSO authentication. Please try again.');
+          toast.error('SSO exchange failed');
+        }
+      };
+      void handleSsoExchange();
+    }
+  }, [ssoParam, errorParam, messageParam, exchangeSso, dispatch, router, returnUrl]);
 
   const executeLogin = async (targetEmail: string, targetPassword: string) => {
     setErrorMessage(null);
@@ -98,12 +131,14 @@ function LoginForm() {
         />
 
         <CardContent className="space-y-4 pt-4">
-          <GoogleButton
-            text="Continue with Google"
-            onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/google`;
-            }}
-          />
+          {isExchangingSso ? (
+            <div className="flex flex-col items-center justify-center p-6 space-y-3 bg-zinc-950/60 rounded-md border border-zinc-800">
+              <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
+              <p className="text-xs text-zinc-400">Completing SSO authentication...</p>
+            </div>
+          ) : (
+            <GoogleButton text="Continue with Google / SSO" />
+          )}
 
           <div className="relative flex items-center justify-center py-2">
             <div className="w-full border-t border-zinc-800" />
