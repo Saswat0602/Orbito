@@ -104,7 +104,7 @@ export default function WorkspaceMembersPage() {
                 className="flex items-center justify-between p-4 hover:bg-zinc-850/30 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9 rounded-lg border border-zinc-700 bg-zinc-800">
+                  <Avatar className="h-9 w-9 rounded-md border border-zinc-700 bg-zinc-800">
                     <AvatarFallback className="text-xs font-bold text-zinc-200">
                       {initials}
                     </AvatarFallback>

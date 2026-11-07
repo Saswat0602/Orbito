@@ -76,7 +76,7 @@ export default function WorkspaceSettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
+        <TabsList className="bg-zinc-900 border border-zinc-800 p-1 rounded-md">
           <TabsTrigger value="general" className="gap-2 text-xs">
             <Building2 className="h-3.5 w-3.5" />
             <span>General</span>

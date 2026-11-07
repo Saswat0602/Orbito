@@ -87,7 +87,7 @@ export default function RootRedirectPage() {
     <div className="flex-1 flex items-center justify-center bg-[#09090b] p-6 min-h-screen">
       <Card className="max-w-md w-full border-zinc-800 bg-zinc-900/80 shadow-2xl">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-800 text-zinc-100 mb-2">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-zinc-800 text-zinc-100 mb-2">
             <Briefcase className="h-6 w-6" />
           </div>
           <CardTitle className="text-xl font-bold text-zinc-100">

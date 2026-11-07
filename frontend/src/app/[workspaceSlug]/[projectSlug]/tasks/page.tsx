@@ -141,7 +141,7 @@ export default function ProjectTasksPage() {
           />
         ) : (
           /* List View */
-          <div className="flex-1 overflow-y-auto border border-zinc-800 rounded-lg bg-zinc-950/40 divide-y divide-zinc-850">
+          <div className="flex-1 overflow-y-auto border border-zinc-800 rounded-md bg-zinc-950/40 divide-y divide-zinc-850">
             {filteredTasks.length === 0 ? (
               <div className="p-8 text-center text-xs text-zinc-500">
                 No tasks match the filter criteria.

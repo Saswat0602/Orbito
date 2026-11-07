@@ -123,7 +123,7 @@ export default function AdminConsolePage() {
                 {organizations.map((org) => (
                   <div
                     key={org.id}
-                    className="flex items-center justify-between py-3 px-2 hover:bg-zinc-850/50 rounded-lg transition-colors"
+                    className="flex items-center justify-between py-3 px-2 hover:bg-zinc-850/50 rounded-md transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-md bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-200">

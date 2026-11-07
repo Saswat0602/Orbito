@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
+        <TabsList className="bg-zinc-900 border border-zinc-800 p-1 rounded-md">
           <TabsTrigger value="profile" className="gap-2 text-xs">
             <User className="h-3.5 w-3.5" />
             <span>Profile</span>
@@ -174,7 +174,7 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-zinc-850/50 border border-zinc-800 text-xs text-zinc-300">
+                <div className="p-4 rounded-md bg-zinc-850/50 border border-zinc-800 text-xs text-zinc-300">
                   Workspace preferences are inherited by all child projects and agile boards.
                 </div>
               </CardContent>
