@@ -26,7 +26,10 @@ import {
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { useGetOrganizationsQuery } from '@/lib/store/api/organizationsApi';
-import { useGetWorkspacesQuery } from '@/lib/store/api/workspacesApi';
+import {
+  useGetWorkspacesQuery,
+  useGetWorkspaceMembersQuery,
+} from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { WorkspaceProjectSwitcher } from './WorkspaceProjectSwitcher';
@@ -78,6 +81,11 @@ export function Sidebar() {
     { skip: !activeWorkspaceId }
   );
 
+  const { data: workspaceMembers = [] } = useGetWorkspaceMembersQuery(
+    activeWorkspaceId || '',
+    { skip: !activeWorkspaceId }
+  );
+
   // Active project is only considered active if explicitly set in state
   const activeProject = useMemo(() => {
     if (!authState.activeProjectId && !authState.activeProjectSlug) return null;
@@ -123,11 +131,23 @@ export function Sidebar() {
 
     return [
       { name: 'Dashboard', href: baseWorkspaceUrl, icon: LayoutDashboard, exact: true },
-      { name: 'Projects Directory', href: `${baseWorkspaceUrl}/projects`, icon: FolderGit2, exact: false },
-      { name: 'Members', href: `${baseWorkspaceUrl}/members`, icon: Users, exact: false },
+      {
+        name: 'Projects Directory',
+        href: `${baseWorkspaceUrl}/projects`,
+        icon: FolderGit2,
+        exact: false,
+        badge: projects.length > 0 ? projects.length : undefined,
+      },
+      {
+        name: 'Members',
+        href: `${baseWorkspaceUrl}/members`,
+        icon: Users,
+        exact: false,
+        badge: workspaceMembers.length > 0 ? workspaceMembers.length : undefined,
+      },
       { name: 'Activity Log', href: `${baseWorkspaceUrl}/activities`, icon: Activity, exact: false },
     ];
-  }, [activeWorkspaceSlug]);
+  }, [activeWorkspaceSlug, projects.length, workspaceMembers.length]);
 
   // RBAC Management Links (Manager and above)
   const managementLinks = useMemo(() => {
@@ -281,7 +301,7 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={`
-                    flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors
+                    flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors
                     ${
                       isActive
                         ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
@@ -289,8 +309,21 @@ export function Sidebar() {
                     }
                   `}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-2.5 truncate">
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </div>
+                  {item.badge !== undefined && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-medium ${
+                        isActive
+                          ? 'bg-zinc-200 text-zinc-900 font-bold'
+                          : 'bg-zinc-800 text-zinc-400'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

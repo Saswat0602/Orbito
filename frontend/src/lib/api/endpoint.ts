@@ -232,13 +232,16 @@ export const ENDPOINTS = {
     status: '/jira-sync/status',
     sync: '/jira-sync/sync',
     workspace: {
-      connect: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/jira/connect`,
-      status: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/jira/status`,
-      sync: (workspaceId: string) => `/workspaces/${workspaceId}/jira/sync`,
-      disconnect: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/jira/disconnect`,
+      connect: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync/connect`,
+      status: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync`,
+      update: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync`,
+      projects: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync/projects`,
+      syncedProjects: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync/synced-projects`,
+      projectStatuses: (workspaceId: string, projectKey: string) =>
+        `/workspaces/${workspaceId}/jira-sync/projects/${projectKey}/statuses`,
+      import: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync/import`,
+      syncAll: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync/sync-all`,
+      disconnect: (workspaceId: string) => `/workspaces/${workspaceId}/jira-sync`,
     },
   },
 
@@ -249,13 +252,14 @@ export const ENDPOINTS = {
     status: '/trello-sync/status',
     sync: '/trello-sync/sync',
     workspace: {
-      connect: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/trello/connect`,
-      status: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/trello/status`,
-      sync: (workspaceId: string) => `/workspaces/${workspaceId}/trello/sync`,
-      disconnect: (workspaceId: string) =>
-        `/workspaces/${workspaceId}/trello/disconnect`,
+      connect: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync/connect`,
+      status: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync`,
+      update: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync`,
+      projects: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync/projects`,
+      boards: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync/boards`,
+      import: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync/import`,
+      syncAll: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync/sync-all`,
+      disconnect: (workspaceId: string) => `/workspaces/${workspaceId}/trello-sync`,
     },
   },
 

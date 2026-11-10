@@ -1,31 +1,8 @@
 import { apiSlice } from './apiSlice';
 import { ENDPOINTS } from '../../api/endpoint';
+import type { NotificationItem, NotificationsResponse } from '@/types';
 
-export interface NotificationItem {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  priority?: string;
-  entityType?: string | null;
-  entityId?: string | null;
-  actionUrl?: string | null;
-  createdAt: string;
-  readAt?: string | null;
-}
-
-export interface NotificationsResponse {
-  notifications: NotificationItem[];
-  pagination?: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
-}
+export type { NotificationItem, NotificationsResponse };
 
 export const notificationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

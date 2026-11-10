@@ -54,11 +54,14 @@ export default function WorkspaceMembersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Users className="h-6 w-6 text-zinc-100" />
             <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
               Workspace Members
             </h1>
+            <Badge variant="outline" className="text-xs font-mono">
+              {members.length} {members.length === 1 ? 'Member' : 'Members'}
+            </Badge>
           </div>
           <p className="text-xs text-zinc-400">
             Collaborators with access to projects inside{' '}

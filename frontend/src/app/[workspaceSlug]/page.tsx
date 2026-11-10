@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -8,10 +9,8 @@ import {
   ListTodo,
   CheckCircle2,
   Clock,
-  AlertCircle,
   Plus,
   Users,
-  Target,
   ArrowRight,
   Building2,
 } from 'lucide-react';
@@ -19,9 +18,13 @@ import {
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setActiveProject, setActiveProjectSlug } from '@/lib/store/slices/authSlice';
-import { useGetWorkspaceBySlugQuery } from '@/lib/store/api/workspacesApi';
+import {
+  useGetWorkspaceBySlugQuery,
+  useGetWorkspaceMembersQuery,
+} from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
+import { CreateProjectModal } from '@/features/projects';
 import {
   Card,
   CardHeader,
@@ -38,6 +41,8 @@ export default function WorkspaceOverviewPage() {
   const dispatch = useAppDispatch();
   const workspaceSlug = params.workspaceSlug;
   const { user, isManager, isOwner, roleBadge } = useAuthRbac();
+
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
 
   // Reset active project when viewing workspace overview
   React.useEffect(() => {
@@ -60,6 +65,11 @@ export default function WorkspaceOverviewPage() {
       skip: !workspace?.id,
     });
 
+  // Fetch workspace members for real count
+  const { data: members = [] } = useGetWorkspaceMembersQuery(workspace?.id || '', {
+    skip: !workspace?.id,
+  });
+
   // Fetch tasks for first project or workspace
   const firstProjectId = projects[0]?.id;
   const { data: tasks = [] } = useGetTasksQuery(
@@ -70,7 +80,6 @@ export default function WorkspaceOverviewPage() {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status?.category === 'DONE').length;
   const inProgressTasks = tasks.filter((t) => t.status?.category === 'IN_PROGRESS').length;
-  const urgentTasks = tasks.filter((t) => t.priority === 'URGENT' || t.priority === 'HIGH').length;
 
   if (isWsLoading) {
     return (
@@ -118,6 +127,17 @@ export default function WorkspaceOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {(isManager || isOwner) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreateProjectOpen(true)}
+              className="gap-1.5 text-xs border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New Project</span>
+            </Button>
+          )}
           {projects[0] && (
             <Link href={`/${workspaceSlug}/${projects[0].slug}/tasks`}>
               <Button variant="primary" size="sm" className="gap-2">
@@ -134,12 +154,23 @@ export default function WorkspaceOverviewPage() {
         <Card className="border-zinc-800 bg-zinc-900/60 p-5">
           <div className="flex items-center justify-between pb-2">
             <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Total Backlog
+              Total Projects
             </span>
-            <ListTodo className="h-4 w-4 text-zinc-400" />
+            <FolderGit2 className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className="text-2xl font-bold text-zinc-100">{totalTasks}</div>
-          <p className="text-[11px] text-zinc-500 mt-1">Managed tasks</p>
+          <div className="text-2xl font-bold text-zinc-100">{projects.length}</div>
+          <p className="text-[11px] text-zinc-500 mt-1">Active workstreams</p>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-900/60 p-5">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Team Members
+            </span>
+            <Users className="h-4 w-4 text-zinc-400" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-100">{members.length}</div>
+          <p className="text-[11px] text-zinc-500 mt-1">Active collaborators</p>
         </Card>
 
         <Card className="border-zinc-800 bg-zinc-900/60 p-5">
@@ -150,7 +181,7 @@ export default function WorkspaceOverviewPage() {
             <Clock className="h-4 w-4 text-amber-400" />
           </div>
           <div className="text-2xl font-bold text-amber-400">{inProgressTasks}</div>
-          <p className="text-[11px] text-zinc-500 mt-1">Currently active</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Currently active tasks</p>
         </Card>
 
         <Card className="border-zinc-800 bg-zinc-900/60 p-5">
@@ -161,32 +192,26 @@ export default function WorkspaceOverviewPage() {
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-bold text-emerald-400">{completedTasks}</div>
-          <p className="text-[11px] text-zinc-500 mt-1">Closed items</p>
-        </Card>
-
-        <Card className="border-zinc-800 bg-zinc-900/60 p-5">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              High / Urgent
-            </span>
-            <AlertCircle className="h-4 w-4 text-rose-400" />
-          </div>
-          <div className="text-2xl font-bold text-rose-400">{urgentTasks}</div>
-          <p className="text-[11px] text-zinc-500 mt-1">Priority focus</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Delivered tasks</p>
         </Card>
       </div>
 
       {/* Projects Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
             <h3 className="text-base font-semibold text-zinc-100">Projects</h3>
-            <p className="text-xs text-zinc-400">
-              Active projects scoped within this workspace.
-            </p>
+            <Badge variant="outline" className="text-[10px] font-mono">
+              {projects.length} {projects.length === 1 ? 'Project' : 'Projects'}
+            </Badge>
           </div>
           {(isManager || isOwner) && (
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreateProjectOpen(true)}
+              className="gap-1.5 text-xs border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200"
+            >
               <Plus className="h-3.5 w-3.5" />
               <span>New Project</span>
             </Button>
@@ -204,6 +229,17 @@ export default function WorkspaceOverviewPage() {
             <p className="text-xs text-zinc-500 mt-1">
               Create your first project to start organizing sprints and backlog items.
             </p>
+            {(isManager || isOwner) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCreateProjectOpen(true)}
+                className="gap-1.5 text-xs mt-3"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Project</span>
+              </Button>
+            )}
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -218,6 +254,10 @@ export default function WorkspaceOverviewPage() {
                     <Badge variant="outline" className="text-[10px] font-mono uppercase">
                       {project.slug}
                     </Badge>
+                    <span className="text-[11px] text-zinc-500 group-hover:text-zinc-300 flex items-center gap-1 transition-colors">
+                      <span>Tasks Board</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </span>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
@@ -235,7 +275,15 @@ export default function WorkspaceOverviewPage() {
           </div>
         )}
       </div>
+
+      {/* Create Project Modal */}
+      {workspace?.id && (
+        <CreateProjectModal
+          isOpen={isCreateProjectOpen}
+          onClose={() => setIsCreateProjectOpen(false)}
+          workspaceId={workspace.id}
+        />
+      )}
     </div>
   );
 }
-

@@ -24,11 +24,14 @@ export default function WorkspaceActivitiesPage() {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-[#09090b]">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Activity className="h-6 w-6 text-zinc-100" />
             <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
               Workspace Activity
             </h1>
+            <Badge variant="outline" className="text-xs font-mono">
+              {logs.length} {logs.length === 1 ? 'Event' : 'Events'}
+            </Badge>
           </div>
           <p className="text-xs text-zinc-400">
             Real-time audit log of team actions in <span className="font-mono text-zinc-300">{workspaceSlug}</span>.

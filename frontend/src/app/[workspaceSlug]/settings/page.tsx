@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { AutomationsTab } from '@/features/automations';
 
 export default function WorkspaceSettingsPage() {
   const params = useParams<{ workspaceSlug: string }>();
@@ -192,15 +193,11 @@ export default function WorkspaceSettingsPage() {
         {/* Automations */}
         {(isManager || isOwner) && (
           <TabsContent value="automations">
-            <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl p-8 text-center space-y-2">
-              <Zap className="h-8 w-8 text-zinc-500 mx-auto" />
-              <h4 className="text-sm font-semibold text-zinc-200">
-                Workspace Automation Engine
-              </h4>
-              <p className="text-xs text-zinc-400 max-w-md mx-auto">
-                Trigger background rule jobs whenever tasks move or status transitions occur.
-              </p>
-            </Card>
+            <AutomationsTab
+              workspaceId={workspace?.id || ''}
+              organizationId={workspace?.organizationId}
+              isManagerOrOwner={isManager || isOwner}
+            />
           </TabsContent>
         )}
       </Tabs>
