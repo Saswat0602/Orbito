@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import type { Task, TaskPriority } from '@orbito/types';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { setTaskDrawerId } from '@/lib/store/slices/uiSlice';
+import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import {
   useGetTaskQuery,
   useUpdateTaskMutation,
@@ -30,6 +31,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { TaskLabels } from './TaskLabels';
+import { TaskSubtasks } from './TaskSubtasks';
+import { TaskTimeTracking } from './TaskTimeTracking';
+import { TaskAttachments } from './TaskAttachments';
 
 const STATUS_OPTIONS = [
   { value: 'TODO', label: 'To Do' },
@@ -43,6 +48,11 @@ export function TaskDetailDrawer() {
   const taskDrawerId = useAppSelector((state) => state.ui.taskDrawerId);
   const activeWorkspaceId = useAppSelector((state) => state.auth.activeWorkspaceId);
   const currentUser = useAppSelector((state) => state.auth.user);
+  const { isViewer, isManager, isOwner, isSuperAdmin } = useAuthRbac();
+
+  // Strict RBAC checks
+  const canEdit = !isViewer;
+  const canDelete = isManager || isOwner || isSuperAdmin;
 
   const {
     data: task,
@@ -90,7 +100,7 @@ export function TaskDetailDrawer() {
   };
 
   const handleSaveTitleAndDesc = async () => {
-    if (!task) return;
+    if (!task || !canEdit) return;
     try {
       await updateTask({
         id: task.id,
@@ -106,7 +116,7 @@ export function TaskDetailDrawer() {
   };
 
   const handleStatusChange = async (newCategory: string) => {
-    if (!task) return;
+    if (!task || !canEdit) return;
     setStatusCategory(newCategory);
     try {
       await updateTask({
@@ -122,7 +132,7 @@ export function TaskDetailDrawer() {
   };
 
   const handleAssigneeChange = async (userId: string) => {
-    if (!task) return;
+    if (!task || !canEdit) return;
     try {
       const assigneeIds = userId === 'unassigned' ? [] : [userId];
       await updateAssignees({ taskId: task.id, assigneeIds }).unwrap();
@@ -159,7 +169,7 @@ export function TaskDetailDrawer() {
   };
 
   const handleDeleteTask = async () => {
-    if (!task) return;
+    if (!task || !canDelete) return;
     if (confirm('Are you sure you want to delete this task?')) {
       try {
         await deleteTask(task.id).unwrap();
@@ -197,15 +207,17 @@ export function TaskDetailDrawer() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDeleteTask}
-              disabled={isDeleting}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
-              title="Delete task"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={handleDeleteTask}
+                disabled={isDeleting}
+                className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
+                title="Delete task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
             <button
               type="button"
               onClick={handleClose}
@@ -239,8 +251,9 @@ export function TaskDetailDrawer() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={handleSaveTitleAndDesc}
+                disabled={!canEdit}
                 placeholder="Task title..."
-                className="text-base font-bold bg-transparent border-transparent hover:border-zinc-800 focus:border-zinc-700 px-2 py-1 text-zinc-100 rounded-md"
+                className="text-base font-bold bg-transparent border-transparent hover:border-zinc-800 focus:border-zinc-700 px-2 py-1 text-zinc-100 rounded-md disabled:opacity-80"
               />
             </div>
 
@@ -254,8 +267,9 @@ export function TaskDetailDrawer() {
                 </span>
                 <select
                   value={statusCategory}
+                  disabled={!canEdit}
                   onChange={(e) => handleStatusChange(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer"
+                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -270,12 +284,13 @@ export function TaskDetailDrawer() {
                 <span className="text-zinc-500 text-[11px] font-medium">Priority</span>
                 <select
                   value={priority}
+                  disabled={!canEdit}
                   onChange={(e) => {
                     const next = e.target.value as TaskPriority;
                     setPriority(next);
                     updateTask({ id: task.id, updates: { priority: next } });
                   }}
-                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer"
+                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -292,8 +307,9 @@ export function TaskDetailDrawer() {
                 </span>
                 <select
                   value={currentAssignee?.id || 'unassigned'}
+                  disabled={!canEdit}
                   onChange={(e) => handleAssigneeChange(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer"
+                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <option value="unassigned">Unassigned</option>
                   {workspaceMembers.map((m) => {
@@ -315,14 +331,35 @@ export function TaskDetailDrawer() {
             <div className="space-y-2">
               <span className="text-xs font-semibold text-zinc-400">Description</span>
               <Textarea
-                rows={5}
+                rows={4}
                 value={description}
+                disabled={!canEdit}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={handleSaveTitleAndDesc}
                 placeholder="Add more details, acceptance criteria, or context..."
-                className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200 resize-none"
+                className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200 resize-none disabled:opacity-80"
               />
             </div>
+
+            {/* Labels Power Tool */}
+            <TaskLabels taskId={task.id} canEdit={canEdit} />
+
+            {/* Subtasks Power Tool */}
+            <TaskSubtasks
+              taskId={task.id}
+              projectId={task.projectId}
+              canEdit={canEdit}
+            />
+
+            {/* Time Tracking Power Tool */}
+            <TaskTimeTracking
+              taskId={task.id}
+              estimatedHours={task.estimatedHours}
+              canEdit={canEdit}
+            />
+
+            {/* Attachments Power Tool */}
+            <TaskAttachments taskId={task.id} canEdit={canEdit} />
 
             {/* Comments Timeline */}
             <div className="space-y-3 pt-4 border-t border-zinc-800">
@@ -377,7 +414,7 @@ export function TaskDetailDrawer() {
                             </span>
                           </div>
 
-                          {isOwnComment && (
+                          {(isOwnComment || canDelete) && (
                             <button
                               type="button"
                               onClick={() => handleDeleteComment(c.id)}
@@ -397,25 +434,27 @@ export function TaskDetailDrawer() {
               </div>
 
               {/* Comment Input Box */}
-              <form onSubmit={handleCommentSubmit} className="flex gap-2 pt-2">
-                <Input
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Write a comment or update..."
-                  className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  variant="primary"
-                  isLoading={isPostingComment}
-                  disabled={!commentText.trim()}
-                  className="gap-1.5 text-xs shrink-0"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  <span>Send</span>
-                </Button>
-              </form>
+              {canEdit && (
+                <form onSubmit={handleCommentSubmit} className="flex gap-2 pt-2">
+                  <Input
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Write a comment or update..."
+                    className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    variant="primary"
+                    isLoading={isPostingComment}
+                    disabled={!commentText.trim()}
+                    className="gap-1.5 text-xs shrink-0"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    <span>Send</span>
+                  </Button>
+                </form>
+              )}
             </div>
           </div>
         )}

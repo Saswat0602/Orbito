@@ -2,4 +2,7 @@ export * from './components/TaskCard';
 export * from './components/KanbanBoard';
 export * from './components/TaskDetailDrawer';
 export * from './components/CreateTaskModal';
-
+export * from './components/TaskSubtasks';
+export * from './components/TaskLabels';
+export * from './components/TaskTimeTracking';
+export * from './components/TaskAttachments';

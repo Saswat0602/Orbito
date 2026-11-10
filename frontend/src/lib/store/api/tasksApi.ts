@@ -5,6 +5,9 @@ import type {
   TaskGroupedResponse,
   TaskReorderPayload,
   TaskComment,
+  Label,
+  Attachment,
+  TimeEntry,
 } from '@orbito/types';
 import { getSocket } from '../../socket';
 import { ENDPOINTS } from '../../api/endpoint';
@@ -207,6 +210,99 @@ export const tasksApi = apiSlice.injectEndpoints({
         { type: 'Task', id: 'LIST' },
       ],
     }),
+
+    // Subtasks
+    getSubtasks: builder.query<Task[], string>({
+      query: (parentTaskId) => ({
+        url: ENDPOINTS.tasks.list,
+        params: { parentTaskId },
+      }),
+      providesTags: (_res, _err, parentTaskId) => [{ type: 'Task', id: `SUBTASKS_${parentTaskId}` }],
+    }),
+
+    createSubtask: builder.mutation<Task, { parentTaskId: string; title: string; projectId: string }>({
+      query: (body) => ({
+        url: ENDPOINTS.tasks.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { parentTaskId }) => [
+        { type: 'Task', id: `SUBTASKS_${parentTaskId}` },
+        { type: 'Task', id: parentTaskId },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    // Labels
+    getTaskLabels: builder.query<Label[], string>({
+      query: (taskId) => `/labels/task/${taskId}`,
+      providesTags: (_res, _err, taskId) => [{ type: 'Label', id: taskId }],
+    }),
+
+    getAllLabels: builder.query<Label[], { organizationId?: string } | void>({
+      query: (params) => ({
+        url: ENDPOINTS.labels.list,
+        params: params || {},
+      }),
+      providesTags: ['Label'],
+    }),
+
+    createLabel: builder.mutation<Label, { name: string; color: string; organizationId?: string }>({
+      query: (body) => ({
+        url: ENDPOINTS.labels.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Label'],
+    }),
+
+    assignTaskLabel: builder.mutation<void, { taskId: string; labelId: string }>({
+      query: (body) => ({
+        url: '/labels/assign',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Label', id: taskId },
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    removeTaskLabel: builder.mutation<void, { taskId: string; labelId: string }>({
+      query: ({ taskId, labelId }) => ({
+        url: `/labels/task/${taskId}/label/${labelId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Label', id: taskId },
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    // Attachments
+    getTaskAttachments: builder.query<Attachment[], string>({
+      query: (taskId) => `/task-attachments/task/${taskId}`,
+      providesTags: (_res, _err, taskId) => [{ type: 'Attachment', id: taskId }],
+    }),
+
+    uploadTaskAttachment: builder.mutation<Attachment, { taskId: string; formData: FormData }>({
+      query: ({ taskId, formData }) => ({
+        url: `/task-attachments/upload/${taskId}`,
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [{ type: 'Attachment', id: taskId }],
+    }),
+
+    deleteTaskAttachment: builder.mutation<void, { id: string; taskId: string }>({
+      query: ({ id }) => ({
+        url: ENDPOINTS.taskAttachments.byId(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [{ type: 'Attachment', id: taskId }],
+    }),
   }),
 });
 
@@ -222,4 +318,14 @@ export const {
   useCreateTaskCommentMutation,
   useDeleteTaskCommentMutation,
   useUpdateTaskAssigneesMutation,
+  useGetSubtasksQuery,
+  useCreateSubtaskMutation,
+  useGetTaskLabelsQuery,
+  useGetAllLabelsQuery,
+  useCreateLabelMutation,
+  useAssignTaskLabelMutation,
+  useRemoveTaskLabelMutation,
+  useGetTaskAttachmentsQuery,
+  useUploadTaskAttachmentMutation,
+  useDeleteTaskAttachmentMutation,
 } = tasksApi;
