@@ -141,3 +141,4 @@ export function ActionModal({ open, onOpenChange, onSubmit, title }: ActionModal
 1. Verify keyboard accessibility: Tab navigation, Escape key closes overlays, Enter triggers primary actions.
 2. Verify screen sizes: Ensure mobile (`<640px`), tablet (`768px`), and desktop (`1024px+`) viewports display zero horizontal overflow.
 3. Test dark/light mode compatibility via `ThemeToggle`.
+

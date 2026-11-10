@@ -114,3 +114,4 @@ updateTaskStatus: builder.mutation<TaskItem, { id: string; statusId: string; pro
 1. **`TypeError: data.map is not a function`**: The endpoint returned `{ items: [...] }` but the component expected an array. Add `transformResponse` in the API definition and defensive array checking in the component.
 2. **Missing Auth Cookie**: Verify `credentials: 'include'` is declared in `baseQuery` in `apiSlice.ts`.
 3. **Infinite Reauth Loop**: Verify that calls to `/auth/login` and `/auth/refresh` explicitly skip the 401 mutex trigger.
+

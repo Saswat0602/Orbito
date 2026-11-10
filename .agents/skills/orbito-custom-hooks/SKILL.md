@@ -126,3 +126,4 @@ export function useKeyShortcut(
 - **No Duplicated State**: Do not mirror RTK Query cache in `useState` unless editing a temporary draft.
 - **No Unstable Dependency Arrays**: Memoize callbacks with `useCallback` or primitive IDs when passing them into `useEffect` dependencies.
 - **No Catch-All File Dumping**: Every hook should reside in its own dedicated file (e.g., `src/lib/hooks/useDebounce.ts`) and be exported cleanly from `src/lib/hooks/index.ts`.
+
