@@ -1,20 +1,15 @@
 import { apiSlice } from './apiSlice';
 import type { TimeEntry } from '@orbito/types';
 import { ENDPOINTS } from '../../api/endpoint';
+import type {
+  CreateTimeEntryRequest,
+  ActiveTimerResponse,
+} from '@/types';
 
-export interface CreateTimeEntryRequest {
-  taskId: string;
-  duration: number; // in seconds
-  description?: string;
-  date?: string;
-}
-
-export interface ActiveTimerResponse {
-  active: boolean;
-  taskId?: string;
-  startedAt?: string;
-  elapsedSeconds?: number;
-}
+export type {
+  CreateTimeEntryRequest,
+  ActiveTimerResponse,
+};
 
 export const timeEntriesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

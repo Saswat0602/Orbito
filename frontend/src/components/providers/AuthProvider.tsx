@@ -23,23 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const authState = useAppSelector((state) => state.auth);
-  const hasRedirectedRef = useRef(false);
-
-  // Fast client-side hydration from localStorage on initial page load / refresh
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !authState.user) {
-      const storedUser = localStorage.getItem('orbito_user');
-      const token = localStorage.getItem('access_token');
-      if (storedUser && token) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          dispatch(setCredentials({ user: parsed, accessToken: token }));
-        } catch {
-          // ignore corrupted local storage
-        }
-      }
-    }
-  }, [dispatch, authState.user]);
+  const isHandlingAuthRef = useRef(false);
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
     pathname?.startsWith(route)
@@ -52,25 +36,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     data: meUser,
     isLoading: isMeLoading,
     isError: isMeError,
-    error: meError,
   } = useGetMeQuery(undefined, {
     skip: shouldSkipGetMe,
   });
 
+  // Consolidated Single Session Lifecycle Effect
   useEffect(() => {
+    // 1. If server returned fresh user profile, synchronize Redux credentials
     if (meUser) {
       dispatch(setCredentials({ user: meUser }));
-      hasRedirectedRef.current = false;
+      isHandlingAuthRef.current = false;
+      return;
     }
-  }, [meUser, dispatch]);
 
-  useEffect(() => {
-    if (!isPublicRoute && isMeError && !hasRedirectedRef.current) {
-      hasRedirectedRef.current = true;
+    // 2. If me query failed on a protected route, cleanly terminate session and redirect
+    if (!isPublicRoute && isMeError && !isHandlingAuthRef.current) {
+      isHandlingAuthRef.current = true;
       dispatch(logOut());
       router.replace('/login?error=session_expired');
+      return;
     }
-  }, [isPublicRoute, isMeError, dispatch, router]);
+
+    // 3. Fast client-side initial hydration from localStorage before network resolves
+    if (typeof window !== 'undefined' && !authState.user) {
+      const storedUser = localStorage.getItem('orbito_user');
+      const token = localStorage.getItem('access_token');
+      if (storedUser && token) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          dispatch(setCredentials({ user: parsed, accessToken: token }));
+        } catch {
+          localStorage.removeItem('orbito_user');
+        }
+      }
+    }
+  }, [meUser, isMeError, isPublicRoute, authState.user, dispatch, router]);
 
   // While checking authentication on protected route
   if (!isPublicRoute && !authState.isAuthenticated) {
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               variant="outline"
               size="sm"
               onClick={() => {
-                hasRedirectedRef.current = false;
+                isHandlingAuthRef.current = false;
                 router.replace('/login?error=session_expired');
               }}
               className="w-full text-xs"
@@ -115,4 +115,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-

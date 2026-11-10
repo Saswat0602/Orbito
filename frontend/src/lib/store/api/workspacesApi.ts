@@ -1,18 +1,16 @@
 import { apiSlice } from './apiSlice';
-import type { Workspace, WorkspaceMember } from '@orbito/types';
+import type {
+  Workspace,
+  WorkspaceMember,
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+} from '@orbito/types';
 import { ENDPOINTS } from '../../api/endpoint';
 
-export interface CreateWorkspaceRequest {
-  name: string;
-  organizationId: string;
-  description?: string;
-}
-
-export interface UpdateWorkspaceRequest {
-  id: string;
-  name?: string;
-  description?: string;
-}
+export type {
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+};
 
 export const workspacesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

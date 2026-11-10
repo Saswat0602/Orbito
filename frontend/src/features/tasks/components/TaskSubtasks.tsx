@@ -10,14 +10,9 @@ import {
   useUpdateTaskMutation,
   useDeleteTaskMutation,
 } from '@/lib/store/api/tasksApi';
+import type { TaskSubtasksProps } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-interface TaskSubtasksProps {
-  taskId: string;
-  projectId: string;
-  canEdit: boolean;
-}
 
 export const TaskSubtasks = React.memo(function TaskSubtasks({ taskId, projectId, canEdit }: TaskSubtasksProps) {
   const { data: subtasks = [], isLoading } = useGetSubtasksQuery(taskId, {

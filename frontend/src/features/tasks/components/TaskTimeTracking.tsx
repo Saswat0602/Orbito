@@ -8,14 +8,9 @@ import {
   useGetTimeEntriesQuery,
   useCreateTimeEntryMutation,
 } from '@/lib/store/api/timeEntriesApi';
+import type { TaskTimeTrackingProps } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-interface TaskTimeTrackingProps {
-  taskId: string;
-  estimatedHours?: number | null;
-  canEdit: boolean;
-}
 
 export const TaskTimeTracking = React.memo(function TaskTimeTracking({ taskId, estimatedHours, canEdit }: TaskTimeTrackingProps) {
   const { data: entries = [], isLoading } = useGetTimeEntriesQuery(

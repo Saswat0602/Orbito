@@ -9,12 +9,8 @@ import {
   useUploadTaskAttachmentMutation,
   useDeleteTaskAttachmentMutation,
 } from '@/lib/store/api/tasksApi';
+import type { TaskAttachmentsProps } from '@/types';
 import { Button } from '@/components/ui/button';
-
-interface TaskAttachmentsProps {
-  taskId: string;
-  canEdit: boolean;
-}
 
 function formatBytes(bytes: number, decimals = 1) {
   if (bytes === 0) return '0 B';

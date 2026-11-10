@@ -14,11 +14,7 @@ import {
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-interface TaskLabelsProps {
-  taskId: string;
-  canEdit: boolean;
-}
+import type { TaskLabelsProps } from '@/types';
 
 const PRESET_COLORS = [
   '#ef4444', // Red

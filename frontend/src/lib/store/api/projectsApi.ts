@@ -1,26 +1,15 @@
 import { apiSlice } from './apiSlice';
-import type { Project } from '@orbito/types';
+import type {
+  Project,
+  GanttTask,
+  ResourceAllocation,
+} from '@orbito/types';
 import { ENDPOINTS } from '../../api/endpoint';
 
-export interface GanttTask {
-  id: string;
-  name: string;
-  start: string;
-  end: string;
-  progress: number;
-  dependencies: string[];
-  type: string;
-  assignees: { id: string; name: string; avatar?: string }[];
-}
-
-export interface ResourceAllocation {
-  userId: string;
-  userName: string;
-  avatar?: string;
-  tasksCount: number;
-  estimatedHours: number;
-  loggedHours: number;
-}
+export type {
+  GanttTask,
+  ResourceAllocation,
+};
 
 export const projectsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

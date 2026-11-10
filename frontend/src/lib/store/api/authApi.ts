@@ -1,45 +1,28 @@
 import { apiSlice } from './apiSlice';
-import type { User, AuthResponse } from '@orbito/types';
+import type {
+  User,
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from '@orbito/types';
 import { ENDPOINTS } from '../../api/endpoint';
+import type {
+  MessageResponse,
+  VerifyResetTokenResponse,
+  RegistrationStatusResponse,
+} from '@/types';
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  password: string;
-  confirmPassword: string;
-}
-
-export interface MessageResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface VerifyResetTokenResponse {
-  valid: boolean;
-  message: string;
-}
-
-export interface RegistrationStatusResponse {
-  enabled: boolean;
-  allowOrgCreation: boolean;
-  hasDefaultOrganization: boolean;
-}
+export type {
+  LoginRequest,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  MessageResponse,
+  VerifyResetTokenResponse,
+  RegistrationStatusResponse,
+};
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
