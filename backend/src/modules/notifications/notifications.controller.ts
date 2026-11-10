@@ -355,8 +355,6 @@ export class NotificationsController {
   }
 
   @Patch('mark-all-read')
-  @Patch('read-all')
-  @Post('mark-all-read')
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @HttpCode(HttpStatus.OK)
   async markAllAsRead(@Req() req: Request, @Query('organizationId') organizationId?: string) {
@@ -370,6 +368,18 @@ export class NotificationsController {
         : undefined;
     await this.notificationsService.markAllAsRead(user.id, validOrgId);
     return { message: 'All notifications marked as read' };
+  }
+
+  @Patch('read-all')
+  @HttpCode(HttpStatus.OK)
+  async readAllAlias(@Req() req: Request, @Query('organizationId') organizationId?: string) {
+    return this.markAllAsRead(req, organizationId);
+  }
+
+  @Post('mark-all-read')
+  @HttpCode(HttpStatus.OK)
+  async markAllAsReadPostAlias(@Req() req: Request, @Query('organizationId') organizationId?: string) {
+    return this.markAllAsRead(req, organizationId);
   }
 
   @Patch('mark-all-unread-read')
