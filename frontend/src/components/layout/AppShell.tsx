@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
+import { Navbar } from './Navbar';
 import { TaskDetailDrawer } from '@/features/tasks';
 import { Toaster } from 'sonner';
 
@@ -34,9 +35,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#09090b] text-zinc-100 antialiased">
       <Sidebar />
-      <main className="flex-1 overflow-hidden flex flex-col bg-[#09090b]">
-        {children}
-      </main>
+      <div className="flex-1 overflow-hidden flex flex-col bg-[#09090b]">
+        <Navbar />
+        <main className="flex-1 overflow-y-auto flex flex-col bg-[#09090b]">
+          {children}
+        </main>
+      </div>
       <TaskDetailDrawer />
       <Toaster
         position="bottom-right"
@@ -52,4 +56,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

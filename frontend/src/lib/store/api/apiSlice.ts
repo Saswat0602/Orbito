@@ -89,6 +89,7 @@ export const apiSlice = createApi({
     'TimeEntry',
     'Admin',
     'Queue',
+    'Invitation',
   ],
   endpoints: () => ({}),
 });

@@ -7,6 +7,8 @@ import { useParams } from 'next/navigation';
 import { FolderGit2, Plus, Calendar } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setActiveProject, setActiveProjectSlug } from '@/lib/store/slices/authSlice';
 import { useGetWorkspaceBySlugQuery } from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { CreateProjectModal } from '@/features/projects';
@@ -16,8 +18,14 @@ import { Badge } from '@/components/ui/badge';
 
 export default function WorkspaceProjectsPage() {
   const params = useParams<{ workspaceSlug: string }>();
+  const dispatch = useAppDispatch();
   const { workspaceSlug } = params;
   const { isManager, isOwner } = useAuthRbac();
+
+  React.useEffect(() => {
+    dispatch(setActiveProject(null));
+    dispatch(setActiveProjectSlug(null));
+  }, [dispatch]);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 

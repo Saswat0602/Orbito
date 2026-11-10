@@ -7,35 +7,82 @@ export interface NotificationItem {
   type: string;
   title: string;
   message: string;
-  read: boolean;
-  data?: Record<string, unknown>;
+  isRead: boolean;
+  priority?: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  actionUrl?: string | null;
   createdAt: string;
+  readAt?: string | null;
+}
+
+export interface NotificationsResponse {
+  notifications: NotificationItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 }
 
 export const notificationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getNotifications: builder.query<NotificationItem[], { unreadOnly?: boolean } | void>({
+    getNotifications: builder.query<
+      NotificationItem[],
+      { isRead?: boolean; page?: number; limit?: number; organizationId?: string } | void
+    >({
       query: (params) => ({
         url: ENDPOINTS.notifications.list,
         params: params || {},
       }),
+      transformResponse: (response: NotificationsResponse | NotificationItem[] | unknown) => {
+        if (Array.isArray(response)) return response;
+        if (
+          response &&
+          typeof response === 'object' &&
+          Array.isArray((response as NotificationsResponse).notifications)
+        ) {
+          return (response as NotificationsResponse).notifications;
+        }
+        return [];
+      },
       providesTags: ['Notification'],
     }),
-    getUnreadCount: builder.query<{ count: number }, void>({
-      query: () => ENDPOINTS.notifications.unreadCount,
+
+    getUnreadCount: builder.query<number, { organizationId?: string } | void>({
+      query: (params) => ({
+        url: ENDPOINTS.notifications.unreadCount,
+        params: params || {},
+      }),
+      transformResponse: (response: number | { count: number } | unknown) => {
+        if (typeof response === 'number') return response;
+        if (
+          response &&
+          typeof response === 'object' &&
+          typeof (response as { count?: number }).count === 'number'
+        ) {
+          return (response as { count: number }).count;
+        }
+        return 0;
+      },
       providesTags: ['Notification'],
     }),
-    markAsRead: builder.mutation<void, string>({
+
+    markAsRead: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: ENDPOINTS.notifications.markAsRead(id),
         method: 'PATCH',
       }),
       invalidatesTags: ['Notification'],
     }),
-    markAllAsRead: builder.mutation<void, void>({
-      query: () => ({
+
+    markAllAsRead: builder.mutation<{ message: string }, { organizationId?: string } | void>({
+      query: (params) => ({
         url: ENDPOINTS.notifications.markAllAsRead,
-        method: 'POST',
+        method: 'PATCH',
+        params: params || {},
       }),
       invalidatesTags: ['Notification'],
     }),
@@ -48,4 +95,3 @@ export const {
   useMarkAsReadMutation,
   useMarkAllAsReadMutation,
 } = notificationsApi;
-

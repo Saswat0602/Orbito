@@ -55,7 +55,7 @@ export class NotificationsService {
       whereClause.type = filters.type;
     }
 
-    if (filters.organizationId) {
+    if (filters.organizationId && filters.organizationId.trim() !== '') {
       whereClause.organizationId = filters.organizationId;
     }
 
@@ -104,7 +104,7 @@ export class NotificationsService {
   markAllAsRead(userId: string, organizationId?: string) {
     const whereClause: any = { userId, isRead: false };
 
-    if (organizationId) {
+    if (organizationId && organizationId.trim() !== '') {
       whereClause.organizationId = organizationId;
     }
 
@@ -120,7 +120,7 @@ export class NotificationsService {
   getUnreadCount(userId: string, organizationId?: string) {
     const whereClause: any = { userId, isRead: false };
 
-    if (organizationId) {
+    if (organizationId && organizationId.trim() !== '') {
       whereClause.organizationId = organizationId;
     }
 

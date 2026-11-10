@@ -19,6 +19,8 @@ import {
   Activity,
   Sliders,
   Cpu,
+  Layers,
+  ArrowLeft,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
@@ -76,16 +78,17 @@ export function Sidebar() {
     { skip: !activeWorkspaceId }
   );
 
+  // Active project is only considered active if explicitly set in state
   const activeProject = useMemo(() => {
+    if (!authState.activeProjectId && !authState.activeProjectSlug) return null;
     return (
       projects.find((p) => p.id === authState.activeProjectId) ||
       projects.find((p) => p.slug === authState.activeProjectSlug) ||
-      projects[0] ||
       null
     );
   }, [projects, authState.activeProjectId, authState.activeProjectSlug]);
 
-  const activeProjectSlug = activeProject?.slug || authState.activeProjectSlug || '';
+  const activeProjectSlug = activeProject?.slug || '';
 
   // Active names
   const activeOrgName = useMemo(() => {
@@ -100,29 +103,31 @@ export function Sidebar() {
     return activeProject?.name || 'All Projects';
   }, [activeProject]);
 
-  // Main Navigation Items scoped by Workspace / Project
-  const navigation = useMemo(() => {
+  // Context-Aware Navigation Items
+  const projectNavigation = useMemo(() => {
+    if (!activeWorkspaceSlug || !activeProjectSlug) return [];
+    const baseProjectUrl = `/${activeWorkspaceSlug}/${activeProjectSlug}`;
+
+    return [
+      { name: 'Tasks & Board', href: `${baseProjectUrl}/tasks`, icon: ListTodo, exact: false },
+      { name: 'Sprints & Backlog', href: `${baseProjectUrl}/sprints`, icon: Target, exact: false },
+    ];
+  }, [activeWorkspaceSlug, activeProjectSlug]);
+
+  const workspaceNavigation = useMemo(() => {
     if (!activeWorkspaceSlug) {
       return [{ name: 'Overview', href: '/', icon: LayoutDashboard, exact: true }];
     }
 
     const baseWorkspaceUrl = `/${activeWorkspaceSlug}`;
-    const tasksUrl = activeProjectSlug
-      ? `${baseWorkspaceUrl}/${activeProjectSlug}/tasks`
-      : `${baseWorkspaceUrl}/projects`;
-    const sprintsUrl = activeProjectSlug
-      ? `${baseWorkspaceUrl}/${activeProjectSlug}/sprints`
-      : `${baseWorkspaceUrl}/projects`;
 
     return [
       { name: 'Dashboard', href: baseWorkspaceUrl, icon: LayoutDashboard, exact: true },
-      { name: 'Projects', href: `${baseWorkspaceUrl}/projects`, icon: FolderGit2, exact: false },
-      { name: 'Tasks', href: tasksUrl, icon: ListTodo, exact: false },
-      { name: 'Sprints', href: sprintsUrl, icon: Target, exact: false },
+      { name: 'Projects Directory', href: `${baseWorkspaceUrl}/projects`, icon: FolderGit2, exact: false },
       { name: 'Members', href: `${baseWorkspaceUrl}/members`, icon: Users, exact: false },
       { name: 'Activity Log', href: `${baseWorkspaceUrl}/activities`, icon: Activity, exact: false },
     ];
-  }, [activeWorkspaceSlug, activeProjectSlug]);
+  }, [activeWorkspaceSlug]);
 
   // RBAC Management Links (Manager and above)
   const managementLinks = useMemo(() => {
@@ -224,12 +229,47 @@ export function Sidebar() {
 
         {/* Navigation Links Scrollable Body */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-          {/* Main Links */}
+          {/* Case 1: Specific Project Selected -> Show Focused Project Tools */}
+          {activeProject && projectNavigation.length > 0 && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between px-3 pb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 truncate">
+                  {activeProject.name}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 uppercase">Project</span>
+              </div>
+              {projectNavigation.map((item) => {
+                const isActive = pathname?.startsWith(item.href);
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={`
+                      flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors
+                      ${
+                        isActive
+                          ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
+                      }
+                    `}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Workspace Links Group */}
           <div className="space-y-1">
             <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              Workspace
+              {activeProject ? 'Workspace Context' : 'Workspace'}
             </span>
-            {navigation.map((item) => {
+            {workspaceNavigation.map((item) => {
               const isActive = item.exact
                 ? pathname === item.href
                 : pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));

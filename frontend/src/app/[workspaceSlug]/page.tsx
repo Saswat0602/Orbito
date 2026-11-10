@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setActiveProject, setActiveProjectSlug } from '@/lib/store/slices/authSlice';
 import { useGetWorkspaceBySlugQuery } from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
@@ -33,8 +35,15 @@ import { Badge } from '@/components/ui/badge';
 export default function WorkspaceOverviewPage() {
   const params = useParams<{ workspaceSlug: string }>();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const workspaceSlug = params.workspaceSlug;
   const { user, isManager, isOwner, roleBadge } = useAuthRbac();
+
+  // Reset active project when viewing workspace overview
+  React.useEffect(() => {
+    dispatch(setActiveProject(null));
+    dispatch(setActiveProjectSlug(null));
+  }, [dispatch]);
 
   // Fetch workspace by slug
   const {

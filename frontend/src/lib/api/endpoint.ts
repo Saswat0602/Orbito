@@ -284,7 +284,7 @@ export const ENDPOINTS = {
     list: '/notifications',
     unreadCount: '/notifications/unread-count',
     markAsRead: (id: string) => `/notifications/${id}/read`,
-    markAllAsRead: '/notifications/read-all',
+    markAllAsRead: '/notifications/mark-all-read',
   },
 
   invitations: {

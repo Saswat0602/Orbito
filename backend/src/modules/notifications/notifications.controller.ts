@@ -2,6 +2,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Param,
@@ -81,11 +82,18 @@ export class NotificationsController {
     const validatedLimit = Math.min(Math.max(1, limitNum), 100); // Max 100 items per page
 
     const filters: any = {};
-    if (isRead !== undefined) {
+    if (isRead !== undefined && isRead !== '' && isRead !== 'undefined') {
       filters.isRead = isRead === 'true';
     }
     if (type) filters.type = type;
-    if (organizationId) filters.organizationId = organizationId;
+    if (
+      organizationId &&
+      organizationId !== 'undefined' &&
+      organizationId !== 'null' &&
+      organizationId.trim() !== ''
+    ) {
+      filters.organizationId = organizationId;
+    }
 
     return this.notificationsService.getUserNotifications(
       user.id,
@@ -102,9 +110,17 @@ export class NotificationsController {
     required: false,
     description: 'Filter by organization',
   })
-  getUnreadCount(@Req() req: Request, @Query('organizationId') organizationId?: string) {
+  async getUnreadCount(@Req() req: Request, @Query('organizationId') organizationId?: string) {
     const user = getAuthUser(req);
-    return this.notificationsService.getUnreadCount(user.id, organizationId);
+    const validOrgId =
+      organizationId &&
+      organizationId !== 'undefined' &&
+      organizationId !== 'null' &&
+      organizationId.trim() !== ''
+        ? organizationId
+        : undefined;
+    const count = await this.notificationsService.getUnreadCount(user.id, validOrgId);
+    return { count };
   }
 
   @Get('unread-by-organization')
@@ -302,6 +318,26 @@ export class NotificationsController {
       validatedLimit,
     );
   }
+  @Get('stats/summary')
+  @ApiOperation({
+    summary: 'Get notification statistics',
+    description: 'Get counts by type, read/unread status, and recent activity',
+  })
+  async getNotificationStats(
+    @Req() req: Request,
+    @Query('organizationId') organizationId?: string,
+  ) {
+    const user = getAuthUser(req);
+    const validOrgId =
+      organizationId &&
+      organizationId !== 'undefined' &&
+      organizationId !== 'null' &&
+      organizationId.trim() !== ''
+        ? organizationId
+        : undefined;
+    return this.notificationsService.getUserNotificationStats(user.id, validOrgId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get notification by ID' })
   async getNotificationById(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
@@ -319,11 +355,20 @@ export class NotificationsController {
   }
 
   @Patch('mark-all-read')
+  @Patch('read-all')
+  @Post('mark-all-read')
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @HttpCode(HttpStatus.OK)
   async markAllAsRead(@Req() req: Request, @Query('organizationId') organizationId?: string) {
     const user = getAuthUser(req);
-    await this.notificationsService.markAllAsRead(user.id, organizationId);
+    const validOrgId =
+      organizationId &&
+      organizationId !== 'undefined' &&
+      organizationId !== 'null' &&
+      organizationId.trim() !== ''
+        ? organizationId
+        : undefined;
+    await this.notificationsService.markAllAsRead(user.id, validOrgId);
     return { message: 'All notifications marked as read' };
   }
 
@@ -335,12 +380,17 @@ export class NotificationsController {
   @HttpCode(HttpStatus.OK)
   async markAllUnreadAsRead(@Req() req: Request, @Query('organizationId') organizationId?: string) {
     const user = getAuthUser(req);
-    const filters: any = { isRead: false };
-    if (organizationId) filters.organizationId = organizationId;
-
-    await this.notificationsService.markAllAsRead(user.id, organizationId);
+    const validOrgId =
+      organizationId &&
+      organizationId !== 'undefined' &&
+      organizationId !== 'null' &&
+      organizationId.trim() !== ''
+        ? organizationId
+        : undefined;
+    await this.notificationsService.markAllAsRead(user.id, validOrgId);
     return { message: 'All unread notifications marked as read' };
   }
+
   @Delete('bulk')
   @ApiOperation({
     summary: 'Delete multiple notifications',
@@ -364,18 +414,5 @@ export class NotificationsController {
   async deleteNotification(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     const user = getAuthUser(req);
     await this.notificationsService.deleteNotification(id, user.id);
-  }
-
-  @Get('stats/summary')
-  @ApiOperation({
-    summary: 'Get notification statistics',
-    description: 'Get counts by type, read/unread status, and recent activity',
-  })
-  async getNotificationStats(
-    @Req() req: Request,
-    @Query('organizationId') organizationId?: string,
-  ) {
-    const user = getAuthUser(req);
-    return this.notificationsService.getUserNotificationStats(user.id, organizationId);
   }
 }

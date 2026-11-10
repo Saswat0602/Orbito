@@ -1,23 +1,25 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
 
 export const ThemeToggle: React.FC = () => {
-    const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
-    return (
-        <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-xl bg-[rgb(var(--color-bg-tertiary))] hover:bg-[rgb(var(--color-primary))] hover:text-white transition-all duration-200 group"
-            aria-label="Toggle theme"
-        >
-            {theme === 'light' ? (
-                <Moon size={18} className="transition-transform group-hover:rotate-12" />
-            ) : (
-                <Sun size={18} className="transition-transform group-hover:rotate-12" />
-            )}
-        </button>
-    );
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="p-2 rounded-md bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
+      aria-label="Toggle theme mode"
+      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {theme === 'light' ? (
+        <Moon className="h-4 w-4" />
+      ) : (
+        <Sun className="h-4 w-4" />
+      )}
+    </button>
+  );
 };
