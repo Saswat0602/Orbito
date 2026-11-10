@@ -73,3 +73,68 @@ export interface TaskDependenciesProps {
   projectId: string;
   canEdit: boolean;
 }
+
+export interface BulkTaskItem {
+  title: string;
+  description?: string;
+  type?: 'TASK' | 'BUG' | 'STORY' | 'EPIC';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  dueDate?: string;
+}
+
+export interface BulkCreateTasksRequest {
+  projectId: string;
+  statusId: string;
+  sprintId?: string;
+  tasks: BulkTaskItem[];
+}
+
+export interface BulkCreateTasksResponse {
+  created: number;
+  failed: number;
+  failures: Array<{
+    index: number;
+    title: string;
+    reason: string;
+  }>;
+}
+
+export interface CreateTaskShareRequest {
+  taskId: string;
+  expiresInDays: number;
+}
+
+export interface TaskShareResponse {
+  id: string;
+  token: string;
+  shareUrl: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface PublicSharedTask {
+  title: string;
+  description?: string;
+  status: {
+    name: string;
+    color: string;
+  };
+  priority: string;
+  dueDate?: string;
+  assignees: Array<{
+    firstName: string;
+    lastName: string;
+  }>;
+  createdBy?: {
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  attachments: Array<{
+    id: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+  }>;
+}
+

@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Layers,
   Clock,
+  Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Task, TaskPriority } from '@orbito/types';
@@ -36,6 +37,7 @@ import { TaskSubtasks } from './TaskSubtasks';
 import { TaskTimeTracking } from './TaskTimeTracking';
 import { TaskAttachments } from './TaskAttachments';
 import { TaskDependencies } from './TaskDependencies';
+import { ShareTaskDialog } from './ShareTaskDialog';
 
 const STATUS_OPTIONS = [
   { value: 'TODO', label: 'To Do' },
@@ -84,6 +86,7 @@ export function TaskDetailDrawer() {
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM' as TaskPriority);
   const [statusCategory, setStatusCategory] = useState('TODO');
   const [commentText, setCommentText] = useState('');
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -208,6 +211,14 @@ export function TaskDetailDrawer() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsShareDialogOpen(true)}
+              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+              title="Share task publicly"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
             {canDelete && (
               <button
                 type="button"
@@ -467,6 +478,15 @@ export function TaskDetailDrawer() {
           </div>
         )}
       </div>
+      {/* Share Task Dialog */}
+      {task && (
+        <ShareTaskDialog
+          isOpen={isShareDialogOpen}
+          onClose={() => setIsShareDialogOpen(false)}
+          taskId={task.id}
+          taskTitle={task.title}
+        />
+      )}
     </div>
   );
 }

@@ -11,13 +11,21 @@ import {
   Filter,
   User,
   Calendar,
+  GanttChartSquare,
+  Upload,
 } from 'lucide-react';
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setTaskDrawerId } from '@/lib/store/slices/uiSlice';
 import { useGetProjectBySlugQuery } from '@/lib/store/api/projectsApi';
 import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
-import { KanbanBoard, CreateTaskModal, TaskCalendarView } from '@/features/tasks';
+import {
+  KanbanBoard,
+  CreateTaskModal,
+  TaskCalendarView,
+  TaskGanttView,
+  CsvImportModal,
+} from '@/features/tasks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -29,11 +37,12 @@ export default function ProjectTasksPage() {
   const { workspaceSlug, projectSlug } = params;
 
   const { can, isMember } = useAuthRbac();
-  const [viewMode, setViewMode] = useState<'board' | 'list' | 'calendar'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'list' | 'calendar' | 'timeline'>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCsvImportOpen, setIsCsvImportOpen] = useState(false);
   const [createCategory, setCreateCategory] = useState('TODO');
 
   // Fetch Project
@@ -177,20 +186,44 @@ export default function ProjectTasksPage() {
             >
               <Calendar className="h-3.5 w-3.5" />
             </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className={`p-1.5 rounded-md transition-colors ${
+                viewMode === 'timeline'
+                  ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+              title="Gantt / Timeline View"
+            >
+              <GanttChartSquare className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* New Task Button */}
+        {/* Action Buttons: Import CSV & New Task */}
         {isMember && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => handleOpenCreateModal('TODO')}
-            className="gap-1.5 text-xs shrink-0 h-8"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>New Task</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCsvImportOpen(true)}
+              className="gap-1.5 text-xs h-8 border-zinc-800 bg-zinc-950/60 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              <span>Import CSV</span>
+            </Button>
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleOpenCreateModal('TODO')}
+              className="gap-1.5 text-xs h-8"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New Task</span>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -267,11 +300,17 @@ export default function ProjectTasksPage() {
               })
             )}
           </div>
-        ) : (
+        ) : viewMode === 'calendar' ? (
           <TaskCalendarView
             tasks={filteredTasks}
             canEdit={isMember}
             onOpenCreateTask={(date) => handleOpenCreateModal('TODO')}
+          />
+        ) : (
+          <TaskGanttView
+            tasks={filteredTasks}
+            canEdit={isMember}
+            onAddTask={() => handleOpenCreateModal('TODO')}
           />
         )}
       </div>
@@ -282,6 +321,13 @@ export default function ProjectTasksPage() {
         onClose={() => setIsCreateModalOpen(false)}
         projectId={project.id}
         defaultCategory={createCategory}
+      />
+
+      {/* CSV Task Importer Modal */}
+      <CsvImportModal
+        isOpen={isCsvImportOpen}
+        onClose={() => setIsCsvImportOpen(false)}
+        projectId={project.id}
       />
     </div>
   );

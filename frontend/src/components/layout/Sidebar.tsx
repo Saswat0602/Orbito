@@ -22,6 +22,7 @@ import {
   Layers,
   ArrowLeft,
   CalendarDays,
+  GanttChartSquare,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
@@ -120,6 +121,7 @@ export function Sidebar() {
     const items = [
       { name: 'Tasks & Board', href: `${baseProjectUrl}/tasks`, icon: ListTodo, exact: false },
       { name: 'Calendar Schedule', href: `${baseProjectUrl}/calendar`, icon: CalendarDays, exact: false },
+      { name: 'Timeline View', href: `${baseProjectUrl}/timeline`, icon: GanttChartSquare, exact: false },
       { name: 'Sprints & Backlog', href: `${baseProjectUrl}/sprints`, icon: Target, exact: false },
     ];
 

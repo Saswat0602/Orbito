@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { useRef } from 'react';
-import { Paperclip, Upload, Download, Trash2, File, FileText, Image as ImageIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Paperclip, Upload, Download, Trash2, File, FileText, Image as ImageIcon, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useGetTaskAttachmentsQuery,
@@ -11,6 +11,7 @@ import {
 } from '@/lib/store/api/tasksApi';
 import type { TaskAttachmentsProps } from '@/types';
 import { Button } from '@/components/ui/button';
+import { AttachmentLightboxModal, LightboxAttachment } from './AttachmentLightboxModal';
 
 function formatBytes(bytes: number, decimals = 1) {
   if (bytes === 0) return '0 B';
@@ -23,6 +24,7 @@ function formatBytes(bytes: number, decimals = 1) {
 
 export const TaskAttachments = React.memo(function TaskAttachments({ taskId, canEdit }: TaskAttachmentsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeLightboxAttachment, setActiveLightboxAttachment] = useState<LightboxAttachment | null>(null);
 
   const { data: attachments = [], isLoading } = useGetTaskAttachmentsQuery(taskId, {
     skip: !taskId,
@@ -109,17 +111,41 @@ export const TaskAttachments = React.memo(function TaskAttachments({ taskId, can
           attachments.map((att) => (
             <div
               key={att.id}
-              className="flex items-center justify-between p-2.5 rounded-md bg-zinc-950/40 hover:bg-zinc-950 border border-zinc-850 group transition-colors text-xs"
+              onClick={() =>
+                setActiveLightboxAttachment({
+                  id: att.id,
+                  fileName: att.fileName,
+                  fileSize: att.fileSize,
+                  mimeType: att.mimeType || 'application/octet-stream',
+                })
+              }
+              className="flex items-center justify-between p-2.5 rounded-md bg-zinc-950/40 hover:bg-zinc-900 border border-zinc-850 group transition-colors text-xs cursor-pointer"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 {getFileIcon(att.mimeType)}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-zinc-200 truncate font-medium">{att.fileName}</span>
+                  <span className="text-xs text-zinc-200 truncate font-medium group-hover:text-white">{att.fileName}</span>
                   <span className="text-[10px] text-zinc-500">{formatBytes(att.fileSize)}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveLightboxAttachment({
+                      id: att.id,
+                      fileName: att.fileName,
+                      fileSize: att.fileSize,
+                      mimeType: att.mimeType || 'application/octet-stream',
+                    })
+                  }
+                  className="p-1 rounded text-zinc-500 hover:text-zinc-200 transition-colors"
+                  title="Preview in Lightbox"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </button>
+
                 <a
                   href={`/api/task-attachments/${att.id}/download`}
                   target="_blank"
@@ -145,6 +171,13 @@ export const TaskAttachments = React.memo(function TaskAttachments({ taskId, can
           ))
         )}
       </div>
+
+      {/* Attachment Lightbox Modal */}
+      <AttachmentLightboxModal
+        isOpen={!!activeLightboxAttachment}
+        onClose={() => setActiveLightboxAttachment(null)}
+        attachment={activeLightboxAttachment}
+      />
     </div>
   );
 });

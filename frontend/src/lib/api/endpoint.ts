@@ -107,6 +107,7 @@ export const ENDPOINTS = {
     grouped: '/tasks/grouped',
     create: '/tasks',
     createWithAttachments: '/tasks/with-attachments',
+    bulkCreate: '/tasks/bulk-create',
     bulkImport: '/tasks/bulk-import',
     bulkStatus: '/tasks/bulk-status',
     bulkDelete: '/tasks/bulk-delete',
@@ -155,6 +156,13 @@ export const ENDPOINTS = {
     create: '/task-dependencies',
     byId: (id: string) => `/task-dependencies/${id}`,
     byTask: (taskId: string) => `/task-dependencies/task/${taskId}`,
+  },
+
+  taskShares: {
+    create: '/task-shares',
+    byTask: (taskId: string) => `/task-shares/task/${taskId}`,
+    revoke: (shareId: string) => `/task-shares/${shareId}`,
+    publicTask: (token: string) => `/public/tasks/${token}`,
   },
 
   taskWatchers: {

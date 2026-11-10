@@ -13,6 +13,11 @@ import type {
   TaskDependenciesResponse,
   TaskDependencyItem,
   CreateTaskDependencyRequest,
+  BulkCreateTasksRequest,
+  BulkCreateTasksResponse,
+  CreateTaskShareRequest,
+  TaskShareResponse,
+  PublicSharedTask,
 } from '@/types';
 import { getSocket } from '../../socket';
 import { ENDPOINTS } from '../../api/endpoint';
@@ -339,6 +344,53 @@ export const tasksApi = apiSlice.injectEndpoints({
         { type: 'Task', id: taskId },
       ],
     }),
+
+    // Bulk Tasks Import
+    bulkCreateTasks: builder.mutation<BulkCreateTasksResponse, BulkCreateTasksRequest>({
+      query: (body) => ({
+        url: ENDPOINTS.tasks.bulkCreate,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    getTaskStatusesByProject: builder.query<
+      Array<{ id: string; name: string; category: string; color: string }>,
+      string
+    >({
+      query: (projectId) => ({
+        url: '/task-statuses/project',
+        params: { projectId },
+      }),
+    }),
+
+    // Public Task Sharing
+    createTaskShare: builder.mutation<TaskShareResponse, CreateTaskShareRequest>({
+      query: (body) => ({
+        url: ENDPOINTS.taskShares.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [{ type: 'TaskShare', id: taskId }],
+    }),
+
+    getTaskShares: builder.query<TaskShareResponse[], string>({
+      query: (taskId) => ENDPOINTS.taskShares.byTask(taskId),
+      providesTags: (_res, _err, taskId) => [{ type: 'TaskShare', id: taskId }],
+    }),
+
+    revokeTaskShare: builder.mutation<{ message: string }, { shareId: string; taskId: string }>({
+      query: ({ shareId }) => ({
+        url: ENDPOINTS.taskShares.revoke(shareId),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [{ type: 'TaskShare', id: taskId }],
+    }),
+
+    getPublicTask: builder.query<PublicSharedTask, string>({
+      query: (token) => ENDPOINTS.taskShares.publicTask(token),
+    }),
   }),
 });
 
@@ -367,4 +419,10 @@ export const {
   useGetTaskDependenciesQuery,
   useCreateTaskDependencyMutation,
   useDeleteTaskDependencyMutation,
+  useBulkCreateTasksMutation,
+  useGetTaskStatusesByProjectQuery,
+  useCreateTaskShareMutation,
+  useGetTaskSharesQuery,
+  useRevokeTaskShareMutation,
+  useGetPublicTaskQuery,
 } = tasksApi;
