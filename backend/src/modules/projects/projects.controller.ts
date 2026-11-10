@@ -93,7 +93,7 @@ export class ProjectsController {
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
   findAll(
     @CurrentUser() user: AuthenticatedUser,
-    @Query('workspaceId', ParseUUIDPipe) workspaceId?: string,
+    @Query('workspaceId') workspaceId?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('search') search?: string,

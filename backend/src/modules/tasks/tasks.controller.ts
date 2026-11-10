@@ -580,11 +580,10 @@ export class TasksController {
     required: false,
     description: 'Group by field',
   })
-  @Scope('ORGANIZATION', 'organizationId')
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
   findAll(
     @CurrentUser() user: User,
-    @Query('organizationId', ParseUUIDPipe) organizationId: string,
+    @Query('organizationId') organizationId?: string,
     @Query('projectId') projectId?: string,
     @Query('sprintId') sprintId?: string,
     @Query('workspaceId') workspaceId?: string,
@@ -692,11 +691,10 @@ export class TasksController {
     required: false,
     description: 'Items per page',
   })
-  @Scope('ORGANIZATION', 'organizationId')
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
   getTasks(
     @CurrentUser() user: User,
-    @Query('organizationId', ParseUUIDPipe) organizationId: string,
+    @Query('organizationId') organizationId?: string,
     @Query('projectId') projectId?: string,
     @Query('sprintId') sprintId?: string,
     @Query('workspaceId') workspaceId?: string,
@@ -778,7 +776,6 @@ export class TasksController {
     required: false,
     description: 'Page within the specified groupKey (1-based, default 1)',
   })
-  @Scope('ORGANIZATION', 'organizationId')
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
   getGroupedTasks(@CurrentUser() user: User, @Query() dto: GetGroupedTasksDto) {
     return this.tasksService.getTasksGrouped(dto, user.id);
@@ -810,10 +807,9 @@ export class TasksController {
   @ApiOperation({
     summary: "Get today's tasks filtered by assignee/reporter and organization",
   })
-  @Scope('ORGANIZATION', 'organizationId')
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
   getTodaysTasks(
-    @Query('organizationId', ParseUUIDPipe) organizationId: string,
+    @Query('organizationId') organizationId: string | undefined,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @CurrentUser() user: User,

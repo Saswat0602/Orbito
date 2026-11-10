@@ -859,11 +859,109 @@ export class TasksService {
   }
 
   /**
+   * Helper to normalize scope identifiers (slugs to UUIDs) and auto-resolve organizationId
+   */
+  private async resolveScopeContext(
+    organizationId: string | undefined,
+    projectId: string[] | undefined,
+    workspaceId: string[] | undefined,
+    userId: string,
+  ): Promise<{
+    organizationId: string;
+    resolvedProjectIds?: string[];
+    resolvedWorkspaceIds?: string[];
+  }> {
+    const isUuid = (val: string) =>
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(val);
+
+    let resolvedProjectIds: string[] | undefined = undefined;
+    if (projectId && projectId.length > 0) {
+      resolvedProjectIds = [];
+      for (const p of projectId) {
+        if (isUuid(p)) {
+          resolvedProjectIds.push(p);
+        } else {
+          const proj = await this.prisma.project.findFirst({
+            where: { slug: p },
+            select: { id: true },
+          });
+          if (proj) resolvedProjectIds.push(proj.id);
+        }
+      }
+    }
+
+    let resolvedWorkspaceIds: string[] | undefined = undefined;
+    if (workspaceId && workspaceId.length > 0) {
+      resolvedWorkspaceIds = [];
+      for (const w of workspaceId) {
+        if (isUuid(w)) {
+          resolvedWorkspaceIds.push(w);
+        } else {
+          const ws = await this.prisma.workspace.findFirst({
+            where: { slug: w },
+            select: { id: true },
+          });
+          if (ws) resolvedWorkspaceIds.push(ws.id);
+        }
+      }
+    }
+
+    let resolvedOrgId = organizationId;
+    if (resolvedOrgId && !isUuid(resolvedOrgId)) {
+      const org = await this.prisma.organization.findFirst({
+        where: { slug: resolvedOrgId },
+        select: { id: true },
+      });
+      if (org) resolvedOrgId = org.id;
+    }
+
+    if (!resolvedOrgId && resolvedProjectIds && resolvedProjectIds.length > 0) {
+      const proj = await this.prisma.project.findFirst({
+        where: { id: { in: resolvedProjectIds } },
+        include: { workspace: true },
+      });
+      if (proj) {
+        resolvedOrgId = proj.workspace.organizationId;
+      }
+    }
+
+    if (!resolvedOrgId && resolvedWorkspaceIds && resolvedWorkspaceIds.length > 0) {
+      const ws = await this.prisma.workspace.findFirst({
+        where: { id: { in: resolvedWorkspaceIds } },
+        select: { organizationId: true },
+      });
+      if (ws) {
+        resolvedOrgId = ws.organizationId;
+      }
+    }
+
+    if (!resolvedOrgId) {
+      const member = await this.prisma.organizationMember.findFirst({
+        where: { userId },
+        select: { organizationId: true },
+      });
+      if (member) {
+        resolvedOrgId = member.organizationId;
+      }
+    }
+
+    if (!resolvedOrgId) {
+      throw new BadRequestException('Organization context could not be determined. Please specify organizationId, workspaceId, or projectId.');
+    }
+
+    return {
+      organizationId: resolvedOrgId,
+      resolvedProjectIds,
+      resolvedWorkspaceIds,
+    };
+  }
+
+  /**
    * bulkUpdateTasksStatus - moved after findAll for logical grouping
    */
 
   async findAll(
-    organizationId: string,
+    organizationId?: string,
     projectId?: string[],
     sprintId?: string,
     workspaceId?: string[],
@@ -898,11 +996,17 @@ export class TasksService {
       throw new ForbiddenException('User context required');
     }
 
-    const access = await this.accessControl.getOrgAccess(organizationId, userId);
+    const {
+      organizationId: resolvedOrgId,
+      resolvedProjectIds,
+      resolvedWorkspaceIds,
+    } = await this.resolveScopeContext(organizationId, projectId, workspaceId, userId);
+
+    const access = await this.accessControl.getOrgAccess(resolvedOrgId, userId);
 
     // Verify organization exists
     const organization = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
+      where: { id: resolvedOrgId },
       select: { id: true },
     });
 
@@ -915,7 +1019,7 @@ export class TasksService {
       // Ensure tasks belong to the organization through project->workspace->organization
       project: {
         workspace: {
-          organizationId: organizationId,
+          organizationId: resolvedOrgId,
         },
       },
     };
@@ -929,18 +1033,18 @@ export class TasksService {
     const andConditions: any[] = [];
 
     // Filter by workspace if provided
-    if (workspaceId && workspaceId.length > 0) {
+    if (resolvedWorkspaceIds && resolvedWorkspaceIds.length > 0) {
       andConditions.push({
         project: {
-          workspaceId: { in: workspaceId },
+          workspaceId: { in: resolvedWorkspaceIds },
         },
       });
     }
 
     // Filter by project if provided
-    if (projectId && projectId.length > 0) {
+    if (resolvedProjectIds && resolvedProjectIds.length > 0) {
       andConditions.push({
-        projectId: { in: projectId },
+        projectId: { in: resolvedProjectIds },
       });
     }
 
@@ -1483,7 +1587,7 @@ export class TasksService {
   }
 
   async getTasks(
-    organizationId: string,
+    organizationId?: string,
     projectId?: string[],
     sprintId?: string,
     workspaceId?: string[],
@@ -1513,11 +1617,17 @@ export class TasksService {
       throw new ForbiddenException('User context required');
     }
 
-    const access = await this.accessControl.getOrgAccess(organizationId, userId);
+    const {
+      organizationId: resolvedOrgId,
+      resolvedProjectIds,
+      resolvedWorkspaceIds,
+    } = await this.resolveScopeContext(organizationId, projectId, workspaceId, userId);
+
+    const access = await this.accessControl.getOrgAccess(resolvedOrgId, userId);
 
     // Verify organization exists
     const organization = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
+      where: { id: resolvedOrgId },
       select: { id: true },
     });
 
@@ -1528,7 +1638,7 @@ export class TasksService {
     // Build base where clause
     const whereClause: any = {
       project: {
-        workspace: { organizationId },
+        workspace: { organizationId: resolvedOrgId },
       },
     };
 
@@ -1539,12 +1649,12 @@ export class TasksService {
 
     const andConditions: any[] = [];
 
-    if (workspaceId?.length) {
-      andConditions.push({ project: { workspaceId: { in: workspaceId } } });
+    if (resolvedWorkspaceIds?.length) {
+      andConditions.push({ project: { workspaceId: { in: resolvedWorkspaceIds } } });
     }
 
-    if (projectId?.length) {
-      andConditions.push({ projectId: { in: projectId } });
+    if (resolvedProjectIds?.length) {
+      andConditions.push({ projectId: { in: resolvedProjectIds } });
     }
 
     if (sprintId) {
@@ -1961,27 +2071,10 @@ export class TasksService {
   }> {
     if (!userId) throw new ForbiddenException('User context required');
 
-    const { organizationId, groupBy, limitPerGroup = 20, groupKey, page = 1 } = dto;
+    const { groupBy, limitPerGroup = 20, groupKey, page = 1 } = dto;
     const parsedLimit = Number(limitPerGroup);
     const parsedPage = Number(page);
 
-    const access = await this.accessControl.getOrgAccess(organizationId, userId);
-
-    const organization = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
-      select: { id: true },
-    });
-    if (!organization) throw new NotFoundException('Organization not found');
-
-    // ── Base where clause (same access-control pattern as findAll) ──────────
-    const baseWhere: any = {
-      project: { workspace: { organizationId } },
-    };
-    if (!access.isSuperAdmin && !access.isElevated) {
-      baseWhere.project.OR = this.accessControl.getProjectVisibilityFilter(userId);
-    }
-
-    const andConditions: any[] = [];
     const parseIds = (csv?: string) =>
       csv
         ? csv
@@ -1990,8 +2083,41 @@ export class TasksService {
             .filter(Boolean)
         : [];
 
-    const workspaceIds = parseIds(dto.workspaceId);
-    const projectIds = parseIds(dto.projectId);
+    const rawWorkspaceIds = parseIds(dto.workspaceId);
+    const rawProjectIds = parseIds(dto.projectId);
+
+    const {
+      organizationId: resolvedOrgId,
+      resolvedProjectIds,
+      resolvedWorkspaceIds,
+    } = await this.resolveScopeContext(
+      dto.organizationId,
+      rawProjectIds.length ? rawProjectIds : undefined,
+      rawWorkspaceIds.length ? rawWorkspaceIds : undefined,
+      userId,
+    );
+    const organizationId = resolvedOrgId;
+
+    const access = await this.accessControl.getOrgAccess(resolvedOrgId, userId);
+
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: resolvedOrgId },
+      select: { id: true },
+    });
+    if (!organization) throw new NotFoundException('Organization not found');
+
+    // ── Base where clause (same access-control pattern as findAll) ──────────
+    const baseWhere: any = {
+      project: { workspace: { organizationId: resolvedOrgId } },
+    };
+    if (!access.isSuperAdmin && !access.isElevated) {
+      baseWhere.project.OR = this.accessControl.getProjectVisibilityFilter(userId);
+    }
+
+    const andConditions: any[] = [];
+
+    const workspaceIds = resolvedWorkspaceIds || [];
+    const projectIds = resolvedProjectIds || [];
     const priorities = parseIds(dto.priorities);
     const statuses = parseIds(dto.statuses);
     const types = parseIds(dto.types);
@@ -3070,7 +3196,7 @@ export class TasksService {
   }
 
   async findTodaysTasks(
-    organizationId: string,
+    organizationId?: string,
     filters: {
       assigneeId?: string;
       reporterId?: string;
@@ -3093,7 +3219,14 @@ export class TasksService {
       throw new ForbiddenException('User context required');
     }
 
-    const access = await this.accessControl.getOrgAccess(organizationId, userId);
+    const { organizationId: resolvedOrgId } = await this.resolveScopeContext(
+      organizationId,
+      undefined,
+      undefined,
+      userId,
+    );
+
+    const access = await this.accessControl.getOrgAccess(resolvedOrgId, userId);
 
     const today = new Date();
     const startOfDay = new Date(today);
@@ -3103,7 +3236,7 @@ export class TasksService {
     endOfDay.setHours(23, 59, 59, 999);
 
     const workspaces = await this.prisma.workspace.findMany({
-      where: { organizationId },
+      where: { organizationId: resolvedOrgId },
       select: { id: true },
     });
 

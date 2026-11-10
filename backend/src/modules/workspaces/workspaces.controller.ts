@@ -72,7 +72,6 @@ export class WorkspacesController {
   @ApiQuery({ name: 'search', required: false, description: 'Search workspaces by name' })
   @ApiResponse({ status: 200, description: 'List of workspaces' })
   @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
-  @Scope('ORGANIZATION', 'organizationId')
   findAll(
     @CurrentUser() user: any,
     @Query('organizationId') organizationId?: string,

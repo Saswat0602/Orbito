@@ -74,24 +74,49 @@ export class RolesGuard implements CanActivate {
     const scopeId = scopeSource[idParam];
     if (!scopeId) throw new ForbiddenException('Scope id missing');
 
-    let resolvedScopeId = scopeId;
+    const isUuid = (val: string) =>
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(val);
+
+    const rawId = typeof scopeId === 'string' && scopeId.includes(',') ? scopeId.split(',')[0].trim() : String(scopeId);
+    let resolvedScopeId = rawId;
     let projectVisibility: string | undefined;
-    if (type === 'PROJECT' && idParam === 'slug') {
-      const project = await this.prisma.project.findUnique({
-        where: { slug: scopeId },
-        select: { id: true, visibility: true },
-      });
-      if (!project) throw new NotFoundException('Project not found');
-      resolvedScopeId = project.id;
-      projectVisibility = project.visibility;
+
+    if (type === 'PROJECT') {
+      if (!isUuid(rawId)) {
+        const project = await this.prisma.project.findFirst({
+          where: { slug: rawId },
+          select: { id: true, visibility: true },
+        });
+        if (!project) throw new NotFoundException('Project not found');
+        resolvedScopeId = project.id;
+        projectVisibility = project.visibility;
+      } else {
+        const project = await this.prisma.project.findUnique({
+          where: { id: rawId },
+          select: { visibility: true },
+        });
+        projectVisibility = project?.visibility;
+      }
     }
-    if (type === 'ORGANIZATION' && idParam === 'slug') {
-      const organization = await this.prisma.organization.findUnique({
-        where: { slug: scopeId },
-        select: { id: true },
-      });
-      if (!organization) throw new NotFoundException('Organization not found');
-      resolvedScopeId = organization.id;
+    if (type === 'WORKSPACE') {
+      if (!isUuid(rawId)) {
+        const workspace = await this.prisma.workspace.findFirst({
+          where: { slug: rawId },
+          select: { id: true },
+        });
+        if (!workspace) throw new NotFoundException('Workspace not found');
+        resolvedScopeId = workspace.id;
+      }
+    }
+    if (type === 'ORGANIZATION') {
+      if (!isUuid(rawId)) {
+        const organization = await this.prisma.organization.findFirst({
+          where: { slug: rawId },
+          select: { id: true },
+        });
+        if (!organization) throw new NotFoundException('Organization not found');
+        resolvedScopeId = organization.id;
+      }
     }
 
     // A PUBLIC project grants READ-ONLY access, and only enough to satisfy a

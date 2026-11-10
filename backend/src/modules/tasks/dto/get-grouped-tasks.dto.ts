@@ -13,12 +13,13 @@ export enum GroupByField {
 }
 
 export class GetGroupedTasksDto {
-  @ApiProperty({
-    description: 'Organization ID (required)',
+  @ApiPropertyOptional({
+    description: 'Organization ID (optional, auto-inferred from project/workspace)',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @IsUUID()
-  organizationId: string;
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 
   @ApiProperty({
     description: 'Field to group tasks by',
