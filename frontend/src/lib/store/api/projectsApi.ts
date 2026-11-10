@@ -4,6 +4,7 @@ import type {
   GanttTask,
   ResourceAllocation,
 } from '@orbito/types';
+import type { ProjectChartDataResponse } from '@/types';
 import { ENDPOINTS } from '../../api/endpoint';
 
 export type {
@@ -86,6 +87,20 @@ export const projectsApi = apiSlice.injectEndpoints({
         { type: 'Project', id: 'LIST' },
       ],
     }),
+
+    getProjectCharts: builder.query<
+      ProjectChartDataResponse,
+      { slug: string; types: string[] }
+    >({
+      query: ({ slug, types }) => {
+        const params = new URLSearchParams();
+        types.forEach((t) => params.append('types', t));
+        return {
+          url: `${ENDPOINTS.projects.charts(slug)}?${params.toString()}`,
+        };
+      },
+      providesTags: (_res, _err, { slug }) => [{ type: 'Project', id: slug }],
+    }),
   }),
 });
 
@@ -99,4 +114,5 @@ export const {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
   useArchiveProjectMutation,
+  useGetProjectChartsQuery,
 } = projectsApi;

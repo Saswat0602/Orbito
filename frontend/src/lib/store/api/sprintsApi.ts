@@ -1,5 +1,6 @@
 import { apiSlice } from './apiSlice';
 import type { Sprint, SprintBurndownPoint } from '@orbito/types';
+import type { SprintBurndownTask } from '@/types';
 import { getSocket } from '../../socket';
 import { ENDPOINTS } from '../../api/endpoint';
 
@@ -117,7 +118,7 @@ export const sprintsApi = apiSlice.injectEndpoints({
     }),
 
     getSprintBurndown: builder.query<
-      SprintBurndownPoint[],
+      SprintBurndownTask[] | SprintBurndownPoint[],
       { projectSlug: string; sprintId: string }
     >({
       query: ({ projectSlug, sprintId }) =>

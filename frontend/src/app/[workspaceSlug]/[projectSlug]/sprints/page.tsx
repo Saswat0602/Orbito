@@ -3,7 +3,15 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Target, Plus } from 'lucide-react';
+import {
+  Target,
+  Plus,
+  TrendingDown,
+  Zap,
+  BarChart2,
+  Layers,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
@@ -12,13 +20,18 @@ import {
   useGetSprintsQuery,
   useCreateSprintMutation,
 } from '@/lib/store/api/sprintsApi';
+import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
 import {
-  SprintCard,
+  SprintPlanningView,
+  SprintBurndownChart,
+  SprintVelocityChart,
+  SprintCapacityBar,
+  ProjectAnalyticsTab,
   StartSprintModal,
   CompleteSprintModal,
 } from '@/features/sprints';
+import { CreateTaskModal } from '@/features/tasks';
 import type { Sprint } from '@orbito/types';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/input';
@@ -28,12 +41,23 @@ export default function ScopedSprintsPage() {
   const params = useParams<{ workspaceSlug: string; projectSlug: string }>();
   const { workspaceSlug, projectSlug } = params;
   const { isManager, isOwner } = useAuthRbac();
+  const canManage = isManager || isOwner;
 
-  const { data: project } = useGetProjectBySlugQuery(projectSlug || '', {
-    skip: !projectSlug,
-  });
+  const [activeTab, setActiveTab] = useState<
+    'planning' | 'burndown' | 'velocity' | 'analytics'
+  >('planning');
 
-  const { data: sprints = [], isLoading } = useGetSprintsQuery(
+  const { data: project, isLoading: isProjectLoading } = useGetProjectBySlugQuery(
+    projectSlug || '',
+    { skip: !projectSlug }
+  );
+
+  const { data: sprints = [], isLoading: isSprintsLoading } = useGetSprintsQuery(
+    project?.id ? { projectId: project.id } : undefined,
+    { skip: !project?.id }
+  );
+
+  const { data: tasks = [] } = useGetTasksQuery(
     project?.id ? { projectId: project.id } : undefined,
     { skip: !project?.id }
   );
@@ -41,10 +65,15 @@ export default function ScopedSprintsPage() {
   const [createSprint, { isLoading: isCreating }] = useCreateSprintMutation();
 
   const [selectedSprint, setSelectedSprint] = useState<Sprint | null>(null);
+  const [burndownSprintId, setBurndownSprintId] = useState<string | undefined>(undefined);
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [newSprintName, setNewSprintName] = useState('');
+  const [newSprintGoal, setNewSprintGoal] = useState('');
+
+  const activeSprint = sprints.find((s) => s.status === 'ACTIVE') || sprints[0];
 
   const handleCreateSprint = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +82,13 @@ export default function ScopedSprintsPage() {
     try {
       await createSprint({
         name: newSprintName.trim(),
+        goal: newSprintGoal.trim() || undefined,
         projectId: project.id,
       }).unwrap();
 
       toast.success('Sprint created successfully');
       setNewSprintName('');
+      setNewSprintGoal('');
       setIsCreateOpen(false);
     } catch {
       toast.error('Failed to create sprint');
@@ -74,60 +105,142 @@ export default function ScopedSprintsPage() {
     setIsCompleteOpen(true);
   };
 
+  const handleSwitchToBurndown = (sprintId: string) => {
+    setBurndownSprintId(sprintId);
+    setActiveTab('burndown');
+  };
+
+  if (isProjectLoading || isSprintsLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
+        Loading agile workspace...
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
+        Project not found.
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-[#09090b]">
+    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-[#09090b]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Target className="h-6 w-6 text-zinc-100" />
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-              {project?.name || 'Project'} Sprints
+            <Target className="h-5 w-5 text-zinc-100" />
+            <h1 className="text-xl font-bold tracking-tight text-zinc-100">
+              {project.name} &mdash; Agile Sprints & Analytics
             </h1>
           </div>
           <p className="text-xs text-zinc-400">
-            Sprint cycles and iterations for project{' '}
-            <span className="font-mono text-zinc-300">{projectSlug}</span>.
+            Sprint planning, backlog management, and real-time velocity metrics.
           </p>
         </div>
 
-        {(isManager || isOwner) && (
+        {canManage && (
           <Button
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
-            className="gap-2 text-xs"
+            className="gap-1.5 text-xs h-8"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             <span>Create Sprint</span>
           </Button>
         )}
       </div>
 
-      {/* Sprints List */}
-      {isLoading ? (
-        <div className="flex h-48 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+      {/* Agile Mode Navigation Tabs */}
+      <div className="flex items-center gap-1.5 bg-zinc-950 border border-zinc-850 p-1 rounded-md w-fit overflow-x-auto max-w-full">
+        <button
+          type="button"
+          onClick={() => setActiveTab('planning')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
+            activeTab === 'planning'
+              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <Layers className="h-3.5 w-3.5" />
+          <span>Planning & Backlog</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('burndown')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
+            activeTab === 'burndown'
+              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <TrendingDown className="h-3.5 w-3.5" />
+          <span>Burndown Trajectory</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('velocity')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
+            activeTab === 'velocity'
+              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          <span>Velocity & Capacity</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('analytics')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
+            activeTab === 'analytics'
+              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <BarChart2 className="h-3.5 w-3.5" />
+          <span>Project Analytics</span>
+        </button>
+      </div>
+
+      {/* Tab Panels */}
+      {activeTab === 'planning' ? (
+        <SprintPlanningView
+          project={project}
+          sprints={sprints}
+          canManage={canManage}
+          onStartSprint={handleStartSprint}
+          onCompleteSprint={handleCompleteSprint}
+          onSwitchToBurndown={handleSwitchToBurndown}
+          onOpenCreateTask={() => setIsCreateTaskOpen(true)}
+        />
+      ) : activeTab === 'burndown' ? (
+        <SprintBurndownChart
+          projectSlug={projectSlug}
+          sprints={sprints}
+          initialSprintId={burndownSprintId}
+        />
+      ) : activeTab === 'velocity' ? (
+        <div className="space-y-8">
+          <SprintVelocityChart projectSlug={projectSlug} />
+          {activeSprint ? (
+            <SprintCapacityBar sprint={activeSprint} tasks={tasks} />
+          ) : (
+            <div className="p-8 border border-zinc-850 rounded bg-zinc-950/40 text-center text-xs text-zinc-500 italic">
+              No active sprint to calculate team capacity.
+            </div>
+          )}
         </div>
-      ) : sprints.length === 0 ? (
-        <Card className="border-zinc-800 bg-zinc-900/60 p-12 text-center">
-          <Target className="h-10 w-10 text-zinc-500 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-zinc-200">No active sprints</h3>
-          <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
-            Create an agile sprint to plan your team&apos;s upcoming commitments.
-          </p>
-        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sprints.map((sprint) => (
-            <SprintCard
-              key={sprint.id}
-              sprint={sprint}
-              onStartSprint={handleStartSprint}
-              onCompleteSprint={handleCompleteSprint}
-            />
-          ))}
-        </div>
+        <ProjectAnalyticsTab projectSlug={projectSlug} />
       )}
 
       {/* Create Sprint Modal */}
@@ -152,13 +265,26 @@ export default function ScopedSprintsPage() {
             />
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="sprint-goal" className="text-xs text-zinc-300">
+              Sprint Goal (Optional)
+            </Label>
+            <Input
+              id="sprint-goal"
+              value={newSprintGoal}
+              onChange={(e) => setNewSprintGoal(e.target.value)}
+              placeholder="e.g. Deliver interactive burndown charts and capacity bars"
+              className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
+            />
+          </div>
+
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsCreateOpen(false)}
-              className="text-xs"
+              className="text-xs h-8"
             >
               Cancel
             </Button>
@@ -167,7 +293,7 @@ export default function ScopedSprintsPage() {
               variant="primary"
               size="sm"
               isLoading={isCreating}
-              className="text-xs gap-1.5"
+              className="text-xs gap-1.5 h-8"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create Sprint</span>
@@ -188,6 +314,14 @@ export default function ScopedSprintsPage() {
         isOpen={isCompleteOpen}
         onClose={() => setIsCompleteOpen(false)}
         sprint={selectedSprint}
+      />
+
+      {/* Create Backlog Task Modal */}
+      <CreateTaskModal
+        isOpen={isCreateTaskOpen}
+        onClose={() => setIsCreateTaskOpen(false)}
+        projectId={project.id}
+        defaultCategory="TODO"
       />
     </div>
   );

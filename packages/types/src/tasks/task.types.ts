@@ -25,6 +25,7 @@ export interface TaskSummary {
   startDate?: string | null;
   estimatedHours?: number | null;
   loggedHours?: number;
+  storyPoints?: number | null;
   parentTaskId?: string | null;
   sprintId?: string | null;
   isArchived?: boolean;
