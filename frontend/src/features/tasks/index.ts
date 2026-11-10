@@ -6,3 +6,5 @@ export * from './components/TaskSubtasks';
 export * from './components/TaskLabels';
 export * from './components/TaskTimeTracking';
 export * from './components/TaskAttachments';
+export * from './components/TaskDependencies';
+export * from './components/TaskCalendarView';

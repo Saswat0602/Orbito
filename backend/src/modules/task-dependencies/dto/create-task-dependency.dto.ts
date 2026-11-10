@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEnum, IsOptional, IsUUID, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DependencyType } from '@prisma/client';
 
 export class CreateTaskDependencyDto {
@@ -31,14 +31,14 @@ export class CreateTaskDependencyDto {
   @IsNotEmpty()
   blockingTaskId: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'ID of the user creating this dependency',
     example: '123e4567-e89b-12d3-a456-426614174002',
     format: 'uuid',
   })
   @IsUUID()
-  @IsNotEmpty()
-  createdBy: string;
+  @IsOptional()
+  createdBy?: string;
 }
 
 export class BulkCreateDependenciesDto {

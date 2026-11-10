@@ -35,6 +35,7 @@ import { TaskLabels } from './TaskLabels';
 import { TaskSubtasks } from './TaskSubtasks';
 import { TaskTimeTracking } from './TaskTimeTracking';
 import { TaskAttachments } from './TaskAttachments';
+import { TaskDependencies } from './TaskDependencies';
 
 const STATUS_OPTIONS = [
   { value: 'TODO', label: 'To Do' },
@@ -360,6 +361,13 @@ export function TaskDetailDrawer() {
 
             {/* Attachments Power Tool */}
             <TaskAttachments taskId={task.id} canEdit={canEdit} />
+
+            {/* Dependencies Power Tool */}
+            <TaskDependencies
+              taskId={task.id}
+              projectId={task.projectId}
+              canEdit={canEdit}
+            />
 
             {/* Comments Timeline */}
             <div className="space-y-3 pt-4 border-t border-zinc-800">

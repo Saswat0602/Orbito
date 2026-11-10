@@ -108,6 +108,7 @@ export const apiSlice = createApi({
     'Label',
     'TimeEntry',
     'Attachment',
+    'TaskDependency',
     'Admin',
     'Queue',
     'Invitation',

@@ -9,6 +9,11 @@ import type {
   Attachment,
   TimeEntry,
 } from '@orbito/types';
+import type {
+  TaskDependenciesResponse,
+  TaskDependencyItem,
+  CreateTaskDependencyRequest,
+} from '@/types';
 import { getSocket } from '../../socket';
 import { ENDPOINTS } from '../../api/endpoint';
 
@@ -303,6 +308,37 @@ export const tasksApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_res, _err, { taskId }) => [{ type: 'Attachment', id: taskId }],
     }),
+
+    // Dependencies
+    getTaskDependencies: builder.query<TaskDependenciesResponse, string>({
+      query: (taskId) => ENDPOINTS.taskDependencies.byTask(taskId),
+      providesTags: (_res, _err, taskId) => [{ type: 'TaskDependency' as const, id: taskId }],
+    }),
+
+    createTaskDependency: builder.mutation<TaskDependencyItem, CreateTaskDependencyRequest>({
+      query: (body) => ({
+        url: ENDPOINTS.taskDependencies.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { dependentTaskId, blockingTaskId }) => [
+        { type: 'TaskDependency', id: dependentTaskId },
+        { type: 'TaskDependency', id: blockingTaskId },
+        { type: 'Task', id: dependentTaskId },
+        { type: 'Task', id: blockingTaskId },
+      ],
+    }),
+
+    deleteTaskDependency: builder.mutation<void, { id: string; taskId: string }>({
+      query: ({ id }) => ({
+        url: ENDPOINTS.taskDependencies.byId(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'TaskDependency', id: taskId },
+        { type: 'Task', id: taskId },
+      ],
+    }),
   }),
 });
 
@@ -328,4 +364,7 @@ export const {
   useGetTaskAttachmentsQuery,
   useUploadTaskAttachmentMutation,
   useDeleteTaskAttachmentMutation,
+  useGetTaskDependenciesQuery,
+  useCreateTaskDependencyMutation,
+  useDeleteTaskDependencyMutation,
 } = tasksApi;

@@ -154,6 +154,7 @@ export const ENDPOINTS = {
     list: '/task-dependencies',
     create: '/task-dependencies',
     byId: (id: string) => `/task-dependencies/${id}`,
+    byTask: (taskId: string) => `/task-dependencies/task/${taskId}`,
   },
 
   taskWatchers: {

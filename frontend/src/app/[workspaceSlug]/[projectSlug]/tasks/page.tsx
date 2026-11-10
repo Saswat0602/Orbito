@@ -17,7 +17,7 @@ import { useAppDispatch } from '@/lib/store/hooks';
 import { setTaskDrawerId } from '@/lib/store/slices/uiSlice';
 import { useGetProjectBySlugQuery } from '@/lib/store/api/projectsApi';
 import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
-import { KanbanBoard, CreateTaskModal } from '@/features/tasks';
+import { KanbanBoard, CreateTaskModal, TaskCalendarView } from '@/features/tasks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ export default function ProjectTasksPage() {
   const { workspaceSlug, projectSlug } = params;
 
   const { can, isMember } = useAuthRbac();
-  const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'list' | 'calendar'>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
@@ -165,6 +165,18 @@ export default function ProjectTasksPage() {
             >
               <List className="h-3.5 w-3.5" />
             </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('calendar')}
+              className={`p-1.5 rounded-md transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+              title="Calendar View"
+            >
+              <Calendar className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
@@ -190,7 +202,7 @@ export default function ProjectTasksPage() {
             projectId={project.id}
             onAddTask={(category) => handleOpenCreateModal(category)}
           />
-        ) : (
+        ) : viewMode === 'list' ? (
           /* List View with Full Click-Through */
           <div className="flex-1 overflow-y-auto border border-zinc-800 rounded-md bg-zinc-950/40 divide-y divide-zinc-850">
             {filteredTasks.length === 0 ? (
@@ -255,6 +267,12 @@ export default function ProjectTasksPage() {
               })
             )}
           </div>
+        ) : (
+          <TaskCalendarView
+            tasks={filteredTasks}
+            canEdit={isMember}
+            onOpenCreateTask={(date) => handleOpenCreateModal('TODO')}
+          />
         )}
       </div>
 

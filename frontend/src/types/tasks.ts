@@ -36,3 +36,40 @@ export interface ActiveTimerResponse {
   startedAt?: string;
   elapsedSeconds?: number;
 }
+
+export interface TaskDependencyItem {
+  id: string;
+  dependentTaskId: string;
+  blockingTaskId: string;
+  type: 'BLOCKS' | 'IS_BLOCKED_BY' | 'RELATES_TO';
+  createdAt: string;
+  blockingTask?: {
+    id: string;
+    title: string;
+    slug?: string;
+    status?: { name: string };
+  };
+  dependentTask?: {
+    id: string;
+    title: string;
+    slug?: string;
+    status?: { name: string };
+  };
+}
+
+export interface TaskDependenciesResponse {
+  dependsOn: TaskDependencyItem[];
+  blocks: TaskDependencyItem[];
+}
+
+export interface CreateTaskDependencyRequest {
+  dependentTaskId: string;
+  blockingTaskId: string;
+  type?: 'BLOCKS' | 'IS_BLOCKED_BY' | 'RELATES_TO';
+}
+
+export interface TaskDependenciesProps {
+  taskId: string;
+  projectId: string;
+  canEdit: boolean;
+}

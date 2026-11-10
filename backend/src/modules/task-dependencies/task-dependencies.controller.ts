@@ -22,6 +22,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { TaskDependenciesService } from './task-dependencies.service';
 import {
   CreateTaskDependencyDto,
@@ -49,7 +50,13 @@ export class TaskDependenciesController {
   })
   @ApiResponse({ status: 404, description: 'Task not found' })
   @ApiResponse({ status: 409, description: 'Dependency already exists' })
-  create(@Body() createTaskDependencyDto: CreateTaskDependencyDto) {
+  create(
+    @CurrentUser() user: any,
+    @Body() createTaskDependencyDto: CreateTaskDependencyDto,
+  ) {
+    if (!createTaskDependencyDto.createdBy && user?.id) {
+      createTaskDependencyDto.createdBy = user.id;
+    }
     return this.taskDependenciesService.create(createTaskDependencyDto);
   }
 
