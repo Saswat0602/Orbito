@@ -12,10 +12,12 @@ import {
   Briefcase,
   Shield,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
-import { useAppSelector } from '@/lib/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
+import { toggleAiChat } from '@/lib/store/slices/uiSlice';
 import { useGetWorkspacesQuery } from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ import { InviteMemberModal } from '@/components/modals/InviteMemberModal';
 
 export function Navbar() {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
   const { user, isManager, isOwner, isSuperAdmin, roleBadge } = useAuthRbac();
   const authState = useAppSelector((state) => state.auth);
 
@@ -147,8 +150,23 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Right Section: Actions (Invite, Notifications, Theme, User) */}
+        {/* Right Section: Actions (Copilot, Invite, Notifications, Theme, User) */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* AI Copilot Quick Trigger */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => dispatch(toggleAiChat())}
+            className="h-8 text-xs border-violet-900/50 bg-violet-950/20 hover:bg-violet-900/40 text-violet-300 font-medium cursor-pointer flex items-center gap-1.5"
+            title="Orbito AI Copilot (⌘J)"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+            <span className="hidden md:inline">Copilot</span>
+            <kbd className="hidden lg:inline-flex items-center text-[10px] font-mono text-violet-400/80 bg-violet-950/60 border border-violet-800/40 px-1 rounded-xs">
+              ⌘J
+            </kbd>
+          </Button>
+
           {/* Mobile search trigger */}
           <button
             type="button"

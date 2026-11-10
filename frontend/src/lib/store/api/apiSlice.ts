@@ -110,6 +110,7 @@ export const apiSlice = createApi({
     'Attachment',
     'TaskDependency',
     'TaskShare',
+    'AiChat',
     'Admin',
     'Queue',
     'Invitation',

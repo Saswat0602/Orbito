@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { TaskPriority } from '@orbito/types';
 import { Modal } from '@/components/ui/Modal';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useCreateTaskMutation } from '@/lib/store/api/tasksApi';
+import { useGenerateDescriptionMutation } from '@/lib/store/api/aiChatApi';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -26,10 +27,27 @@ export function CreateTaskModal({
   defaultCategory = 'TODO',
 }: CreateTaskModalProps) {
   const [createTask, { isLoading }] = useCreateTaskMutation();
+  const [generateDescription, { isLoading: isGeneratingDesc }] = useGenerateDescriptionMutation();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM' as TaskPriority);
+
+  const handleGenerateAiDescription = async () => {
+    if (!title.trim()) {
+      toast.error('Please enter a task title first');
+      return;
+    }
+    try {
+      const result = await generateDescription({ title: title.trim() }).unwrap();
+      if (result.description) {
+        setDescription(result.description);
+        toast.success('Description generated with AI');
+      }
+    } catch {
+      toast.error('Failed to generate description. Ensure AI is enabled in settings.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,9 +111,25 @@ export function CreateTaskModal({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="task-desc" className="text-xs text-zinc-300">
-            Description
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="task-desc" className="text-xs text-zinc-300">
+              Description
+            </Label>
+            <button
+              type="button"
+              onClick={handleGenerateAiDescription}
+              disabled={isGeneratingDesc || !title.trim()}
+              className="flex items-center gap-1 text-[11px] font-medium text-violet-400 hover:text-violet-300 disabled:opacity-40 disabled:hover:text-violet-400 cursor-pointer transition-colors"
+              title="Auto-draft description using AI"
+            >
+              {isGeneratingDesc ? (
+                <Loader2 className="w-3 h-3 animate-spin text-violet-400" />
+              ) : (
+                <Sparkles className="w-3 h-3 text-violet-400" />
+              )}
+              <span>{isGeneratingDesc ? 'Generating...' : 'Generate with AI'}</span>
+            </button>
+          </div>
           <Textarea
             id="task-desc"
             rows={4}

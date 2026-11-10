@@ -11,6 +11,8 @@ import {
   Layers,
   Clock,
   Share2,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Task, TaskPriority } from '@orbito/types';
@@ -26,6 +28,7 @@ import {
   useDeleteTaskCommentMutation,
   useUpdateTaskAssigneesMutation,
 } from '@/lib/store/api/tasksApi';
+import { useGenerateDescriptionMutation } from '@/lib/store/api/aiChatApi';
 import { useGetWorkspaceMembersQuery } from '@/lib/store/api/workspacesApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,6 +83,7 @@ export function TaskDetailDrawer() {
   const [createComment, { isLoading: isPostingComment }] = useCreateTaskCommentMutation();
   const [deleteComment] = useDeleteTaskCommentMutation();
   const [updateAssignees] = useUpdateTaskAssigneesMutation();
+  const [generateDescription, { isLoading: isGeneratingDesc }] = useGenerateDescriptionMutation();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -87,6 +91,28 @@ export function TaskDetailDrawer() {
   const [statusCategory, setStatusCategory] = useState('TODO');
   const [commentText, setCommentText] = useState('');
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  const handleGenerateAiDescription = async () => {
+    if (!task || !canEdit) return;
+    const taskTitle = title.trim() || task.title;
+    if (!taskTitle) {
+      toast.error('Task title is required to generate description');
+      return;
+    }
+    try {
+      const res = await generateDescription({ title: taskTitle }).unwrap();
+      if (res.description) {
+        setDescription(res.description);
+        await updateTask({
+          id: task.id,
+          updates: { description: res.description },
+        }).unwrap();
+        toast.success('Description generated & saved');
+      }
+    } catch {
+      toast.error('Failed to generate description. Ensure AI is enabled in settings.');
+    }
+  };
 
   useEffect(() => {
     if (task) {
@@ -341,7 +367,25 @@ export function TaskDetailDrawer() {
 
             {/* Description */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-zinc-400">Description</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400">Description</span>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={handleGenerateAiDescription}
+                    disabled={isGeneratingDesc}
+                    className="flex items-center gap-1 text-[11px] font-medium text-violet-400 hover:text-violet-300 disabled:opacity-40 disabled:hover:text-violet-400 cursor-pointer transition-colors"
+                    title="Auto-draft description using AI"
+                  >
+                    {isGeneratingDesc ? (
+                      <Loader2 className="w-3 h-3 animate-spin text-violet-400" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 text-violet-400" />
+                    )}
+                    <span>{isGeneratingDesc ? 'Generating...' : 'Generate with AI'}</span>
+                  </button>
+                )}
+              </div>
               <Textarea
                 rows={4}
                 value={description}

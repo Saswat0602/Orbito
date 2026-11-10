@@ -1,56 +1,117 @@
 import { apiSlice } from './apiSlice';
 import { ENDPOINTS } from '../../api/endpoint';
-
-export interface ChatMessage {
-  id?: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp?: string;
-  actions?: Array<{
-    type: string;
-    description: string;
-    payload?: Record<string, unknown>;
-  }>;
-}
-
-export interface SendChatMessageRequest {
-  message: string;
-  conversationId?: string;
-  projectId?: string;
-  context?: Record<string, unknown>;
-}
-
-export interface ChatResponse {
-  reply: string;
-  conversationId: string;
-  actions?: Array<{
-    type: string;
-    description: string;
-    payload?: Record<string, unknown>;
-  }>;
-}
+import type {
+  AiConversation,
+  AiChatMessage,
+  AiChatRequest,
+  AiChatResponse,
+  GenerateDescriptionRequest,
+  GenerateDescriptionResponse,
+  TestAiConnectionRequest,
+  TestAiConnectionResponse,
+} from '@/types';
 
 export const aiChatApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    sendChatMessage: builder.mutation<ChatResponse, SendChatMessageRequest>({
+    getConversations: builder.query<AiConversation[], void>({
+      query: () => ENDPOINTS.aiChat.conversations,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'AiChat' as const, id })),
+              { type: 'AiChat', id: 'LIST' },
+            ]
+          : [{ type: 'AiChat', id: 'LIST' }],
+    }),
+
+    createConversation: builder.mutation<
+      AiConversation,
+      { title?: string; sessionId?: string }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.aiChat.conversations,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'AiChat', id: 'LIST' }],
+    }),
+
+    renameConversation: builder.mutation<
+      AiConversation,
+      { id: string; title: string }
+    >({
+      query: ({ id, title }) => ({
+        url: ENDPOINTS.aiChat.conversationById(id),
+        method: 'PATCH',
+        body: { title },
+      }),
+      invalidatesTags: (_res, _err, { id }) => [
+        { type: 'AiChat', id },
+        { type: 'AiChat', id: 'LIST' },
+      ],
+    }),
+
+    deleteConversation: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: ENDPOINTS.aiChat.conversationById(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'AiChat', id: 'LIST' }],
+    }),
+
+    getMessages: builder.query<AiChatMessage[], string>({
+      query: (conversationId) =>
+        ENDPOINTS.aiChat.conversationMessages(conversationId),
+      providesTags: (_res, _err, id) => [{ type: 'AiChat', id }],
+    }),
+
+    sendChatMessage: builder.mutation<AiChatResponse, AiChatRequest>({
       query: (body) => ({
         url: ENDPOINTS.aiChat.chat,
         method: 'POST',
         body,
       }),
     }),
-    getConversations: builder.query<Array<{ id: string; title: string; createdAt: string }>, void>({
-      query: () => ENDPOINTS.aiChat.conversations,
+
+    generateDescription: builder.mutation<
+      GenerateDescriptionResponse,
+      GenerateDescriptionRequest
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.aiChat.generateDescription,
+        method: 'POST',
+        body,
+      }),
     }),
-    getMessages: builder.query<ChatMessage[], string>({
-      query: (conversationId) => ENDPOINTS.aiChat.conversationMessages(conversationId),
+
+    testAiConnection: builder.mutation<
+      TestAiConnectionResponse,
+      TestAiConnectionRequest
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.aiChat.testConnection,
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    clearAiContext: builder.mutation<{ success: boolean }, string>({
+      query: (sessionId) => ({
+        url: ENDPOINTS.aiChat.clearContext(sessionId),
+        method: 'DELETE',
+      }),
     }),
   }),
 });
 
 export const {
-  useSendChatMessageMutation,
   useGetConversationsQuery,
+  useCreateConversationMutation,
+  useRenameConversationMutation,
+  useDeleteConversationMutation,
   useGetMessagesQuery,
+  useSendChatMessageMutation,
+  useGenerateDescriptionMutation,
+  useTestAiConnectionMutation,
+  useClearAiContextMutation,
 } = aiChatApi;
-

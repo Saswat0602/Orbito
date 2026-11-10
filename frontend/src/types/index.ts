@@ -8,3 +8,4 @@ export * from './notifications';
 export * from './navigation';
 export * from './integrations';
 export * from './analytics';
+export * from './ai';

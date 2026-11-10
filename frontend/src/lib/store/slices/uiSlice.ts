@@ -8,6 +8,7 @@ interface UiState {
   commandMenuOpen: boolean;
   taskDrawerId: string | null;
   theme: 'dark' | 'light';
+  isAiChatOpen: boolean;
 }
 
 const initialState: UiState = {
@@ -16,6 +17,7 @@ const initialState: UiState = {
   commandMenuOpen: false,
   taskDrawerId: null,
   theme: 'dark',
+  isAiChatOpen: false,
 };
 
 export const uiSlice = createSlice({
@@ -40,6 +42,12 @@ export const uiSlice = createSlice({
     setTheme: (state, action: PayloadAction<'dark' | 'light'>) => {
       state.theme = action.payload;
     },
+    setIsAiChatOpen: (state, action: PayloadAction<boolean>) => {
+      state.isAiChatOpen = action.payload;
+    },
+    toggleAiChat: (state) => {
+      state.isAiChatOpen = !state.isAiChatOpen;
+    },
   },
 });
 
@@ -50,6 +58,8 @@ export const {
   setCommandMenuOpen,
   setTaskDrawerId,
   setTheme,
+  setIsAiChatOpen,
+  toggleAiChat,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

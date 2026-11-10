@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Sliders,
   ShieldCheck,
@@ -14,6 +14,10 @@ import {
   Globe,
   ToggleLeft,
   ToggleRight,
+  Sparkles,
+  Bot,
+  Loader2,
+  Cpu,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -25,6 +29,7 @@ import {
   useTestAdminSmtpMutation,
 } from '@/lib/store/api/adminApi';
 import { useGetRegistrationStatusQuery } from '@/lib/store/api/authApi';
+import { useTestAiConnectionMutation } from '@/lib/store/api/aiChatApi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,10 +41,109 @@ export default function AdminSettingsPage() {
 
   const [saveConfig, { isLoading: isSaving }] = useSaveAdminConfigMutation();
   const [testSmtp, { isLoading: isTestingSmtp }] = useTestAdminSmtpMutation();
+  const [testAiConnection, { isLoading: isTestingAi }] = useTestAiConnectionMutation();
+
+  // AI Configuration State
+  const [aiApiUrl, setAiApiUrl] = useState('');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [hasInitializedAi, setHasInitializedAi] = useState(false);
+
+  useEffect(() => {
+    if (configData?.settings && !hasInitializedAi) {
+      const url = configData.settings.find((s) => s.key === 'ai_api_url')?.value || '';
+      const key = configData.settings.find((s) => s.key === 'ai_api_key')?.value || '';
+      const model = configData.settings.find((s) => s.key === 'ai_model')?.value || '';
+      if (url || key || model) {
+        setAiApiUrl(url);
+        setAiApiKey(key);
+        setAiModel(model);
+        setHasInitializedAi(true);
+      }
+    }
+  }, [configData, hasInitializedAi]);
 
   // Find registration setting
   const regSetting = configData?.settings.find((s) => s.key === 'enablePublicRegistration');
   const isPublicRegEnabled = regSetting ? regSetting.value === 'true' : (regStatus?.enabled ?? false);
+
+  // Find AI status
+  const aiEnabledSetting = configData?.settings.find((s) => s.key === 'ai_enabled');
+  const isAiEnabled = aiEnabledSetting ? aiEnabledSetting.value === 'true' : false;
+
+  const handleToggleAi = async () => {
+    const nextVal = (!isAiEnabled).toString();
+    try {
+      await saveConfig({
+        settings: [
+          {
+            key: 'ai_enabled',
+            value: nextVal,
+            category: 'ai',
+            description: 'Enable or disable platform-wide AI Copilot',
+          },
+        ],
+      }).unwrap();
+      toast.success(nextVal === 'true' ? 'AI Copilot is now ENABLED' : 'AI Copilot is now DISABLED');
+    } catch {
+      toast.error('Failed to update AI status');
+    }
+  };
+
+  const handleSaveAiConfig = async () => {
+    try {
+      await saveConfig({
+        settings: [
+          {
+            key: 'ai_api_url',
+            value: aiApiUrl.trim(),
+            category: 'ai',
+            description: 'AI Provider Base URL',
+          },
+          {
+            key: 'ai_api_key',
+            value: aiApiKey.trim(),
+            category: 'ai',
+            description: 'AI Provider API Key',
+          },
+          {
+            key: 'ai_model',
+            value: aiModel.trim(),
+            category: 'ai',
+            description: 'AI Model Identifier',
+          },
+        ],
+      }).unwrap();
+      toast.success('AI Copilot configuration saved successfully');
+    } catch {
+      toast.error('Failed to save AI settings');
+    }
+  };
+
+  const handleTestAiConnection = async () => {
+    if (!aiApiUrl.trim() || !aiModel.trim()) {
+      toast.error('Please specify both API URL and Model name before testing');
+      return;
+    }
+    try {
+      const res = await testAiConnection({
+        apiUrl: aiApiUrl.trim(),
+        apiKey: aiApiKey.trim(),
+        model: aiModel.trim(),
+      }).unwrap();
+
+      if (res.success) {
+        toast.success(res.message || 'AI Provider connection verified successfully!');
+      } else {
+        toast.error(res.error || res.message || 'AI connection test failed');
+      }
+    } catch (err: unknown) {
+      const msg =
+        (err as { data?: { message?: string } })?.data?.message ||
+        'Failed to test AI connection. Check endpoint URL and network access.';
+      toast.error(msg);
+    }
+  };
 
   const handleToggleRegistration = async () => {
     const nextVal = (!isPublicRegEnabled).toString();
@@ -153,6 +257,168 @@ export default function AdminSettingsPage() {
                     ⚠ Public signups are closed. Only users with a direct invite token from an existing workspace or organization can onboard.
                   </p>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Orbito AI Copilot & LLM Service */}
+          <Card className="border-zinc-800 bg-zinc-900/60">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-md bg-violet-950/60 border border-violet-900/60 flex items-center justify-center text-violet-400">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-sm font-semibold text-zinc-100">
+                        Orbito AI Copilot & LLM Provider
+                      </CardTitle>
+                      <Badge variant="outline" className="text-[10px] bg-violet-950/40 border-violet-800/40 text-violet-400">
+                        Generative AI
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-xs text-zinc-400">
+                      Configure autonomous task reasoning, sprint analysis, and description drafting models.
+                    </CardDescription>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleAi}
+                  disabled={isSaving}
+                  className={`h-8 text-xs border-zinc-800 cursor-pointer ${
+                    isAiEnabled
+                      ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80 hover:bg-emerald-900/50'
+                      : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  {isAiEnabled ? (
+                    <>
+                      <ToggleRight className="h-4 w-4 mr-1.5 text-emerald-400" />
+                      AI Copilot: Enabled
+                    </>
+                  ) : (
+                    <>
+                      <ToggleLeft className="h-4 w-4 mr-1.5 text-zinc-500" />
+                      AI Copilot: Disabled
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-0">
+              {/* Provider Quick Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-medium text-zinc-400">Quick Provider Presets</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiApiUrl('https://openrouter.ai/api/v1');
+                      setAiModel('anthropic/claude-3.5-sonnet');
+                    }}
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                  >
+                    OpenRouter (Claude 3.5 Sonnet)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiApiUrl('https://api.openai.com/v1');
+                      setAiModel('gpt-4o-mini');
+                    }}
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                  >
+                    OpenAI (GPT-4o Mini)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiApiUrl('http://localhost:11434');
+                      setAiModel('llama3.2');
+                    }}
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                  >
+                    Ollama Local (llama3.2)
+                  </button>
+                </div>
+              </div>
+
+              {/* Input Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Provider API Endpoint URL
+                  </label>
+                  <Input
+                    value={aiApiUrl}
+                    onChange={(e) => setAiApiUrl(e.target.value)}
+                    placeholder="https://openrouter.ai/api/v1"
+                    className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Model Identifier
+                  </label>
+                  <Input
+                    value={aiModel}
+                    onChange={(e) => setAiModel(e.target.value)}
+                    placeholder="anthropic/claude-3.5-sonnet or gpt-4o"
+                    className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Provider API Key <span className="text-zinc-500">(Optional for Ollama)</span>
+                  </label>
+                  <Input
+                    type="password"
+                    value={aiApiKey}
+                    onChange={(e) => setAiApiKey(e.target.value)}
+                    placeholder="sk-or-... or sk-..."
+                    className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestAiConnection}
+                  disabled={isTestingAi}
+                  className="h-8 text-xs border-zinc-800 bg-zinc-950/60 hover:bg-zinc-850 text-zinc-300 cursor-pointer"
+                >
+                  {isTestingAi ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin text-violet-400" />
+                      Testing Endpoint...
+                    </>
+                  ) : (
+                    <>
+                      <Cpu className="h-3.5 w-3.5 mr-1.5 text-violet-400" />
+                      Test AI Connection
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSaveAiConfig}
+                  disabled={isSaving}
+                  className="h-8 text-xs bg-violet-600 hover:bg-violet-500 text-white cursor-pointer"
+                >
+                  Save AI Configuration
+                </Button>
               </div>
             </CardContent>
           </Card>
