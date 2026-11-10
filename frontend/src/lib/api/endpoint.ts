@@ -128,10 +128,14 @@ export const ENDPOINTS = {
   taskStatuses: {
     list: '/task-statuses',
     create: '/task-statuses',
+    fromProject: '/task-statuses/from-project',
+    byProject: '/task-statuses/project',
+    positions: '/task-statuses/positions',
     byId: (id: string) => `/task-statuses/${id}`,
     byWorkflow: (workflowId: string) =>
       `/task-statuses/workflow/${workflowId}`,
     reorder: '/task-statuses/reorder',
+    restore: (id: string) => `/task-statuses/${id}/restore`,
   },
 
   workflows: {

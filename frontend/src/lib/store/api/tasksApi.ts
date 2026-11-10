@@ -10,6 +10,7 @@ import type {
   TimeEntry,
   TaskRecurrence,
   RecurringTaskConfig,
+  TaskStatus,
 } from '@orbito/types';
 import type {
   TaskDependenciesResponse,
@@ -357,14 +358,94 @@ export const tasksApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Task', id: 'LIST' }],
     }),
 
-    getTaskStatusesByProject: builder.query<
-      Array<{ id: string; name: string; category: string; color: string }>,
-      string
-    >({
+    getTaskStatusesByProject: builder.query<TaskStatus[], string>({
       query: (projectId) => ({
-        url: '/task-statuses/project',
+        url: ENDPOINTS.taskStatuses.byProject,
         params: { projectId },
       }),
+      providesTags: (_result, _err, projectId) => [
+        { type: 'TaskStatus', id: `PROJECT_${projectId}` },
+        { type: 'TaskStatus', id: 'LIST' },
+      ],
+    }),
+
+    createTaskStatus: builder.mutation<
+      TaskStatus,
+      {
+        name: string;
+        color: string;
+        category: string;
+        position?: number;
+        workflowId: string;
+        projectId?: string;
+      }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.taskStatuses.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, arg) => [
+        { type: 'TaskStatus', id: 'LIST' },
+        ...(arg.projectId ? [{ type: 'TaskStatus' as const, id: `PROJECT_${arg.projectId}` }] : []),
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    updateTaskStatus: builder.mutation<
+      TaskStatus,
+      {
+        id: string;
+        updates: Partial<{ name: string; color: string; category: string; position: number }>;
+        projectId?: string;
+      }
+    >({
+      query: ({ id, updates }) => ({
+        url: ENDPOINTS.taskStatuses.byId(id),
+        method: 'PATCH',
+        body: updates,
+      }),
+      invalidatesTags: (_res, _err, arg) => [
+        { type: 'TaskStatus', id: 'LIST' },
+        { type: 'TaskStatus', id: arg.id },
+        ...(arg.projectId ? [{ type: 'TaskStatus' as const, id: `PROJECT_${arg.projectId}` }] : []),
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    updateTaskStatusPositions: builder.mutation<
+      TaskStatus[],
+      {
+        statusUpdates: Array<{ id: string; position: number }>;
+        projectId?: string;
+      }
+    >({
+      query: ({ statusUpdates }) => ({
+        url: ENDPOINTS.taskStatuses.positions,
+        method: 'PATCH',
+        body: { statusUpdates },
+      }),
+      invalidatesTags: (_res, _err, arg) => [
+        { type: 'TaskStatus', id: 'LIST' },
+        ...(arg.projectId ? [{ type: 'TaskStatus' as const, id: `PROJECT_${arg.projectId}` }] : []),
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    deleteTaskStatus: builder.mutation<
+      { success?: boolean; message?: string },
+      { id: string; projectId?: string }
+    >({
+      query: ({ id }) => ({
+        url: ENDPOINTS.taskStatuses.byId(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, arg) => [
+        { type: 'TaskStatus', id: 'LIST' },
+        { type: 'TaskStatus', id: arg.id },
+        ...(arg.projectId ? [{ type: 'TaskStatus' as const, id: `PROJECT_${arg.projectId}` }] : []),
+        { type: 'Task', id: 'LIST' },
+      ],
     }),
 
     // Public Task Sharing
@@ -484,6 +565,10 @@ export const {
   useDeleteTaskDependencyMutation,
   useBulkCreateTasksMutation,
   useGetTaskStatusesByProjectQuery,
+  useCreateTaskStatusMutation,
+  useUpdateTaskStatusMutation,
+  useUpdateTaskStatusPositionsMutation,
+  useDeleteTaskStatusMutation,
   useCreateTaskShareMutation,
   useGetTaskSharesQuery,
   useRevokeTaskShareMutation,

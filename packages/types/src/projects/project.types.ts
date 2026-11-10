@@ -15,6 +15,7 @@ export interface Project extends ProjectSummary {
   status: ProjectStatus;
   priority: ProjectPriority;
   visibility: ProjectVisibility;
+  workflowId?: string | null;
   startDate?: string | null;
   targetDate?: string | null;
   createdAt: string;

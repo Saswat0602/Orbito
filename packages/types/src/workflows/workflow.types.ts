@@ -11,6 +11,9 @@ export interface TaskStatus {
   workflowId?: string;
   createdAt?: string;
   updatedAt?: string;
+  _count?: {
+    tasks: number;
+  };
 }
 
 export interface StatusTransition {

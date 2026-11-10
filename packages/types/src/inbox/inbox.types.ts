@@ -1,3 +1,5 @@
+import type { TaskPriority, TaskType } from '../enums';
+
 export type MessageStatus =
   | 'PENDING'
   | 'PROCESSING'
@@ -43,8 +45,8 @@ export interface ProjectInbox {
   autoReplyEnabled: boolean;
   autoReplyTemplate?: string;
   autoCreateTask: boolean;
-  defaultTaskType: 'TASK' | 'BUG' | 'EPIC' | 'STORY' | 'SUBTASK';
-  defaultPriority: 'LOWEST' | 'LOW' | 'MEDIUM' | 'HIGH' | 'HIGHEST';
+  defaultTaskType: TaskType;
+  defaultPriority: TaskPriority;
   defaultStatusId: string;
   defaultAssigneeId?: string;
   createdAt: string;
@@ -123,8 +125,8 @@ export interface CreateInboxDto {
   autoReplyEnabled?: boolean;
   autoReplyTemplate?: string;
   autoCreateTask?: boolean;
-  defaultTaskType?: 'TASK' | 'BUG' | 'EPIC' | 'STORY' | 'SUBTASK';
-  defaultPriority?: 'LOWEST' | 'LOW' | 'MEDIUM' | 'HIGH' | 'HIGHEST';
+  defaultTaskType?: TaskType;
+  defaultPriority?: TaskPriority;
   defaultStatusId?: string;
   defaultAssigneeId?: string;
 }
@@ -141,12 +143,30 @@ export interface SetupEmailDto {
   imapTlsMinVersion?: string;
   imapServername?: string;
   imapFolder?: string;
-  smtpHost: string;
+  smtpHost?: string;
   smtpPort?: number;
-  smtpUsername: string;
+  smtpUsername?: string;
   smtpPassword?: string;
   smtpTlsRejectUnauth?: boolean;
   smtpTlsMinVersion?: string;
   smtpServername?: string;
   smtpRequireTls?: boolean;
 }
+
+export interface CreateRuleDto {
+  name: string;
+  description?: string;
+  priority?: number;
+  enabled?: boolean;
+  conditions: Record<string, unknown>;
+  actions: Record<string, unknown>;
+  stopOnMatch?: boolean;
+}
+
+export interface MessageFiltersDto {
+  status?: MessageStatus;
+  includeSpam?: boolean;
+  fromEmail?: string;
+  search?: string;
+}
+

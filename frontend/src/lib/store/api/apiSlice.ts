@@ -114,6 +114,8 @@ export const apiSlice = createApi({
     'Admin',
     'Queue',
     'Invitation',
+    'TaskStatus',
+    'Workflow',
   ],
   endpoints: () => ({}),
 });

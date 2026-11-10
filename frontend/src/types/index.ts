@@ -9,3 +9,4 @@ export * from './navigation';
 export * from './integrations';
 export * from './analytics';
 export * from './ai';
+export * from './inbox';

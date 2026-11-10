@@ -8,6 +8,7 @@ import {
   FolderGit2,
   Users,
   Layers,
+  Mail,
   Save,
   Trash2,
   Copy,
@@ -39,6 +40,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getRoleBadgeStyle } from '@/lib/rbac';
+import { WorkflowEditor } from '@/features/projects/components/WorkflowEditor';
+import { ProjectInboxTab } from '@/features/projects/components/ProjectInboxTab';
 
 export default function ProjectSettingsPage() {
   const params = useParams<{ workspaceSlug: string; projectSlug: string }>();
@@ -173,6 +176,10 @@ export default function ProjectSettingsPage() {
           <TabsTrigger value="workflow" className="gap-2 text-xs">
             <Layers className="h-3.5 w-3.5" />
             <span>Workflow & Board</span>
+          </TabsTrigger>
+          <TabsTrigger value="inbox" className="gap-2 text-xs">
+            <Mail className="h-3.5 w-3.5" />
+            <span>Inbound Email & Rules</span>
           </TabsTrigger>
           {(isManager || isOwner || isSuperAdmin) && (
             <TabsTrigger value="danger" className="gap-2 text-xs text-rose-400 data-[state=active]:text-rose-300">
@@ -324,39 +331,21 @@ export default function ProjectSettingsPage() {
         </TabsContent>
 
         {/* Workflow & Board */}
-        <TabsContent value="workflow">
-          <Card className="border-zinc-800 bg-zinc-900/80 max-w-3xl">
-            <CardHeader>
-              <CardTitle className="text-base">Kanban Workflow Pipeline</CardTitle>
-              <CardDescription className="text-xs">
-                Active status columns utilized by the agile board and sprint metrics.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                { name: 'To Do', category: 'TODO', color: 'border-zinc-700 text-zinc-300', desc: 'Planned items and incoming sprint backlog.' },
-                { name: 'In Progress', category: 'IN_PROGRESS', color: 'border-amber-500/60 text-amber-400', desc: 'Active development work in flight.' },
-                { name: 'In Review', category: 'IN_REVIEW', color: 'border-sky-500/60 text-sky-400', desc: 'Pull request reviews and QA testing.' },
-                { name: 'Done', category: 'DONE', color: 'border-emerald-500/60 text-emerald-400', desc: 'Completed and verified deliverables.' },
-              ].map((col) => (
-                <div
-                  key={col.category}
-                  className="flex items-center justify-between p-3.5 rounded-md bg-zinc-950/60 border border-zinc-850"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`h-2.5 w-2.5 rounded-full border ${col.color}`} />
-                    <div>
-                      <h5 className="text-xs font-semibold text-zinc-200">{col.name}</h5>
-                      <p className="text-[11px] text-zinc-500">{col.desc}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] font-mono">
-                    {col.category}
-                  </Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+        <TabsContent value="workflow" className="max-w-3xl">
+          <WorkflowEditor
+            projectId={project.id}
+            workflowId={project.workflowId || undefined}
+            canEdit={isManager || isOwner || isSuperAdmin}
+          />
+        </TabsContent>
+
+        {/* Inbound Email & Rules */}
+        <TabsContent value="inbox" className="max-w-3xl">
+          <ProjectInboxTab
+            projectId={project.id}
+            workspaceMembers={workspaceMembers}
+            canEdit={isManager || isOwner || isSuperAdmin}
+          />
         </TabsContent>
 
         {/* Danger Zone */}
