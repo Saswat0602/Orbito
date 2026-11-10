@@ -20,7 +20,7 @@ interface TaskCardProps {
   isOverlay?: boolean;
 }
 
-export function TaskCard({ task, isOverlay = false }: TaskCardProps) {
+export const TaskCard = React.memo(function TaskCard({ task, isOverlay = false }: TaskCardProps) {
   const dispatch = useAppDispatch();
 
   const {
@@ -154,4 +154,4 @@ export function TaskCard({ task, isOverlay = false }: TaskCardProps) {
       </div>
     </div>
   );
-}
+});

@@ -1,20 +1,24 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Settings,
   User,
-  Building2,
-  Puzzle,
-  Zap,
+  Shield,
+  Palette,
   Save,
+  KeyRound,
   CheckCircle2,
+  AlertTriangle,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
-import { useUpdateProfileMutation } from '@/lib/store/api/usersApi';
+import { useAppSelector } from '@/lib/store/hooks';
+import { useUpdateProfileMutation, useChangePasswordMutation } from '@/lib/store/api/usersApi';
 import {
   Card,
   CardHeader,
@@ -27,23 +31,77 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 
 export default function SettingsPage() {
-  const { user, role, isManager, isOwner, roleBadge } = useAuthRbac();
+  const { user, isManager, isOwner, roleBadge } = useAuthRbac();
+  const activeWorkspaceSlug = useAppSelector((state) => state.auth.activeWorkspaceSlug);
 
+  // Profile Form State
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || '');
 
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  // Password Change Form State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Sync state whenever auth user loads
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || '');
+      setLastName(user.lastName || '');
+      setBio(user.bio || '');
+      setMobileNumber(user.mobileNumber || '');
+    }
+  }, [user]);
+
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateProfile({ firstName, lastName, bio }).unwrap();
-      toast.success('Profile details updated');
+      await updateProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        bio: bio.trim(),
+        mobileNumber: mobileNumber.trim() || undefined,
+      }).unwrap();
+      toast.success('Profile details updated successfully');
     } catch {
-      toast.error('Failed to update profile');
+      toast.error('Failed to update profile details');
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      toast.error('Current password is required');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    try {
+      await changePassword({
+        currentPassword,
+        newPassword,
+      }).unwrap();
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to change password. Please check your current password.');
     }
   };
 
@@ -52,14 +110,14 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Settings className="h-6 w-6 text-zinc-100" />
             <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-              Settings
+              Account Settings
             </h1>
           </div>
           <p className="text-xs text-zinc-400">
-            Manage your personal profile, workspace configurations, and integrations.
+            Manage your personal profile, credentials, and global appearance preferences.
           </p>
         </div>
 
@@ -67,6 +125,14 @@ export default function SettingsPage() {
           <Badge className={`text-xs uppercase ${roleBadge.className}`}>
             {roleBadge.label}
           </Badge>
+          {activeWorkspaceSlug && (
+            <Link href={`/${activeWorkspaceSlug}/settings`}>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs border-zinc-800">
+                <span>Workspace Settings</span>
+                <ExternalLink className="h-3 w-3 text-zinc-500" />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -77,22 +143,14 @@ export default function SettingsPage() {
             <User className="h-3.5 w-3.5" />
             <span>Profile</span>
           </TabsTrigger>
-          {(isManager || isOwner) && (
-            <>
-              <TabsTrigger value="workspace" className="gap-2 text-xs">
-                <Building2 className="h-3.5 w-3.5" />
-                <span>Workspace</span>
-              </TabsTrigger>
-              <TabsTrigger value="integrations" className="gap-2 text-xs">
-                <Puzzle className="h-3.5 w-3.5" />
-                <span>Integrations</span>
-              </TabsTrigger>
-              <TabsTrigger value="automations" className="gap-2 text-xs">
-                <Zap className="h-3.5 w-3.5" />
-                <span>Automations</span>
-              </TabsTrigger>
-            </>
-          )}
+          <TabsTrigger value="security" className="gap-2 text-xs">
+            <Shield className="h-3.5 w-3.5" />
+            <span>Security & Password</span>
+          </TabsTrigger>
+          <TabsTrigger value="preferences" className="gap-2 text-xs">
+            <Palette className="h-3.5 w-3.5" />
+            <span>Appearance</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -101,50 +159,64 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-base">Personal Details</CardTitle>
               <CardDescription className="text-xs">
-                Update how your name and profile appear across projects.
+                Update how your name, avatar, and contact information appear across projects.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleProfileSave} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName" className="text-xs text-zinc-300">First Name</Label>
                     <Input
                       id="firstName"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName" className="text-xs text-zinc-300">Last Name</Label>
                     <Input
                       id="lastName"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email" className="text-xs text-zinc-300">Email Address</Label>
                   <Input
                     id="email"
                     value={user?.email || ''}
                     disabled
-                    className="bg-zinc-950 text-zinc-500 cursor-not-allowed"
+                    className="bg-zinc-950/60 border-zinc-850 text-xs text-zinc-500 cursor-not-allowed"
                   />
                   <p className="text-[11px] text-zinc-500">
-                    Email address is tied to your account identity.
+                    Email address is tied to your account identity and login credentials.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio" className="text-xs text-zinc-300">Professional Bio</Label>
                   <Input
                     id="bio"
-                    placeholder="Staff Software Engineer..."
+                    placeholder="e.g. Full-Stack Lead Engineer"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="mobileNumber" className="text-xs text-zinc-300">Contact Number</Label>
+                  <Input
+                    id="mobileNumber"
+                    placeholder="+1 (555) 000-0000"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
                   />
                 </div>
 
@@ -152,8 +224,8 @@ export default function SettingsPage() {
                   type="submit"
                   variant="primary"
                   size="sm"
-                  isLoading={isUpdating}
-                  className="gap-2 mt-2"
+                  isLoading={isUpdatingProfile}
+                  className="gap-2 mt-2 text-xs"
                 >
                   <Save className="h-3.5 w-3.5" />
                   <span>Save Changes</span>
@@ -163,74 +235,100 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Workspace Tab (Manager/Owner only) */}
-        {(isManager || isOwner) && (
-          <TabsContent value="workspace">
-            <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl">
-              <CardHeader>
-                <CardTitle className="text-base">Workspace Configuration</CardTitle>
-                <CardDescription className="text-xs">
-                  Global parameters, default workflows, and membership boundaries.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-md bg-zinc-850/50 border border-zinc-800 text-xs text-zinc-300">
-                  Workspace preferences are inherited by all child projects and agile boards.
+        {/* Security & Password Tab */}
+        <TabsContent value="security">
+          <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl">
+            <CardHeader>
+              <CardTitle className="text-base">Change Password</CardTitle>
+              <CardDescription className="text-xs">
+                Ensure your account uses a strong, unique password with at least 8 characters.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="currentPassword" className="text-xs text-zinc-300">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
 
-        {/* Integrations Tab */}
-        {(isManager || isOwner) && (
-          <TabsContent value="integrations">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-              <Card className="border-zinc-800 bg-zinc-900/80 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-zinc-200">Jira Sync</h4>
-                  <Badge variant="outline" className="text-[10px]">Ready</Badge>
+                <div className="space-y-1.5">
+                  <Label htmlFor="newPassword" className="text-xs text-zinc-300">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
+                  />
                 </div>
-                <p className="text-xs text-zinc-400">
-                  Bidirectional two-way sync for Jira Cloud and Server issues.
-                </p>
-                <Button variant="secondary" size="sm" className="w-full text-xs">
-                  Configure Jira
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword" className="text-xs text-zinc-300">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs text-zinc-100"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  isLoading={isChangingPassword}
+                  className="gap-2 mt-2 text-xs"
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  <span>Update Password</span>
                 </Button>
-              </Card>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <Card className="border-zinc-800 bg-zinc-900/80 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-zinc-200">Trello Boards</h4>
-                  <Badge variant="outline" className="text-[10px]">Ready</Badge>
+        {/* Appearance Tab */}
+        <TabsContent value="preferences">
+          <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl">
+            <CardHeader>
+              <CardTitle className="text-base">Appearance & Interface</CardTitle>
+              <CardDescription className="text-xs">
+                Customize your visual theme and dashboard display preferences.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 rounded-md bg-zinc-950/60 border border-zinc-850">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-semibold text-zinc-200">Obsidian Monochrome Theme</h4>
+                  <p className="text-[11px] text-zinc-400">
+                    Switch between Deep Obsidian Dark and High-Contrast Light mode.
+                  </p>
                 </div>
-                <p className="text-xs text-zinc-400">
-                  Import Trello cards and sync lists with task status columns.
-                </p>
-                <Button variant="secondary" size="sm" className="w-full text-xs">
-                  Configure Trello
-                </Button>
-              </Card>
-            </div>
-          </TabsContent>
-        )}
+                <ThemeToggle />
+              </div>
 
-        {/* Automations Tab */}
-        {(isManager || isOwner) && (
-          <TabsContent value="automations">
-            <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl p-6 text-center">
-              <Zap className="h-8 w-8 text-zinc-500 mx-auto mb-2" />
-              <h4 className="text-sm font-semibold text-zinc-200">
-                Trigger-Condition-Action Rules
-              </h4>
-              <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
-                Automate task transitions, auto-assignments, and alert dispatches with the backend BullMQ engine.
-              </p>
-            </Card>
-          </TabsContent>
-        )}
+              <div className="p-4 rounded-md bg-zinc-950/60 border border-zinc-850 space-y-2">
+                <h4 className="text-xs font-semibold text-zinc-200">Typography & Geometry</h4>
+                <p className="text-[11px] text-zinc-400">
+                  Orbito enforces crisp 4px border-radii (`rounded-md`), subtle 1px zinc borders, and dense typography optimized for engineering team productivity.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
-

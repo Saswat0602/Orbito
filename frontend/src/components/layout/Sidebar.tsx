@@ -116,11 +116,22 @@ export function Sidebar() {
     if (!activeWorkspaceSlug || !activeProjectSlug) return [];
     const baseProjectUrl = `/${activeWorkspaceSlug}/${activeProjectSlug}`;
 
-    return [
+    const items = [
       { name: 'Tasks & Board', href: `${baseProjectUrl}/tasks`, icon: ListTodo, exact: false },
       { name: 'Sprints & Backlog', href: `${baseProjectUrl}/sprints`, icon: Target, exact: false },
     ];
-  }, [activeWorkspaceSlug, activeProjectSlug]);
+
+    if (isManager || isOwner) {
+      items.push({
+        name: 'Project Settings',
+        href: `${baseProjectUrl}/settings`,
+        icon: Settings,
+        exact: false,
+      });
+    }
+
+    return items;
+  }, [activeWorkspaceSlug, activeProjectSlug, isManager, isOwner]);
 
   const workspaceNavigation = useMemo(() => {
     if (!activeWorkspaceSlug) {
@@ -417,14 +428,14 @@ export function Sidebar() {
         {/* User Profile & Session Footer */}
         <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/50">
           <div className="flex items-center justify-between p-2 rounded-md bg-zinc-900/60 border border-zinc-850">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Avatar className="h-8 w-8 rounded-md border border-zinc-800">
+            <Link href="/settings" className="flex items-center gap-2.5 min-w-0 group cursor-pointer">
+              <Avatar className="h-8 w-8 rounded-md border border-zinc-800 group-hover:border-zinc-700 transition-colors">
                 <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0">
-                <span className="truncate text-xs font-semibold text-zinc-200 leading-tight">
+                <span className="truncate text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors leading-tight">
                   {user?.firstName && user?.lastName
                     ? `${user.firstName} ${user.lastName}`
                     : user?.username || 'User'}
@@ -433,10 +444,19 @@ export function Sidebar() {
                   {roleBadge.label}
                 </span>
               </div>
-            </div>
+            </Link>
 
-            {/* Actions: Sign Out */}
+            {/* Actions: Settings & Sign Out */}
             <div className="flex items-center gap-1 shrink-0">
+              <Link href="/settings">
+                <button
+                  type="button"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Account Settings"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </button>
+              </Link>
               <button
                 type="button"
                 onClick={logout}

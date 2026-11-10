@@ -78,6 +78,25 @@ export const projectsApi = apiSlice.injectEndpoints({
         { type: 'Project', id: 'LIST' },
       ],
     }),
+
+    deleteProject: builder.mutation<void, string>({
+      query: (id) => ({
+        url: ENDPOINTS.projects.byId(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Project', id: 'LIST' }],
+    }),
+
+    archiveProject: builder.mutation<Project, string>({
+      query: (id) => ({
+        url: `/projects/archive/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (_result, _err, id) => [
+        { type: 'Project', id },
+        { type: 'Project', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -89,4 +108,6 @@ export const {
   useGetProjectResourcesQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
+  useDeleteProjectMutation,
+  useArchiveProjectMutation,
 } = projectsApi;

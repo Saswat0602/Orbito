@@ -46,7 +46,7 @@ interface KanbanColumnProps {
   onAddTask?: (columnKey: string) => void;
 }
 
-function KanbanColumn({ id, label, color, tasks, onAddTask }: KanbanColumnProps) {
+const KanbanColumn = React.memo(function KanbanColumn({ id, label, color, tasks, onAddTask }: KanbanColumnProps) {
   const { setNodeRef } = useSortable({
     id,
     data: {
@@ -111,7 +111,7 @@ function KanbanColumn({ id, label, color, tasks, onAddTask }: KanbanColumnProps)
       </SortableContext>
     </div>
   );
-}
+});
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -119,7 +119,7 @@ interface KanbanBoardProps {
   onAddTask?: (columnKey: string) => void;
 }
 
-export function KanbanBoard({ tasks, projectId, onAddTask }: KanbanBoardProps) {
+export const KanbanBoard = React.memo(function KanbanBoard({ tasks, projectId, onAddTask }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const [updateTask] = useUpdateTaskMutation();
@@ -256,5 +256,5 @@ export function KanbanBoard({ tasks, projectId, onAddTask }: KanbanBoardProps) {
       </DragOverlay>
     </DndContext>
   );
-}
+});
 

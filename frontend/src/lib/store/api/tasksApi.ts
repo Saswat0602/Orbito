@@ -167,6 +167,46 @@ export const tasksApi = apiSlice.injectEndpoints({
         { type: 'Task', id: 'LIST' },
       ],
     }),
+
+    getTaskComments: builder.query<TaskComment[], string>({
+      query: (taskId) => ({
+        url: ENDPOINTS.taskComments.list,
+        params: { taskId },
+      }),
+      providesTags: (_res, _err, taskId) => [{ type: 'Comment', id: taskId }],
+    }),
+
+    createTaskComment: builder.mutation<TaskComment, { taskId: string; content: string }>({
+      query: (body) => ({
+        url: ENDPOINTS.taskComments.create,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Comment', id: taskId },
+        { type: 'Task', id: taskId },
+      ],
+    }),
+
+    deleteTaskComment: builder.mutation<void, { id: string; taskId: string }>({
+      query: ({ id }) => ({
+        url: ENDPOINTS.taskComments.byId(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [{ type: 'Comment', id: taskId }],
+    }),
+
+    updateTaskAssignees: builder.mutation<Task, { taskId: string; assigneeIds: string[] }>({
+      query: ({ taskId, assigneeIds }) => ({
+        url: `/tasks/${taskId}/assignees`,
+        method: 'PATCH',
+        body: { assigneeIds },
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -178,4 +218,8 @@ export const {
   useUpdateTaskMutation,
   useReorderTaskMutation,
   useDeleteTaskMutation,
+  useGetTaskCommentsQuery,
+  useCreateTaskCommentMutation,
+  useDeleteTaskCommentMutation,
+  useUpdateTaskAssigneesMutation,
 } = tasksApi;
