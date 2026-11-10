@@ -146,6 +146,28 @@ export class WorkspacesController {
     return this.workspacesService.getWorkspaceTree(organizationId, user.id as string);
   }
 
+  @Get('by-slug/:slug')
+  @ApiOperation({ summary: 'Get workspace by slug' })
+  @ApiParam({ name: 'slug', description: 'Workspace slug' })
+  @ApiResponse({ status: 200, description: 'Workspace details' })
+  @ApiResponse({ status: 404, description: 'Workspace not found' })
+  findBySlugOnly(@Param('slug') slug: string, @CurrentUser() user: any) {
+    return this.workspacesService.findBySlugOnly(slug, user.id as string);
+  }
+
+  @Get(':id/members')
+  @ApiOperation({ summary: 'Get all members for a workspace' })
+  @ApiParam({ name: 'id', description: 'Workspace ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'List of workspace members' })
+  @Scope('WORKSPACE', 'id')
+  @Roles(Role.VIEWER, Role.MEMBER, Role.MANAGER, Role.OWNER)
+  getWorkspaceMembers(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.workspacesService.getWorkspaceMembers(id, user.id as string);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get workspace by ID' })
   @ApiParam({ name: 'id', description: 'Workspace ID (UUID)' })

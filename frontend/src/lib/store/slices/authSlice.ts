@@ -31,6 +31,17 @@ export const authSlice = createSlice({
     ) => {
       state.user = action.payload.user;
       state.isAuthenticated = true;
+      if (typeof window !== 'undefined') {
+        if (action.payload.accessToken) {
+          localStorage.setItem('access_token', action.payload.accessToken);
+          document.cookie = `access_token=${action.payload.accessToken}; Path=/; SameSite=Lax; Max-Age=3600`;
+        }
+        if (action.payload.refreshToken) {
+          localStorage.setItem('refresh_token', action.payload.refreshToken);
+          document.cookie = `refresh_token=${action.payload.refreshToken}; Path=/; SameSite=Lax; Max-Age=604800`;
+        }
+        localStorage.setItem('orbito_user', JSON.stringify(action.payload.user));
+      }
     },
     setActiveOrganization: (state, action: PayloadAction<string | null>) => {
       state.activeOrganizationId = action.payload;
@@ -55,6 +66,13 @@ export const authSlice = createSlice({
       state.activeWorkspaceSlug = null;
       state.activeProjectId = null;
       state.activeProjectSlug = null;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('orbito_user');
+        document.cookie = 'access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie = 'refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      }
     },
   },
 });

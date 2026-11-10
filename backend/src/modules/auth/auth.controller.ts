@@ -219,6 +219,17 @@ export class AuthController {
   getProfile(@CurrentUser() user: any): any {
     return user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({ summary: 'Get current authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user retrieved successfully',
+  })
+  getMe(@CurrentUser() user: any): any {
+    return user;
+  }
   @UseGuards(JwtAuthGuard)
   @Get('access-control')
   @ApiOperation({ summary: 'Get user access for a specific resource' })

@@ -65,6 +65,7 @@ export const workspacesApi = apiSlice.injectEndpoints({
     }),
     getWorkspaceMembers: builder.query<WorkspaceMember[], string>({
       query: (workspaceId) => ENDPOINTS.workspaces.members(workspaceId),
+      transformResponse: (response: any) => (Array.isArray(response) ? response : response?.data || []),
       providesTags: (_result, _error, workspaceId) => [
         { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
       ],

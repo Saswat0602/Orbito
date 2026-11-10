@@ -562,6 +562,120 @@ export class WorkspacesService {
     return workspace;
   }
 
+  async findBySlugOnly(slug: string, userId: string): Promise<Workspace> {
+    const workspace = await this.prisma.workspace.findFirst({
+      where: {
+        slug,
+        archive: false,
+        OR: [
+          { members: { some: { userId } } },
+          { organization: { members: { some: { userId } } } },
+          { organization: { ownerId: userId } },
+        ],
+      },
+      include: {
+        organization: {
+          select: { id: true, name: true, slug: true, avatar: true },
+        },
+        members: userId
+          ? {
+              where: { userId },
+              select: { role: true },
+            }
+          : false,
+        _count: {
+          select: {
+            members: true,
+            projects: userId
+              ? {
+                  where: {
+                    archive: false,
+                    OR: [
+                      { visibility: 'PUBLIC' },
+                      { visibility: 'INTERNAL' },
+                      { members: { some: { userId } } },
+                      {
+                        workspace: {
+                          members: { some: { userId, role: { in: [Role.OWNER, Role.MANAGER] } } },
+                        },
+                      },
+                      { workspace: { organization: { ownerId: userId } } },
+                    ],
+                  },
+                }
+              : true,
+          },
+        },
+      },
+    });
+
+    if (workspace) {
+      return workspace;
+    }
+
+    // SuperAdmin fallback or global lookup
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role === Role.SUPER_ADMIN) {
+      const adminWorkspace = await this.prisma.workspace.findFirst({
+        where: { slug, archive: false },
+        include: {
+          organization: {
+            select: { id: true, name: true, slug: true, avatar: true },
+          },
+          _count: {
+            select: {
+              members: true,
+              projects: true,
+            },
+          },
+        },
+      });
+      if (adminWorkspace) {
+        return adminWorkspace as unknown as Workspace;
+      }
+    }
+
+    throw new NotFoundException(`Workspace '${slug}' not found`);
+  }
+
+  async getWorkspaceMembers(workspaceId: string, userId: string) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { id: true },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException('Workspace not found');
+    }
+
+    const access = await this.accessControl.getWorkspaceAccess(workspaceId, userId);
+    if (!access.isSuperAdmin && !access.role) {
+      throw new ForbiddenException('Not a member of this workspace');
+    }
+
+    return this.prisma.workspaceMember.findMany({
+      where: { workspaceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            avatar: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async findBySlug(organizationId: string, slug: string, userId: string): Promise<Workspace> {
     // Check organization access first
     const workspace = await this.prisma.workspace.findUnique({

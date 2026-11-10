@@ -8,6 +8,15 @@ const mutex = new Mutex();
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: 'include', // Automatically send and receive httpOnly & auth cookies
+  prepareHeaders: (headers) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token && !headers.has('authorization')) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+    }
+    return headers;
+  },
 });
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -47,6 +56,17 @@ export const baseQueryWithReauth: BaseQueryFn<
           );
 
           if (refreshResult.data) {
+            const data = refreshResult.data as { access_token?: string; refresh_token?: string };
+            if (typeof window !== 'undefined') {
+              if (data?.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+                document.cookie = `access_token=${data.access_token}; Path=/; SameSite=Lax; Max-Age=3600`;
+              }
+              if (data?.refresh_token) {
+                localStorage.setItem('refresh_token', data.refresh_token);
+                document.cookie = `refresh_token=${data.refresh_token}; Path=/; SameSite=Lax; Max-Age=604800`;
+              }
+            }
             // Retry the original query now that cookies are refreshed
             result = await baseQuery(args, api, extraOptions);
           } else {

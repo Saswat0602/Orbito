@@ -58,6 +58,8 @@ function LoginForm() {
           dispatch(
             setCredentials({
               user: response.user,
+              accessToken: response.access_token,
+              refreshToken: response.refresh_token,
             })
           );
           toast.success(
@@ -85,6 +87,8 @@ function LoginForm() {
       dispatch(
         setCredentials({
           user: response.user,
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
         })
       );
       toast.success(
