@@ -89,3 +89,4 @@ Before pushing or completing any feature:
 2. `npm run build --workspace=@orbito/frontend`: Verify Next.js Turbopack compiles 0 errors.
 3. Test all API contracts with authenticated curl or automated unit tests.
 4. Verify defensive fallbacks for empty arrays and null states in UI components.
+

@@ -100,3 +100,4 @@ export function ProjectActions() {
    Always check that `organizationId` is a non-empty string and not `'undefined'` before querying Prisma to avoid PostgreSQL syntax errors.
 4. **401 Handling on Public Routes**:
    Ensure public setup status and registration check routes (`/api/auth/setup-status`, `/api/auth/registration-status`) do NOT have `@UseGuards(JwtAuthGuard)`.
+

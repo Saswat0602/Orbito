@@ -132,3 +132,24 @@ Orbito is a multi-tenant, enterprise-grade project and work management platform 
 - **Start Dev Environment**:
   - Backend: `npm run dev --workspace=@orbito/backend` (port 3000)
   - Frontend: `npm run dev --workspace=@orbito/frontend` (port 3001)
+
+---
+
+## 5. Workspace Skills Catalog (`.agents/skills/`)
+
+Autonomous agents operating on Orbito must reference the dedicated runbooks in `.agents/skills/` for specialized workflows:
+
+1. **`orbito-auth-and-rbac`** (`.agents/skills/orbito-auth-and-rbac/SKILL.md`):
+   Dual-token JWT & httpOnly cookie session management, OIDC/SSO flow, rate limiting, and RBAC matrix enforcement.
+2. **`orbito-reusable-components`** (`.agents/skills/orbito-reusable-components/SKILL.md`):
+   Radix UI primitives, Obsidian monochrome design tokens (`#09090b`), 4px radii constraint, and idle/loading/empty/error state composition.
+3. **`orbito-custom-hooks`** (`.agents/skills/orbito-custom-hooks/SKILL.md`):
+   Extracting reusable stateful logic into `frontend/src/lib/hooks/` with strict return contracts, lifecycle hygiene, and zero `any`.
+4. **`orbito-rtk-query-data-flow`** (`.agents/skills/orbito-rtk-query-data-flow/SKILL.md`):
+   API endpoint injection into `apiSlice`, cache tag invalidation (`providesTags`/`invalidatesTags`), defensive `transformResponse`, and optimistic updates.
+5. **`orbito-clean-code-standards`** (`.agents/skills/orbito-clean-code-standards/SKILL.md`):
+   Anti-hallucination protocols, file size limits (max 1,200 lines, 75 lines/function), zero `any`, and strict layer separation.
+6. **`orbito-fullstack-architecture`** (`.agents/skills/orbito-fullstack-architecture/SKILL.md`):
+   End-to-end fullstack orchestration connecting Next.js App Router views, modals, RTK Query endpoints, NestJS services, and Prisma models.
+
+
