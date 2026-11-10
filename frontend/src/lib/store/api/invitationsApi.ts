@@ -21,8 +21,58 @@ export interface InvitationResponse {
   projectId?: string | null;
 }
 
+export interface VerifiedInvitation {
+  id: string;
+  inviteeEmail: string;
+  role: string;
+  token: string;
+  status: string;
+  expiresAt: string;
+  inviter?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    username?: string;
+  };
+  organization?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  workspace?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  project?: {
+    id: string;
+    name: string;
+  };
+}
+
 export const invitationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    verifyInvitation: builder.query<VerifiedInvitation, string>({
+      query: (token) => ENDPOINTS.invitations.verify(token),
+    }),
+
+    acceptInvitation: builder.mutation<{ message: string; workspace?: { slug: string } }, string>({
+      query: (token) => ({
+        url: ENDPOINTS.invitations.accept(token),
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Invitation', 'Workspace', 'Organization', 'Project'],
+    }),
+
+    declineInvitation: builder.mutation<{ message: string }, string>({
+      query: (token) => ({
+        url: ENDPOINTS.invitations.decline(token),
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Invitation'],
+    }),
+
     createInvitation: builder.mutation<InvitationResponse, CreateInvitationRequest>({
       query: (body) => ({
         url: ENDPOINTS.invitations.create,
@@ -69,5 +119,8 @@ export const {
   useGetEntityInvitationsQuery,
   useResendInvitationMutation,
   useDeleteInvitationMutation,
+  useVerifyInvitationQuery,
+  useAcceptInvitationMutation,
+  useDeclineInvitationMutation,
 } = invitationsApi;
 

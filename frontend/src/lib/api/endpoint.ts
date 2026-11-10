@@ -294,7 +294,9 @@ export const ENDPOINTS = {
   invitations: {
     list: '/invitations',
     create: '/invitations',
-    accept: (token: string) => `/invitations/accept/${token}`,
+    verify: (token: string) => `/invitations/verify/${token}`,
+    accept: (token: string) => `/invitations/${token}/accept`,
+    decline: (token: string) => `/invitations/${token}/decline`,
     cancel: (id: string) => `/invitations/${id}`,
   },
 

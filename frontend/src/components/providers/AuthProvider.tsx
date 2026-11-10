@@ -15,6 +15,7 @@ const PUBLIC_ROUTES = [
   '/forgot-password',
   '/reset-password',
   '/public',
+  '/invite',
 ];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const authState = useAppSelector((state) => state.auth);
   const hasRedirectedRef = useRef(false);
+
+  // Fast client-side hydration from localStorage on initial page load / refresh
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !authState.user) {
+      const storedUser = localStorage.getItem('orbito_user');
+      const token = localStorage.getItem('access_token');
+      if (storedUser && token) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          dispatch(setCredentials({ user: parsed, accessToken: token }));
+        } catch {
+          // ignore corrupted local storage
+        }
+      }
+    }
+  }, [dispatch, authState.user]);
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
     pathname?.startsWith(route)

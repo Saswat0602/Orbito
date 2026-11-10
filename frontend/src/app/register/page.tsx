@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, User, AtSign, Eye, EyeOff, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -23,8 +23,11 @@ import {
 } from '@/components/ui';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('inviteToken');
+  const returnUrl = searchParams.get('returnUrl') || (inviteToken ? `/invite/${inviteToken}` : '/');
   const dispatch = useAppDispatch();
 
   const [firstName, setFirstName] = useState('');
@@ -99,7 +102,7 @@ export default function RegisterPage() {
       }
 
       toast.success('Account created successfully!');
-      router.push('/tasks');
+      router.push(returnUrl);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string | string[] }; status?: number };
       const rawMessage = error.data?.message;
@@ -299,5 +302,19 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }

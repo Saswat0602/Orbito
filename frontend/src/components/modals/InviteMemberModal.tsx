@@ -56,7 +56,7 @@ export function InviteMemberModal({
       }).unwrap();
 
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      const generatedLink = `${origin}/register?inviteToken=${res.token}`;
+      const generatedLink = `${origin}/invite/${res.token}`;
       setInviteUrl(generatedLink);
       toast.success(`Invitation generated for ${email}`);
     } catch (err: unknown) {
