@@ -8,6 +8,7 @@ import {
   AlertCircle,
   GripVertical,
   Calendar,
+  Repeat,
 } from 'lucide-react';
 import type { Task, TaskPriority } from '@orbito/types';
 import { Badge } from '@/components/ui/badge';
@@ -96,6 +97,16 @@ export const TaskCard = React.memo(function TaskCard({ task, isOverlay = false }
         </span>
 
         <div className="flex items-center gap-1">
+          {task.isRecurring && (
+            <span
+              title="Recurring task"
+              className="inline-flex items-center gap-0.5 text-[9px] text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-1 py-0.5 rounded-xs font-medium"
+            >
+              <Repeat className="w-2.5 h-2.5" />
+              <span>Repeat</span>
+            </span>
+          )}
+
           <Badge
             variant="outline"
             className={`text-[9px] uppercase font-semibold px-1.5 py-0 border ${getPriorityStyle(

@@ -13,6 +13,9 @@ import {
   Share2,
   Sparkles,
   Loader2,
+  Repeat,
+  History,
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Task, TaskPriority } from '@orbito/types';
@@ -28,6 +31,7 @@ import {
   useDeleteTaskCommentMutation,
   useUpdateTaskAssigneesMutation,
 } from '@/lib/store/api/tasksApi';
+import { useGetTaskActivityLogsQuery } from '@/lib/store/api/activityLogApi';
 import { useGenerateDescriptionMutation } from '@/lib/store/api/aiChatApi';
 import { useGetWorkspaceMembersQuery } from '@/lib/store/api/workspacesApi';
 import { Badge } from '@/components/ui/badge';
@@ -35,11 +39,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DualModeEditor } from '@/components/common/DualModeEditor';
+import ReactMarkdown from 'react-markdown';
 import { TaskLabels } from './TaskLabels';
 import { TaskSubtasks } from './TaskSubtasks';
 import { TaskTimeTracking } from './TaskTimeTracking';
 import { TaskAttachments } from './TaskAttachments';
 import { TaskDependencies } from './TaskDependencies';
+import { TaskRecurrenceSelector } from './TaskRecurrenceSelector';
 import { ShareTaskDialog } from './ShareTaskDialog';
 
 const STATUS_OPTIONS = [
@@ -91,6 +98,13 @@ export function TaskDetailDrawer() {
   const [statusCategory, setStatusCategory] = useState('TODO');
   const [commentText, setCommentText] = useState('');
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [bottomTab, setBottomTab] = useState<'comments' | 'activity'>('comments');
+
+  const { data: activityData, isLoading: isActivityLoading } = useGetTaskActivityLogsQuery(
+    task?.id || '',
+    { skip: !task?.id || bottomTab !== 'activity' }
+  );
+  const activities = activityData?.activities || [];
 
   const handleGenerateAiDescription = async () => {
     if (!task || !canEdit) return;
@@ -295,8 +309,8 @@ export function TaskDetailDrawer() {
               />
             </div>
 
-            {/* Properties Grid: Status, Priority, Assignee */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-md bg-zinc-950/60 border border-zinc-850 text-xs">
+            {/* Properties Grid: Status, Priority, Assignee, Recurrence */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 rounded-md bg-zinc-950/60 border border-zinc-850 text-xs">
               {/* Status */}
               <div className="space-y-1">
                 <span className="text-zinc-500 text-[11px] font-medium flex items-center gap-1">
@@ -363,6 +377,20 @@ export function TaskDetailDrawer() {
                   })}
                 </select>
               </div>
+
+              {/* Recurrence */}
+              <div className="space-y-1">
+                <span className="text-zinc-500 text-[11px] font-medium flex items-center gap-1">
+                  <Repeat className="h-3 w-3 text-cyan-400" />
+                  <span>Repeat</span>
+                </span>
+                <TaskRecurrenceSelector
+                  taskId={task.id}
+                  isRecurring={task.isRecurring}
+                  initialConfig={task.recurringConfig}
+                  canEdit={canEdit}
+                />
+              </div>
             </div>
 
             {/* Description */}
@@ -386,14 +414,14 @@ export function TaskDetailDrawer() {
                   </button>
                 )}
               </div>
-              <Textarea
-                rows={4}
+              <DualModeEditor
                 value={description}
                 disabled={!canEdit}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={setDescription}
                 onBlur={handleSaveTitleAndDesc}
-                placeholder="Add more details, acceptance criteria, or context..."
-                className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200 resize-none disabled:opacity-80"
+                placeholder="Add technical details, acceptance criteria, or context... (Type @ to mention)"
+                workspaceId={activeWorkspaceId || undefined}
+                minRows={4}
               />
             </div>
 
@@ -424,99 +452,191 @@ export function TaskDetailDrawer() {
               canEdit={canEdit}
             />
 
-            {/* Comments Timeline */}
+            {/* Comments & Activity Dual-Tab Pane */}
             <div className="space-y-3 pt-4 border-t border-zinc-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-300">Activity & Comments</span>
-                </div>
-                <span className="text-[10px] font-mono text-zinc-500">{comments.length} comments</span>
-              </div>
-
-              {/* Comments Feed */}
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                {isCommentsLoading ? (
-                  <div className="py-4 text-center text-xs text-zinc-500">Loading discussion...</div>
-                ) : comments.length === 0 ? (
-                  <div className="py-4 text-center text-xs text-zinc-600">
-                    No comments yet. Start the conversation below.
-                  </div>
-                ) : (
-                  comments.map((c) => {
-                    const authorName =
-                      c.author?.firstName && c.author?.lastName
-                        ? `${c.author.firstName} ${c.author.lastName}`
-                        : c.author?.username || 'Team Member';
-                    const initials =
-                      ((c.author?.firstName?.[0] || '') + (c.author?.lastName?.[0] || '')).toUpperCase() || 'U';
-                    const isOwnComment = currentUser?.id === c.authorId;
-
-                    return (
-                      <div
-                        key={c.id}
-                        className="p-3 rounded-md bg-zinc-950/60 border border-zinc-850 space-y-1.5 text-xs"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-5 w-5 rounded-sm border border-zinc-800">
-                              <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
-                                {initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-semibold text-zinc-200 text-xs">{authorName}</span>
-                            <span className="text-[10px] text-zinc-500">
-                              {c.createdAt
-                                ? new Date(c.createdAt).toLocaleDateString(undefined, {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })
-                                : ''}
-                            </span>
-                          </div>
-
-                          {(isOwnComment || canDelete) && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteComment(c.id)}
-                              className="text-zinc-600 hover:text-rose-400 transition-colors p-1"
-                              title="Delete comment"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
-                        </div>
-
-                        <p className="text-zinc-300 text-xs pl-7 whitespace-pre-wrap">{c.content}</p>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Comment Input Box */}
-              {canEdit && (
-                <form onSubmit={handleCommentSubmit} className="flex gap-2 pt-2">
-                  <Input
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Write a comment or update..."
-                    className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    variant="primary"
-                    isLoading={isPostingComment}
-                    disabled={!commentText.trim()}
-                    className="gap-1.5 text-xs shrink-0"
+              <div className="flex items-center justify-between pb-1 border-b border-zinc-850">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setBottomTab('comments')}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-t-sm text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
+                      bottomTab === 'comments'
+                        ? 'border-violet-500 text-zinc-100 bg-zinc-900/60'
+                        : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    }`}
                   >
-                    <Send className="h-3.5 w-3.5" />
-                    <span>Send</span>
-                  </Button>
-                </form>
+                    <MessageSquare className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>Comments</span>
+                    <span className="text-[10px] font-mono px-1 rounded-full bg-zinc-800 text-zinc-400">
+                      {comments.length}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBottomTab('activity')}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-t-sm text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
+                      bottomTab === 'activity'
+                        ? 'border-violet-500 text-zinc-100 bg-zinc-900/60'
+                        : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    }`}
+                  >
+                    <History className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>Activity History</span>
+                    {activities.length > 0 && (
+                      <span className="text-[10px] font-mono px-1 rounded-full bg-zinc-800 text-zinc-400">
+                        {activities.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {bottomTab === 'comments' ? (
+                <>
+                  {/* Comments Feed */}
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    {isCommentsLoading ? (
+                      <div className="py-4 text-center text-xs text-zinc-500">Loading discussion...</div>
+                    ) : comments.length === 0 ? (
+                      <div className="py-4 text-center text-xs text-zinc-600">
+                        No comments yet. Start the conversation below.
+                      </div>
+                    ) : (
+                      comments.map((c) => {
+                        const authorName =
+                          c.author?.firstName && c.author?.lastName
+                            ? `${c.author.firstName} ${c.author.lastName}`
+                            : c.author?.username || 'Team Member';
+                        const initials =
+                          ((c.author?.firstName?.[0] || '') + (c.author?.lastName?.[0] || '')).toUpperCase() || 'U';
+                        const isOwnComment = currentUser?.id === c.authorId;
+
+                        return (
+                          <div
+                            key={c.id}
+                            className="p-3 rounded-md bg-zinc-950/60 border border-zinc-850 space-y-1.5 text-xs"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-5 w-5 rounded-sm border border-zinc-800">
+                                  <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-zinc-200 text-xs">{authorName}</span>
+                                <span className="text-[10px] text-zinc-500">
+                                  {c.createdAt
+                                    ? new Date(c.createdAt).toLocaleDateString(undefined, {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })
+                                    : ''}
+                                </span>
+                              </div>
+
+                              {(isOwnComment || canDelete) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(c.id)}
+                                  className="text-zinc-600 hover:text-rose-400 transition-colors p-1"
+                                  title="Delete comment"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="text-zinc-300 text-xs pl-7 leading-relaxed prose prose-invert prose-xs max-w-none [&_p]:leading-relaxed [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:bg-violet-950/40 [&_code]:border [&_code]:border-violet-800/40 [&_code]:text-violet-300 [&_code]:rounded-xs [&_code]:font-sans [&_code]:font-medium [&_pre]:bg-zinc-950 [&_pre]:p-2 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-zinc-800">
+                              <ReactMarkdown>
+                                {c.content.replace(/@\[([^\]]+)\]/g, '**`@$1`**')}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Comment Input Box */}
+                  {canEdit && (
+                    <form onSubmit={handleCommentSubmit} className="flex gap-2 pt-2">
+                      <Input
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder="Write a comment or update... (Type @ to mention)"
+                        className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        variant="primary"
+                        isLoading={isPostingComment}
+                        disabled={!commentText.trim()}
+                        className="gap-1.5 text-xs shrink-0"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                        <span>Send</span>
+                      </Button>
+                    </form>
+                  )}
+                </>
+              ) : (
+                /* Activity History Feed */
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                  {isActivityLoading ? (
+                    <div className="py-4 text-center text-xs text-zinc-500">Loading activity timeline...</div>
+                  ) : activities.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-zinc-600">
+                      No activity recorded for this task yet.
+                    </div>
+                  ) : (
+                    activities.map((act) => {
+                      const userName = act.user?.firstName
+                        ? `${act.user.firstName} ${act.user.lastName || ''}`.trim()
+                        : 'Team Member';
+                      const initials = act.user?.firstName?.[0]?.toUpperCase() || 'U';
+
+                      return (
+                        <div
+                          key={act.id}
+                          className="p-3 rounded-md bg-zinc-950/60 border border-zinc-850 flex items-start gap-2.5 text-xs"
+                        >
+                          <Avatar className="h-5 w-5 rounded-sm border border-zinc-800 shrink-0 mt-0.5">
+                            <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300 font-bold">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-semibold text-zinc-200 text-xs truncate">
+                                {userName}
+                              </span>
+                              <span className="text-[10px] text-zinc-500 flex items-center gap-1 shrink-0">
+                                <Clock className="w-2.5 h-2.5" />
+                                {new Date(act.createdAt).toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">{act.description}</p>
+                            <div className="pt-0.5">
+                              <Badge variant="outline" className="text-[9px] uppercase font-mono px-1 py-0">
+                                {act.type}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               )}
             </div>
           </div>

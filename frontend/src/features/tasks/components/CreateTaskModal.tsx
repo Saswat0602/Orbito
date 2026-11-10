@@ -4,12 +4,14 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Plus, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { TaskPriority } from '@orbito/types';
+import type { TaskPriority, TaskRecurrence } from '@orbito/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { DualModeEditor } from '@/components/common/DualModeEditor';
+import { TaskRecurrenceSelector } from './TaskRecurrenceSelector';
 import { useCreateTaskMutation } from '@/lib/store/api/tasksApi';
 import { useGenerateDescriptionMutation } from '@/lib/store/api/aiChatApi';
 
@@ -32,6 +34,7 @@ export function CreateTaskModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM' as TaskPriority);
+  const [recurrenceConfig, setRecurrenceConfig] = useState<Partial<TaskRecurrence> | null>(null);
 
   const handleGenerateAiDescription = async () => {
     if (!title.trim()) {
@@ -59,12 +62,15 @@ export function CreateTaskModal({
         description: description.trim() || undefined,
         priority: priority as any,
         projectId,
-      }).unwrap();
+        isRecurring: !!recurrenceConfig,
+        recurringConfig: recurrenceConfig || undefined,
+      } as any).unwrap();
 
       toast.success('Task created successfully');
       setTitle('');
       setDescription('');
       setPriority('MEDIUM' as TaskPriority);
+      setRecurrenceConfig(null);
       onClose();
     } catch {
       toast.error('Failed to create task');
@@ -111,6 +117,14 @@ export function CreateTaskModal({
         </div>
 
         <div className="space-y-1.5">
+          <Label className="text-xs text-zinc-300">Repeat Task</Label>
+          <TaskRecurrenceSelector
+            initialConfig={recurrenceConfig}
+            onChange={setRecurrenceConfig}
+          />
+        </div>
+
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="task-desc" className="text-xs text-zinc-300">
               Description
@@ -130,13 +144,11 @@ export function CreateTaskModal({
               <span>{isGeneratingDesc ? 'Generating...' : 'Generate with AI'}</span>
             </button>
           </div>
-          <Textarea
-            id="task-desc"
-            rows={4}
+          <DualModeEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Technical specifications, requirements, or links..."
-            className="bg-zinc-950 border-zinc-800 text-xs text-zinc-200 resize-none"
+            onChange={setDescription}
+            placeholder="Technical specifications, requirements, or links... (Type @ to mention)"
+            minRows={3}
           />
         </div>
 

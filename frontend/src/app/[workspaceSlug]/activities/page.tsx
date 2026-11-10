@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Activity, Clock } from 'lucide-react';
+import { Activity, Clock, Filter } from 'lucide-react';
 import { useGetActivityLogsQuery } from '@/lib/store/api/activityLogApi';
 import {
   Card,
@@ -18,7 +19,12 @@ export default function WorkspaceActivitiesPage() {
   const params = useParams<{ workspaceSlug: string }>();
   const { workspaceSlug } = params;
 
-  const { data: logs = [], isLoading } = useGetActivityLogsQuery({ limit: 50 });
+  const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'Task' | 'Project' | 'Workspace'>('ALL');
+
+  const { data: logs = [], isLoading } = useGetActivityLogsQuery({
+    limit: 50,
+    entityType: selectedFilter === 'ALL' ? undefined : selectedFilter,
+  });
 
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-[#09090b]">
@@ -36,6 +42,24 @@ export default function WorkspaceActivitiesPage() {
           <p className="text-xs text-zinc-400">
             Real-time audit log of team actions in <span className="font-mono text-zinc-300">{workspaceSlug}</span>.
           </p>
+        </div>
+
+        {/* Entity Type Filter Tabs */}
+        <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-md border border-zinc-800">
+          {(['ALL', 'Task', 'Project', 'Workspace'] as const).map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => setSelectedFilter(filter)}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                selectedFilter === filter
+                  ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              {filter === 'ALL' ? 'All Events' : `${filter}s`}
+            </button>
+          ))}
         </div>
       </div>
 

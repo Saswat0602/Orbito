@@ -12,3 +12,4 @@ export * from './components/TaskGanttView';
 export * from './components/CsvImportModal';
 export * from './components/AttachmentLightboxModal';
 export * from './components/ShareTaskDialog';
+export * from './components/TaskRecurrenceSelector';

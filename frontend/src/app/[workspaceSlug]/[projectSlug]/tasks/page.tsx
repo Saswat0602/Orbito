@@ -13,6 +13,7 @@ import {
   Calendar,
   GanttChartSquare,
   Upload,
+  Repeat,
 } from 'lucide-react';
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useAppDispatch } from '@/lib/store/hooks';
@@ -276,6 +277,16 @@ export default function ProjectTasksPage() {
                             {primaryAssignee.firstName || primaryAssignee.username}
                           </span>
                         </div>
+                      )}
+
+                      {task.isRecurring && (
+                        <span
+                          title="Recurring task"
+                          className="inline-flex items-center gap-1 text-[10px] text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-1.5 py-0.5 rounded-xs font-mono font-medium"
+                        >
+                          <Repeat className="w-2.5 h-2.5" />
+                          <span>Repeat</span>
+                        </span>
                       )}
 
                       <Badge variant="outline" className="text-[10px] uppercase font-mono">

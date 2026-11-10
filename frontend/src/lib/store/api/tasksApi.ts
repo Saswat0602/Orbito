@@ -8,6 +8,8 @@ import type {
   Label,
   Attachment,
   TimeEntry,
+  TaskRecurrence,
+  RecurringTaskConfig,
 } from '@orbito/types';
 import type {
   TaskDependenciesResponse,
@@ -391,6 +393,67 @@ export const tasksApi = apiSlice.injectEndpoints({
     getPublicTask: builder.query<PublicSharedTask, string>({
       query: (token) => ENDPOINTS.taskShares.publicTask(token),
     }),
+
+    // Recurrence Engine
+    getTaskRecurrence: builder.query<TaskRecurrence | null, string>({
+      query: (taskId) => ENDPOINTS.tasks.recurrence(taskId),
+      providesTags: (_res, _err, taskId) => [{ type: 'Task', id: `RECUR_${taskId}` }],
+    }),
+
+    addTaskRecurrence: builder.mutation<
+      TaskRecurrence,
+      { taskId: string; config: Partial<TaskRecurrence> }
+    >({
+      query: ({ taskId, config }) => ({
+        url: ENDPOINTS.tasks.recurrence(taskId),
+        method: 'POST',
+        body: config,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: `RECUR_${taskId}` },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    updateTaskRecurrence: builder.mutation<
+      TaskRecurrence,
+      { taskId: string; config: Partial<TaskRecurrence> }
+    >({
+      query: ({ taskId, config }) => ({
+        url: ENDPOINTS.tasks.recurrence(taskId),
+        method: 'PUT',
+        body: config,
+      }),
+      invalidatesTags: (_res, _err, { taskId }) => [
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: `RECUR_${taskId}` },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    deleteTaskRecurrence: builder.mutation<{ success: boolean }, string>({
+      query: (taskId) => ({
+        url: ENDPOINTS.tasks.recurrence(taskId),
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, taskId) => [
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: `RECUR_${taskId}` },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
+
+    completeTaskOccurrence: builder.mutation<{ success: boolean; nextTask?: Task }, string>({
+      query: (taskId) => ({
+        url: ENDPOINTS.tasks.completeOccurrence(taskId),
+        method: 'POST',
+      }),
+      invalidatesTags: (_res, _err, taskId) => [
+        { type: 'Task', id: taskId },
+        { type: 'Task', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -425,4 +488,9 @@ export const {
   useGetTaskSharesQuery,
   useRevokeTaskShareMutation,
   useGetPublicTaskQuery,
+  useGetTaskRecurrenceQuery,
+  useAddTaskRecurrenceMutation,
+  useUpdateTaskRecurrenceMutation,
+  useDeleteTaskRecurrenceMutation,
+  useCompleteTaskOccurrenceMutation,
 } = tasksApi;

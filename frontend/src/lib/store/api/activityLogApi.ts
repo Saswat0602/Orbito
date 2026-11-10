@@ -14,9 +14,20 @@ export interface ActivityLogItem {
   user?: UserSummary;
 }
 
+export interface TaskActivitiesResponse {
+  activities: ActivityLogItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+
 export const activityLogApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getActivityLogs: builder.query<ActivityLogItem[], { limit?: number; offset?: number } | void>({
+    getActivityLogs: builder.query<ActivityLogItem[], { limit?: number; offset?: number; entityType?: string } | void>({
       query: (params) => ({
         url: ENDPOINTS.activityLog.list,
         params: params || {},
@@ -27,11 +38,28 @@ export const activityLogApi = apiSlice.injectEndpoints({
       query: (projectId) => ENDPOINTS.activityLog.byProject(projectId),
       providesTags: ['ActivityLog'],
     }),
+    getTaskActivityLogs: builder.query<
+      TaskActivitiesResponse,
+      { taskId: string; limit?: number; page?: number } | string
+    >({
+      query: (arg) => {
+        const taskId = typeof arg === 'string' ? arg : arg.taskId;
+        const params = typeof arg === 'string' ? {} : { limit: arg.limit, page: arg.page };
+        return {
+          url: ENDPOINTS.activityLog.taskActivities(taskId),
+          params,
+        };
+      },
+      providesTags: (_res, _err, arg) => [
+        { type: 'ActivityLog', id: typeof arg === 'string' ? arg : arg.taskId },
+      ],
+    }),
   }),
 });
 
 export const {
   useGetActivityLogsQuery,
   useGetProjectActivityLogsQuery,
+  useGetTaskActivityLogsQuery,
 } = activityLogApi;
 

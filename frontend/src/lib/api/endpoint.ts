@@ -113,6 +113,9 @@ export const ENDPOINTS = {
     bulkDelete: '/tasks/bulk-delete',
     byId: (idOrSlug: string) => `/tasks/${idOrSlug}`,
     share: (taskId: string) => `/tasks/${taskId}/share`,
+    recurrence: (taskId: string) => `/tasks/${taskId}/recurrence`,
+    completeOccurrence: (taskId: string) => `/tasks/${taskId}/complete-occurrence`,
+    recurringByProject: (projectId: string) => `/tasks/recurring/project/${projectId}`,
   },
 
   // LexoRank Ranking
@@ -316,6 +319,7 @@ export const ENDPOINTS = {
   activityLog: {
     list: '/activity-log',
     byProject: (projectId: string) => `/activity-log/project/${projectId}`,
+    taskActivities: (taskId: string) => `/activity-logs/task/${taskId}/activities`,
   },
 
   settings: {

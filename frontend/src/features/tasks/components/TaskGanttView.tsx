@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Plus,
   Link2,
+  Repeat,
 } from 'lucide-react';
 import type { Task } from '@orbito/types';
 import { useAppDispatch } from '@/lib/store/hooks';
@@ -242,6 +243,11 @@ export const TaskGanttView: React.FC<TaskGanttViewProps> = ({
                       <span className="font-mono text-[10px] text-zinc-500 shrink-0">
                         {task.slug || 'TASK'}
                       </span>
+                      {task.isRecurring && (
+                        <span title="Recurring task">
+                          <Repeat className="w-2.5 h-2.5 text-cyan-400 shrink-0" />
+                        </span>
+                      )}
                       <span className="text-xs text-zinc-200 truncate group-hover:text-white" title={task.title}>
                         {task.title}
                       </span>

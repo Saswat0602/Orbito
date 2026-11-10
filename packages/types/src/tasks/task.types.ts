@@ -28,6 +28,8 @@ export interface TaskSummary {
   storyPoints?: number | null;
   parentTaskId?: string | null;
   sprintId?: string | null;
+  isRecurring?: boolean;
+  recurringConfig?: TaskRecurrence | null;
   isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -112,19 +114,24 @@ export interface TimeEntry {
 }
 
 export interface TaskRecurrence {
-  id: string;
-  taskId: string;
-  type: RecurrenceType;
+  id?: string;
+  taskId?: string;
+  recurrenceType?: RecurrenceType;
+  type?: RecurrenceType;
   interval: number;
   daysOfWeek?: number[];
   dayOfMonth?: number | null;
   monthOfYear?: number | null;
   endType: RecurrenceEndType;
   endDate?: string | null;
+  occurrenceCount?: number | null;
   occurrencesCount?: number | null;
-  currentOccurrence: number;
+  currentOccurrence?: number;
+  nextOccurrence?: string | null;
   nextOccurrenceDate?: string | null;
 }
+
+export type RecurringTaskConfig = TaskRecurrence;
 
 export interface Task extends TaskSummary {
   description?: string | null;
