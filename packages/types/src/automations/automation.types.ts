@@ -4,14 +4,19 @@ export interface AutomationRule {
   id: string;
   name: string;
   description?: string | null;
-  workspaceId: string;
-  trigger: TriggerType;
-  triggerConfig: Record<string, unknown>;
-  action: ActionType;
-  actionConfig: Record<string, unknown>;
+  organizationId?: string | null;
+  workspaceId?: string | null;
+  projectId?: string | null;
+  trigger?: TriggerType;
+  triggerType: TriggerType;
+  triggerConfig?: Record<string, unknown> | null;
+  action?: ActionType;
+  actionType: ActionType;
+  actionConfig?: Record<string, unknown> | null;
   status: RuleStatus;
-  executionCount: number;
+  executionCount?: number;
   lastRunAt?: string | null;
+  lastExecuted?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,11 +24,15 @@ export interface AutomationRule {
 export interface CreateAutomationRuleDto {
   name: string;
   description?: string;
-  workspaceId: string;
-  trigger: TriggerType;
-  triggerConfig: Record<string, unknown>;
-  action: ActionType;
-  actionConfig: Record<string, unknown>;
+  organizationId?: string;
+  workspaceId?: string;
+  projectId?: string;
+  trigger?: TriggerType;
+  triggerType?: TriggerType;
+  triggerConfig?: Record<string, unknown>;
+  action?: ActionType;
+  actionType?: ActionType;
+  actionConfig?: Record<string, unknown>;
 }
 
 export interface UpdateAutomationRuleDto extends Partial<CreateAutomationRuleDto> {

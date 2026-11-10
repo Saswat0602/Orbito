@@ -53,10 +53,6 @@ export const integrationsApi = apiSlice.injectEndpoints({
       query: (workspaceId) => ENDPOINTS.jiraSync.workspace.status(workspaceId),
       providesTags: ['Integration'],
       transformResponse: (response: JiraWorkspaceStatus) => response,
-      transformErrorResponse: (response: { status: number }) => {
-        if (response.status === 404) return null;
-        return response;
-      },
     }),
 
     connectJiraWorkspace: builder.mutation<
@@ -127,10 +123,6 @@ export const integrationsApi = apiSlice.injectEndpoints({
       query: (workspaceId) => ENDPOINTS.trelloSync.workspace.status(workspaceId),
       providesTags: ['Integration'],
       transformResponse: (response: TrelloWorkspaceStatus) => response,
-      transformErrorResponse: (response: { status: number }) => {
-        if (response.status === 404) return null;
-        return response;
-      },
     }),
 
     connectTrelloWorkspace: builder.mutation<

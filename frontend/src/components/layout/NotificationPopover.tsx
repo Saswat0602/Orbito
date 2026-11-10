@@ -56,16 +56,20 @@ export function NotificationPopover() {
 
   // Safely extract notifications array with zero chance of undefined/object crash
   const notifications: NotificationItem[] = React.useMemo(() => {
+    if (!notificationsData) return [];
     if (Array.isArray(notificationsData)) return notificationsData;
     if (
-      notificationsData &&
       typeof notificationsData === 'object' &&
+      notificationsData !== null &&
+      'notifications' in notificationsData &&
       Array.isArray((notificationsData as { notifications?: NotificationItem[] }).notifications)
     ) {
       return (notificationsData as { notifications: NotificationItem[] }).notifications;
     }
     return [];
   }, [notificationsData]);
+
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
 
   const handleMarkAll = async () => {
     try {
@@ -168,14 +172,14 @@ export function NotificationPopover() {
                 Retry
               </button>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : safeNotifications.length === 0 ? (
             <div className="py-8 text-center space-y-1.5">
               <Inbox className="h-6 w-6 text-zinc-600 mx-auto" />
               <p className="text-xs text-zinc-400 font-medium">All caught up!</p>
               <p className="text-[11px] text-zinc-500">No new alerts or activity.</p>
             </div>
           ) : (
-            notifications.map((item) => {
+            safeNotifications.map((item) => {
               const isItemRead = Boolean(
                 item.isRead ?? (item as unknown as { read?: boolean }).read
               );

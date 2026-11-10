@@ -161,11 +161,11 @@ export function AutomationsTab({
                     {/* Trigger & Action Pipeline Flow */}
                     <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-400">
                       <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700/60 font-mono text-zinc-300">
-                        {rule.triggerType.replace(/_/g, ' ')}
+                        {String(rule.triggerType || rule.trigger || '').replace(/_/g, ' ')}
                       </span>
                       <ArrowRight className="h-3 w-3 text-zinc-600" />
                       <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700/60 font-mono text-zinc-300">
-                        {rule.actionType.replace(/_/g, ' ')}
+                        {String(rule.actionType || rule.action || '').replace(/_/g, ' ')}
                       </span>
                     </div>
                   </div>

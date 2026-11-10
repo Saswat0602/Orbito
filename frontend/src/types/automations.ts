@@ -1,24 +1,6 @@
-import { TriggerType, ActionType, RuleStatus } from '@orbito/types';
+import type { AutomationRule, TriggerType, ActionType, RuleStatus } from '@orbito/types';
 
-export { TriggerType, ActionType, RuleStatus };
-
-export interface AutomationRule {
-  id: string;
-  name: string;
-  description?: string | null;
-  organizationId: string;
-  workspaceId?: string | null;
-  projectId?: string | null;
-  triggerType: TriggerType;
-  triggerConfig?: Record<string, unknown>;
-  actionType: ActionType;
-  actionConfig?: Record<string, unknown>;
-  status: RuleStatus;
-  executionCount?: number;
-  lastTriggeredAt?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { AutomationRule, TriggerType, ActionType, RuleStatus };
 
 export interface CreateAutomationRuleRequest {
   name: string;
@@ -26,8 +8,10 @@ export interface CreateAutomationRuleRequest {
   organizationId?: string;
   workspaceId?: string;
   projectId?: string;
+  trigger?: TriggerType;
   triggerType: TriggerType;
   triggerConfig?: Record<string, unknown>;
+  action?: ActionType;
   actionType: ActionType;
   actionConfig?: Record<string, unknown>;
 }
