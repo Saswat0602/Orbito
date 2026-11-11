@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -221,6 +222,16 @@ export function NotificationPopover() {
               );
             })
           )}
+        </div>
+
+        {/* Footer Link to Dedicated Page */}
+        <div className="p-2 border-t border-zinc-800 bg-zinc-950/60 text-center">
+          <Link
+            href="/notifications"
+            className="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors"
+          >
+            View All Notifications →
+          </Link>
         </div>
       </PopoverContent>
     </Popover>

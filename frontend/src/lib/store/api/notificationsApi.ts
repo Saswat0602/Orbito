@@ -63,6 +63,36 @@ export const notificationsApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Notification'],
     }),
+
+    deleteNotification: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/notifications/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+
+    deleteMultipleNotifications: builder.mutation<void, string[]>({
+      query: (notificationIds) => ({
+        url: '/notifications/bulk',
+        method: 'DELETE',
+        body: { notificationIds },
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+
+    getNotificationStats: builder.query<
+      {
+        total: number;
+        unread: number;
+        byType: Record<string, number>;
+        byPriority: Record<string, number>;
+      },
+      void
+    >({
+      query: () => '/notifications/stats/summary',
+      providesTags: ['Notification'],
+    }),
   }),
 });
 
@@ -71,4 +101,7 @@ export const {
   useGetUnreadCountQuery,
   useMarkAsReadMutation,
   useMarkAllAsReadMutation,
+  useDeleteNotificationMutation,
+  useDeleteMultipleNotificationsMutation,
+  useGetNotificationStatsQuery,
 } = notificationsApi;

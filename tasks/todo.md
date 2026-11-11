@@ -19,11 +19,11 @@
   - [x] Add Role selector dropdown (`Select`) to update member roles with confirmation
   - [x] Create `PendingInvitationsList.tsx` showing active tokens, copy link, resend, and revoke actions
 
-- [ ] **Slice 4: Dedicated Full-Page Notification Center (`/notifications`)**
-  - [ ] Create `frontend/src/app/notifications/page.tsx`
-  - [ ] Create `NotificationCenter.tsx` with category filter tabs (`All`, `Tasks`, `Mentions`, `Status Updates`, `Invitations`)
-  - [ ] Add search input, "Mark All as Read", and "Delete Read" actions
-  - [ ] Connect footer link in `NotificationPopover.tsx` to `/notifications`
+- [x] **Slice 4: Dedicated Full-Page Notification Center (`/notifications`)**
+  - [x] Create `frontend/src/app/notifications/page.tsx`
+  - [x] Create `NotificationCenter.tsx` with category filter tabs (`All`, `Tasks`, `Mentions`, `Status Updates`, `Invitations`)
+  - [x] Add search input, "Mark All as Read", and "Delete Read" actions
+  - [x] Connect footer link in `NotificationPopover.tsx` to `/notifications`
 
 - [ ] **Slice 5: Advanced Tasks Organization & Productivity Tools**
   - [ ] Create `GroupByManager.tsx` (Status, Priority, Assignee, Type, Due Date)
