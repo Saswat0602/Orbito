@@ -13,11 +13,11 @@
   - [x] Create `ProjectHealthIndicator.tsx` circular SVG gauge (0–100%) and throughput heatmap
   - [x] Enhance project cards with health score, active sprint, member avatar stack, and progress bar
 
-- [ ] **Slice 3: Workspace Members & Pending Invitations Management**
-  - [ ] Add dual-tab switcher in `frontend/src/app/[workspaceSlug]/members/page.tsx`: `Active Members` vs `Pending Invitations`
-  - [ ] Add Member search filter with debounce
-  - [ ] Add Role selector dropdown (`Select`) to update member roles with confirmation
-  - [ ] Create `PendingInvitationsList.tsx` showing active tokens, copy link, resend, and revoke actions
+- [x] **Slice 3: Workspace Members & Pending Invitations Management**
+  - [x] Add dual-tab switcher in `frontend/src/app/[workspaceSlug]/members/page.tsx`: `Active Members` vs `Pending Invitations`
+  - [x] Add Member search filter with debounce
+  - [x] Add Role selector dropdown (`Select`) to update member roles with confirmation
+  - [x] Create `PendingInvitationsList.tsx` showing active tokens, copy link, resend, and revoke actions
 
 - [ ] **Slice 4: Dedicated Full-Page Notification Center (`/notifications`)**
   - [ ] Create `frontend/src/app/notifications/page.tsx`

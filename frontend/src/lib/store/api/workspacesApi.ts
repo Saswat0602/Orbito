@@ -93,6 +93,19 @@ export const workspacesApi = apiSlice.injectEndpoints({
         { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
       ],
     }),
+    updateWorkspaceMemberRole: builder.mutation<
+      WorkspaceMember,
+      { workspaceId: string; memberId: string; role: string }
+    >({
+      query: ({ memberId, role }) => ({
+        url: ENDPOINTS.workspaceMembers.byId(memberId),
+        method: 'PATCH',
+        body: { role },
+      }),
+      invalidatesTags: (_result, _error, { workspaceId }) => [
+        { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
+      ],
+    }),
   }),
 });
 
@@ -106,5 +119,6 @@ export const {
   useGetWorkspaceMembersQuery,
   useAddWorkspaceMemberMutation,
   useRemoveWorkspaceMemberMutation,
+  useUpdateWorkspaceMemberRoleMutation,
 } = workspacesApi;
 
