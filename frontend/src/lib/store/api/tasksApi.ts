@@ -549,6 +549,64 @@ export const tasksApi = apiSlice.injectEndpoints({
         { type: 'Task', id: 'LIST' },
       ],
     }),
+
+    // Bulk Task Operations
+    bulkUpdateTasksStatus: builder.mutation<
+      { updatedCount: number; updatedTasks: Task[]; failedTasks: Array<{ id: string; reason: string }> },
+      { taskIds?: string[]; statusId?: string; projectId?: string; all?: boolean; excludedIds?: string[] }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.tasks.bulkStatus,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    bulkAssignTasks: builder.mutation<
+      { assignedCount: number; updatedTasks: Task[]; failedTasks: Array<{ id: string; reason: string }> },
+      { taskIds?: string[]; assigneeIds?: string[]; projectId?: string; all?: boolean; excludedIds?: string[] }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.tasks.bulkAssign,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    bulkDeleteTasks: builder.mutation<
+      { deletedCount: number; failedTasks: Array<{ id: string; reason: string }> },
+      { taskIds?: string[]; projectId?: string; all?: boolean; excludedIds?: string[] }
+    >({
+      query: (body) => ({
+        url: ENDPOINTS.tasks.bulkDelete,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
+
+    // Today's Agenda
+    getTodaysTasks: builder.query<
+      {
+        tasks: Task[];
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalCount: number;
+          hasNextPage: boolean;
+          hasPrevPage: boolean;
+        };
+      },
+      { organizationId?: string; page?: number; limit?: number } | void
+    >({
+      query: (params) => ({
+        url: ENDPOINTS.tasks.today,
+        params: params || undefined,
+      }),
+      providesTags: [{ type: 'Task', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -578,6 +636,10 @@ export const {
   useCreateTaskDependencyMutation,
   useDeleteTaskDependencyMutation,
   useBulkCreateTasksMutation,
+  useBulkUpdateTasksStatusMutation,
+  useBulkAssignTasksMutation,
+  useBulkDeleteTasksMutation,
+  useGetTodaysTasksQuery,
   useGetTaskStatusesByProjectQuery,
   useCreateTaskStatusMutation,
   useUpdateTaskStatusMutation,
