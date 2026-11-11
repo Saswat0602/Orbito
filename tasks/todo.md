@@ -7,11 +7,11 @@
   - [x] Add Metadata Inspector: Type selector, Sprint selector, Story Points selector (Fibonacci), Start Date, Due Date, Reporter
   - [x] Add Task Hierarchy & Subtask Progress Bar (`TaskHierarchy.tsx`)
 
-- [ ] **Slice 2: Workspace Projects Catalog Page Styling**
-  - [ ] Upgrade `frontend/src/app/[workspaceSlug]/projects/page.tsx` with search filter (debounced)
-  - [ ] Add Project Status (`ALL`, `ACTIVE`, `COMPLETED`, `ARCHIVED`) and Priority filter pills
-  - [ ] Create `ProjectHealthIndicator.tsx` circular SVG gauge (0–100%) and throughput heatmap
-  - [ ] Enhance project cards with health score, active sprint, member avatar stack, and progress bar
+- [x] **Slice 2: Workspace Projects Catalog Page Styling**
+  - [x] Upgrade `frontend/src/app/[workspaceSlug]/projects/page.tsx` with search filter (debounced)
+  - [x] Add Project Status (`ALL`, `ACTIVE`, `COMPLETED`, `ARCHIVED`) and Priority filter pills
+  - [x] Create `ProjectHealthIndicator.tsx` circular SVG gauge (0–100%) and throughput heatmap
+  - [x] Enhance project cards with health score, active sprint, member avatar stack, and progress bar
 
 - [ ] **Slice 3: Workspace Members & Pending Invitations Management**
   - [ ] Add dual-tab switcher in `frontend/src/app/[workspaceSlug]/members/page.tsx`: `Active Members` vs `Pending Invitations`
