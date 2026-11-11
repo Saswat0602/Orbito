@@ -11,6 +11,7 @@ import type {
   TaskRecurrence,
   RecurringTaskConfig,
   TaskStatus,
+  TaskType,
 } from '@orbito/types';
 import type {
   TaskDependenciesResponse,
@@ -152,7 +153,20 @@ export const tasksApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Task', id: 'LIST' }],
     }),
 
-    updateTask: builder.mutation<Task, { id: string; updates: Partial<Task> }>({
+    updateTask: builder.mutation<
+      Task,
+      {
+        id: string;
+        updates: Partial<Task> & {
+          reporterIds?: string[];
+          assigneeIds?: string[];
+          type?: TaskType;
+          statusId?: string;
+          parentTaskId?: string | null;
+          stopRecurrence?: boolean;
+        };
+      }
+    >({
       query: ({ id, updates }) => ({
         url: ENDPOINTS.tasks.byId(id),
         method: 'PATCH',
