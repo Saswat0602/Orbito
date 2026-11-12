@@ -25,6 +25,7 @@ interface CsvImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
+  sprintId?: string;
 }
 
 interface ParsedRow {
@@ -38,6 +39,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
   isOpen,
   onClose,
   projectId,
+  sprintId,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
@@ -266,6 +268,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
       const res = await bulkCreateTasks({
         projectId,
         statusId: selectedStatusId,
+        sprintId: sprintId || undefined,
         tasks: validTasks,
       }).unwrap();
 

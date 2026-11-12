@@ -1,6 +1,7 @@
 import { apiSlice } from './apiSlice';
 import type {
   Project,
+  ProjectMember,
   GanttTask,
   ResourceAllocation,
 } from '@orbito/types';
@@ -101,6 +102,67 @@ export const projectsApi = apiSlice.injectEndpoints({
       },
       providesTags: (_res, _err, { slug }) => [{ type: 'Project', id: slug }],
     }),
+
+    getProjectMembers: builder.query<
+      ProjectMember[],
+      { projectId: string; search?: string }
+    >({
+      query: ({ projectId, search }) => {
+        const params = new URLSearchParams();
+        params.append('projectId', projectId);
+        if (search) params.append('search', search);
+        return {
+          url: `/project-members?${params.toString()}`,
+        };
+      },
+      transformResponse: (response: { data: ProjectMember[] } | ProjectMember[]) => {
+        return Array.isArray(response) ? response : response.data || [];
+      },
+      providesTags: (_result, _err, { projectId }) => [
+        { type: 'Project', id: `MEMBERS_${projectId}` },
+      ],
+    }),
+
+    inviteProjectMember: builder.mutation<
+      void,
+      { projectId: string; email: string; role?: string }
+    >({
+      query: (body) => ({
+        url: '/project-members/invite',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _err, { projectId }) => [
+        { type: 'Project', id: `MEMBERS_${projectId}` },
+      ],
+    }),
+
+    updateProjectMemberRole: builder.mutation<
+      ProjectMember,
+      { id: string; role: string; projectId: string }
+    >({
+      query: ({ id, role }) => ({
+        url: `/project-members/${id}`,
+        method: 'PATCH',
+        body: { role },
+      }),
+      invalidatesTags: (_result, _err, { projectId }) => [
+        { type: 'Project', id: `MEMBERS_${projectId}` },
+      ],
+    }),
+
+    removeProjectMember: builder.mutation<
+      void,
+      { id: string; projectId: string }
+    >({
+      query: ({ id }) => ({
+        url: `/project-members/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _err, { projectId }) => [
+        { type: 'Project', id: `MEMBERS_${projectId}` },
+      ],
+    }),
   }),
 });
 
@@ -115,4 +177,8 @@ export const {
   useDeleteProjectMutation,
   useArchiveProjectMutation,
   useGetProjectChartsQuery,
+  useGetProjectMembersQuery,
+  useInviteProjectMemberMutation,
+  useUpdateProjectMemberRoleMutation,
+  useRemoveProjectMemberMutation,
 } = projectsApi;

@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
-import { Clock, Plus, Play, Square, History } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Clock, Plus, Play, Pause, Square, RotateCcw, History } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useGetTimeEntriesQuery,
@@ -24,6 +24,57 @@ export const TaskTimeTracking = React.memo(function TaskTimeTracking({ taskId, e
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
   const [description, setDescription] = useState('');
+
+  // Live Stopwatch State
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isTimerRunning]);
+
+  const formatStopwatch = (totalSecs: number) => {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
+
+  const handleStartTimer = () => {
+    setIsTimerRunning(true);
+    toast.info('Stopwatch timer started');
+  };
+
+  const handlePauseTimer = () => {
+    setIsTimerRunning(false);
+  };
+
+  const handleResetTimer = () => {
+    setIsTimerRunning(false);
+    setElapsedSeconds(0);
+  };
+
+  const handleStopAndLog = () => {
+    setIsTimerRunning(false);
+    const totalMinutes = Math.max(1, Math.round(elapsedSeconds / 60));
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+
+    setHours(h > 0 ? h.toString() : '');
+    setMinutes(m > 0 ? m.toString() : '1');
+    setIsLoggingOpen(true);
+    setElapsedSeconds(0);
+    toast.success('Timer stopped. Review and save your work log below.');
+  };
 
   // Total seconds calculated from entries
   const totalSeconds = entries.reduce((acc, e) => acc + (e.duration || 0), 0);
@@ -77,6 +128,97 @@ export const TaskTimeTracking = React.memo(function TaskTimeTracking({ taskId, e
           </button>
         )}
       </div>
+
+      {/* Stopwatch Live Timer Bar */}
+      {canEdit && (
+        <div className="p-2.5 rounded-md bg-zinc-950/80 border border-zinc-800 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                isTimerRunning
+                  ? 'bg-emerald-500 animate-pulse'
+                  : elapsedSeconds > 0
+                  ? 'bg-amber-500'
+                  : 'bg-zinc-600'
+              }`}
+            />
+            <span className="font-mono text-sm font-bold text-zinc-100 tracking-wider">
+              {formatStopwatch(elapsedSeconds)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {!isTimerRunning && elapsedSeconds === 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleStartTimer}
+                className="h-7 px-2.5 text-[11px] gap-1 border-emerald-900/60 bg-emerald-950/30 text-emerald-400 hover:bg-emerald-950/60 cursor-pointer"
+              >
+                <Play className="h-3 w-3 fill-emerald-400" />
+                <span>Start</span>
+              </Button>
+            ) : isTimerRunning ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePauseTimer}
+                  className="h-7 px-2 text-[11px] gap-1 border-amber-900/60 bg-amber-950/30 text-amber-400 hover:bg-amber-950/60 cursor-pointer"
+                >
+                  <Pause className="h-3 w-3" />
+                  <span>Pause</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleStopAndLog}
+                  className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+                >
+                  <Square className="h-3 w-3 fill-current" />
+                  <span>Stop & Log</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStartTimer}
+                  className="h-7 px-2 text-[11px] gap-1 border-emerald-900/60 text-emerald-400 cursor-pointer"
+                >
+                  <Play className="h-3 w-3 fill-emerald-400" />
+                  <span>Resume</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleStopAndLog}
+                  className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+                >
+                  <Square className="h-3 w-3 fill-current" />
+                  <span>Log</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetTimer}
+                  className="h-7 w-7 p-0 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                  title="Reset Timer"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 p-3 rounded-md bg-zinc-950/60 border border-zinc-850 text-xs">

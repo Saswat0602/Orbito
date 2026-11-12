@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   Target,
   Play,
@@ -14,6 +16,7 @@ import {
   AlertCircle,
   Calendar,
   LineChart,
+  KanbanSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Sprint, Task, Project } from '@orbito/types';
@@ -52,6 +55,8 @@ export const SprintPlanningView: React.FC<SprintPlanningViewProps> = ({
   onOpenCreateTask,
 }) => {
   const dispatch = useAppDispatch();
+  const params = useParams<{ workspaceSlug?: string }>();
+  const activeWorkspaceSlug = params?.workspaceSlug || project.workspace?.slug || 'workspace';
   const [backlogSearch, setBacklogSearch] = useState('');
   const [collapsedSprints, setCollapsedSprints] = useState<Record<string, boolean>>({});
 
@@ -238,6 +243,22 @@ export const SprintPlanningView: React.FC<SprintPlanningViewProps> = ({
                         {completedTasks}/{tasksInSprint.length} Done
                       </Badge>
                     )}
+
+                    <Link
+                      href={`/${activeWorkspaceSlug}/${project.slug}/sprints/${sprint.id}`}
+                      className="inline-flex"
+                      title="Open Dedicated Sprint Board"
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-[11px] gap-1 border-zinc-700 bg-zinc-800 text-zinc-300 hover:text-white"
+                      >
+                        <KanbanSquare className="h-3 w-3 text-sky-400" />
+                        <span className="hidden sm:inline">Sprint Board</span>
+                      </Button>
+                    </Link>
 
                     {sprint.status === 'ACTIVE' && onSwitchToBurndown && (
                       <Button

@@ -67,3 +67,38 @@
   - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
   - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
   - [x] Dev servers healthy on ports 3000 and 3001
+
+---
+
+# Phase 7: Project Operations & Productivity
+
+- [x] **Task 1: Dedicated Sprint Execution Board**
+  - [x] Implement `frontend/src/app/[workspaceSlug]/[projectSlug]/sprints/[sprintId]/page.tsx`
+  - [x] Scoped sprint view: Kanban board, List view, and Gantt view filtered strictly to that sprint
+  - [x] Sprint header with name, goal, status badge, dates, burndown metric badge, story points progress bar, and "+ Add Task to Sprint" button
+  - [x] Link sprint cards in `SprintPlanningView.tsx` to `/[workspaceSlug]/[projectSlug]/sprints/[sprintId]`
+
+- [x] **Task 2: Dedicated Project Members Portal**
+  - [x] Add RTK Query endpoints for `project-members` in `frontend/src/lib/store/api/projectsApi.ts` (`getProjectMembers`, `updateProjectMemberRole`, `removeProjectMember`, `inviteProjectMember`)
+  - [x] Create `frontend/src/features/projects/components/ProjectInviteMemberModal.tsx`
+  - [x] Implement `frontend/src/app/[workspaceSlug]/[projectSlug]/members/page.tsx` with search, role dropdown, remove member, and pending invitations
+  - [x] Update project navigation in `Sidebar.tsx` to include "Members" link
+
+- [x] **Task 3: CSV Task Bulk Import Modal**
+  - [x] Enhanced `frontend/src/features/tasks/components/CsvImportModal.tsx` with `sprintId?: string` support
+  - [x] Connected to `useBulkCreateTasksMutation`
+  - [x] Added `Import CSV` action button to tasks board, list toolbars, and sprint execution board
+
+- [x] **Task 4: Live Stopwatch Time Tracker**
+  - [x] Updated `frontend/src/features/tasks/components/TaskTimeTracking.tsx` with start/pause/reset stopwatch controls
+  - [x] Animated ticking display with live duration calculation
+  - [x] 1-click "Stop & Log" auto-filling duration into the time log dialog
+
+- [x] **Task 5: Quick Share Button in Task Detail Drawer**
+  - [x] Verified `<ShareTaskDialog>` trigger in `TaskDetailWorkspace.tsx` and `TaskDetailDrawer.tsx`
+  - [x] Accessible from drawer and fullpage task workspaces
+
+- [x] **Checkpoint: Build & Verification**
+  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
+  - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
+  - [x] Dev servers healthy on ports 3000 and 3001

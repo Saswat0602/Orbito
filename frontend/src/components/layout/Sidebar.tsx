@@ -123,6 +123,7 @@ export function Sidebar() {
       { name: 'Calendar Schedule', href: `${baseProjectUrl}/calendar`, icon: CalendarDays, exact: false },
       { name: 'Timeline View', href: `${baseProjectUrl}/timeline`, icon: GanttChartSquare, exact: false },
       { name: 'Sprints & Backlog', href: `${baseProjectUrl}/sprints`, icon: Target, exact: false },
+      { name: 'Project Members', href: `${baseProjectUrl}/members`, icon: Users, exact: false },
     ];
 
     if (isManager || isOwner) {
