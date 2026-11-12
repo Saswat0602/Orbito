@@ -25,15 +25,45 @@
   - [x] Add search input, "Mark All as Read", and "Delete Read" actions
   - [x] Connect footer link in `NotificationPopover.tsx` to `/notifications`
 
-- [ ] **Slice 5: Advanced Tasks Organization & Productivity Tools**
-  - [ ] Create `GroupByManager.tsx` (Status, Priority, Assignee, Type, Due Date)
-  - [ ] Create `SortingManager.tsx` (multi-field sort with ASC/DESC)
-  - [ ] Create `ColumnManager.tsx` to toggle table column visibility
-  - [ ] Create `taskExport.ts` for 1-click export to CSV and Excel (XLSX)
-  - [ ] Create `BulkActionsBar.tsx` floating multi-select bar in List view
-  - [ ] Create `TodayAgendaDialog.tsx` daily briefing modal with header shortcut
+- [x] **Slice 5: Advanced Tasks Organization & Productivity Tools**
+  - [x] Create `GroupByManager.tsx` (Status, Priority, Assignee, Type, Due Date)
+  - [x] Create `SortingManager.tsx` (multi-field sort with ASC/DESC)
+  - [x] Create `ColumnManager.tsx` to toggle table column visibility
+  - [x] Create `taskExport.ts` for 1-click export to CSV and Excel (XLSX)
+  - [x] Create `BulkActionsBar.tsx` floating multi-select bar in List view
+  - [x] Create `TodayAgendaDialog.tsx` daily briefing modal with header shortcut
 
-- [ ] **Checkpoint: Build & Verification**
-  - [ ] `npm run build --workspace=@orbito/frontend` passes with 0 errors
-  - [ ] `npm run build --workspace=@orbito/backend` passes with 0 errors
-  - [ ] Full end-to-end verification of task editing, full-page view, projects, members, notifications, and board tools
+- [x] **Checkpoint: Taskosaur Parity Complete**
+  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
+  - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
+  - [x] Full end-to-end verification of task editing, full-page view, projects, members, notifications, and board tools
+
+---
+
+# Phase 6: Workspace Analytics, Profile Customization, AI Settings & Shortcuts
+
+- [x] **Task 1: Workspace Overview & Aggregated Analytics**
+  - [x] Update `frontend/src/app/[workspaceSlug]/page.tsx` to aggregate metrics across all projects in the workspace
+  - [x] Add Completion Rate %, Workload Health, Status & Priority distribution progress bars
+  - [x] Add Quick Action buttons (New Project, Invite Member, Open Agenda, Projects Overview)
+
+- [x] **Task 2: User Profile Avatar & Preferences**
+  - [x] Update `frontend/src/lib/store/api/usersApi.ts` `UpdateProfileRequest` to support `avatar?: string` and `preferences?: Record<string, unknown>`
+  - [x] Update `frontend/src/app/settings/page.tsx` with avatar upload dropzone, image preview, removal, and Department/Job Title fields
+
+- [x] **Task 3: AI Copilot Preferences & Settings**
+  - [x] Create `frontend/src/features/settings/components/AISettings.tsx`
+  - [x] Persona selector (Agile Scrum Master, Staff Architect, Product Manager, Custom)
+  - [x] Creativity/Temperature slider (0.0 to 1.0) and voice auto-submit toggle
+  - [x] Integrate into `frontend/src/app/settings/page.tsx` as a new "AI Assistant" tab
+
+- [x] **Task 4: Global Keyboard Shortcuts Dialog**
+  - [x] Create `frontend/src/components/layout/KeyboardShortcutsDialog.tsx`
+  - [x] Implement global `?` key listener (ignoring inputs/textareas)
+  - [x] Hotkeys display: Navigation (`⌘K`, `⌘J`, `G+B`, `G+L`, `G+P`, `G+M`), Tasks (`C`/`N`, `D`, `Esc`), Shortcuts (`?`)
+  - [x] Mount in `frontend/src/components/layout/AppShell.tsx` with trigger in sidebar/footer
+
+- [x] **Checkpoint: Build & Verification**
+  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
+  - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
+  - [x] Dev servers healthy on ports 3000 and 3001

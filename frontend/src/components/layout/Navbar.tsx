@@ -13,6 +13,7 @@ import {
   Shield,
   Layers,
   Sparkles,
+  Keyboard,
 } from 'lucide-react';
 
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
@@ -192,6 +193,17 @@ export function Navbar() {
 
           {/* Notifications Popover */}
           <NotificationPopover />
+
+          {/* Keyboard Shortcuts Trigger */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }))}
+            className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-200 border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 cursor-pointer hidden sm:flex items-center justify-center"
+            title="Keyboard Shortcuts (?)"
+          >
+            <Keyboard className="h-3.5 w-3.5" />
+          </Button>
 
           {/* Theme Toggle (Dark / Light) */}
           <ThemeToggle />

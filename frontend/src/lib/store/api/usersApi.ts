@@ -9,6 +9,10 @@ export interface UpdateProfileRequest {
   mobileNumber?: string;
   language?: string;
   timezone?: string;
+  avatar?: string;
+  jobTitle?: string;
+  department?: string;
+  preferences?: Record<string, unknown>;
 }
 
 export interface ChangePasswordRequest {

@@ -54,11 +54,14 @@ export interface TaskStatusPositionUpdate {
 
 export interface TaskQueryParams extends PaginationParams {
   projectId?: string;
+  workspaceId?: string;
+  organizationId?: string;
   sprintId?: string;
   statusId?: string;
   assigneeId?: string;
   priority?: TaskPriority;
   taskType?: TaskType;
+  search?: string;
   isArchived?: boolean;
 }
 

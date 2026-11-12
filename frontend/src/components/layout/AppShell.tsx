@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { TaskDetailDrawer } from '@/features/tasks';
 import { AiChatDrawer } from '@/features/ai-chat';
 import { useAppDispatch } from '@/lib/store/hooks';
@@ -60,6 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <TaskDetailDrawer />
       <AiChatDrawer />
+      <KeyboardShortcutsDialog />
 
       {/* Floating Copilot Launcher */}
       <button

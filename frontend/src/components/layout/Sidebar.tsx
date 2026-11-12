@@ -33,7 +33,7 @@ import {
   useGetWorkspaceMembersQuery,
 } from '@/lib/store/api/workspacesApi';
 import { useGetProjectsQuery } from '@/lib/store/api/projectsApi';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { WorkspaceProjectSwitcher } from './WorkspaceProjectSwitcher';
 
 export function Sidebar() {
@@ -434,6 +434,7 @@ export function Sidebar() {
           <div className="flex items-center justify-between p-2 rounded-md bg-zinc-900/60 border border-zinc-850">
             <Link href="/settings" className="flex items-center gap-2.5 min-w-0 group cursor-pointer">
               <Avatar className="h-8 w-8 rounded-md border border-zinc-800 group-hover:border-zinc-700 transition-colors">
+                {user?.avatar && <AvatarImage src={user.avatar} alt={user.firstName || 'User'} className="object-cover" />}
                 <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold">
                   {userInitials}
                 </AvatarFallback>
