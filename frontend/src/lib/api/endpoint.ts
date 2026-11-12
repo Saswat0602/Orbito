@@ -20,6 +20,8 @@ export const ENDPOINTS = {
     registrationStatus: '/auth/registration-status',
     setupStatus: '/auth/setup-status',
     setupAdmin: '/auth/setup-admin',
+    setupRequired: '/auth/setup/required',
+    setup: '/auth/setup',
   },
 
   // Users & Profiles

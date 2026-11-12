@@ -14,6 +14,20 @@ import type {
   RegistrationStatusResponse,
 } from '@/types';
 
+export interface SetupRequiredResponse {
+  required: boolean;
+  canSetup: boolean;
+  message?: string;
+}
+
+export interface SetupAdminRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  username?: string;
+}
+
 export type {
   LoginRequest,
   RegisterRequest,
@@ -87,6 +101,17 @@ export const authApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Auth', 'User'],
     }),
+    getSetupRequired: builder.query<SetupRequiredResponse, void>({
+      query: () => ENDPOINTS.auth.setupRequired,
+    }),
+    setupSuperAdmin: builder.mutation<AuthResponse, SetupAdminRequest>({
+      query: (body) => ({
+        url: ENDPOINTS.auth.setup,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
   }),
 });
 
@@ -102,4 +127,6 @@ export const {
   useGetRegistrationStatusQuery,
   useGetOidcConfigQuery,
   useExchangeSsoMutation,
+  useGetSetupRequiredQuery,
+  useSetupSuperAdminMutation,
 } = authApi;

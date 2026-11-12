@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   Users,
   UserPlus,
@@ -14,6 +15,7 @@ import {
   Clock,
   UserCheck,
   RotateCcw,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -293,15 +295,18 @@ export default function WorkspaceMembersPage() {
                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 hover:bg-zinc-850/30 transition-colors text-xs"
                   >
                     {/* User Identity */}
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 rounded-md border border-zinc-700 bg-zinc-800 shrink-0">
+                    <Link
+                      href={`/${workspaceSlug}/members/${member.userId || member.user?.id}`}
+                      className="flex items-center gap-3 group"
+                    >
+                      <Avatar className="h-9 w-9 rounded-md border border-zinc-700 bg-zinc-800 shrink-0 group-hover:border-zinc-500 transition-colors">
                         <AvatarFallback className="text-xs font-bold text-zinc-200">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-zinc-200 text-xs">
+                          <span className="font-semibold text-zinc-200 group-hover:text-white transition-colors text-xs">
                             {memberDisplayName}
                           </span>
                           {isCurrentUser && (
@@ -318,7 +323,7 @@ export default function WorkspaceMembersPage() {
                           <span>{member.user?.email}</span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Role Selector & Actions */}
                     <div className="flex items-center gap-3 self-end sm:self-center">

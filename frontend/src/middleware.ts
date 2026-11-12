@@ -8,6 +8,9 @@ const PUBLIC_ROUTES = [
   '/reset-password',
   '/public',
   '/invite',
+  '/setup',
+  '/terms-of-service',
+  '/privacy-policy',
 ];
 
 export function middleware(request: NextRequest) {

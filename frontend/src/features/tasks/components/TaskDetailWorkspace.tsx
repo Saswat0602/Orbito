@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -64,6 +64,7 @@ import { TaskAttachments } from './TaskAttachments';
 import { TaskDependencies } from './TaskDependencies';
 import { TaskRecurrenceSelector } from './TaskRecurrenceSelector';
 import { ShareTaskDialog } from './ShareTaskDialog';
+import { MentionAutocomplete, type MentionMember } from './MentionAutocomplete';
 
 export interface TaskDetailWorkspaceProps {
   taskId: string;
@@ -205,8 +206,66 @@ export function TaskDetailWorkspace({
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [commentText, setCommentText] = useState('');
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [isMentionOpen, setIsMentionOpen] = useState(false);
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isCopiedSlug, setIsCopiedSlug] = useState(false);
+
+  const mentionMembers: MentionMember[] = useMemo(() => {
+    return workspaceMembers.map((m) => {
+      const name =
+        m.user?.firstName && m.user?.lastName
+          ? `${m.user.firstName} ${m.user.lastName}`
+          : m.user?.username || m.user?.email || 'Member';
+      return {
+        id: m.userId || m.user?.id || m.id,
+        name,
+        email: m.user?.email,
+        avatar: m.user?.avatar,
+        role: m.role,
+      };
+    });
+  }, [workspaceMembers]);
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCommentText(val);
+
+    const cursorPos = e.target.selectionStart || val.length;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/(?:^|\s)@([a-zA-Z0-9_]*)$/);
+
+    if (atMatch) {
+      setMentionQuery(atMatch[1] || '');
+      setIsMentionOpen(true);
+    } else {
+      setIsMentionOpen(false);
+    }
+  };
+
+  const handleSelectMention = (member: MentionMember) => {
+    const cursorPos = commentInputRef.current?.selectionStart || commentText.length;
+    const textBeforeCursor = commentText.slice(0, cursorPos);
+    const textAfterCursor = commentText.slice(cursorPos);
+
+    const updatedBefore = textBeforeCursor.replace(/(?:^|\s)@([a-zA-Z0-9_]*)$/, (match) => {
+      const prefix = match.startsWith(' ') ? ' ' : '';
+      return `${prefix}@[${member.name}] `;
+    });
+
+    const newText = updatedBefore + textAfterCursor;
+    setCommentText(newText);
+    setIsMentionOpen(false);
+
+    setTimeout(() => {
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+        const newCursor = updatedBefore.length;
+        commentInputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
+  };
 
   useEffect(() => {
     if (task) {
@@ -973,12 +1032,22 @@ export function TaskDetailWorkspace({
                 {/* Comment Input Box */}
                 {canEdit && (
                   <form onSubmit={handleCommentSubmit} className="flex gap-2 pt-2">
-                    <Input
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Write a comment or update... (Type @ to mention)"
-                      className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
-                    />
+                    <div className="relative flex-1">
+                      <MentionAutocomplete
+                        isOpen={isMentionOpen}
+                        searchQuery={mentionQuery}
+                        members={mentionMembers}
+                        onSelect={handleSelectMention}
+                        onClose={() => setIsMentionOpen(false)}
+                      />
+                      <Input
+                        ref={commentInputRef}
+                        value={commentText}
+                        onChange={handleCommentChange}
+                        placeholder="Write a comment or update... (Type @ to mention)"
+                        className="bg-zinc-950/80 border-zinc-800 text-xs text-zinc-200"
+                      />
+                    </div>
                     <Button
                       type="submit"
                       size="sm"

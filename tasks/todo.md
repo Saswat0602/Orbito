@@ -131,8 +131,36 @@
   - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
   - [x] Live servers healthy: API on port 3000 (`/api/health`), Web on port 3001
 
+---
 
-- [x] **Checkpoint: Build & Verification**
-  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
+# Phase 9: Onboarding, Rich Mentions & Compliance
+
+- [x] **Task 1: First-Run Super Admin Setup Wizard**
+  - [x] Created `frontend/src/app/setup/page.tsx`
+  - [x] Integrated `getSetupRequired` and `setupSuperAdmin` endpoints in `frontend/src/lib/store/api/authApi.ts`
+  - [x] Added public route exception in `frontend/src/middleware.ts`
+  - [x] Handles both pending setup initialization and "already configured" guard state
+
+- [x] **Task 2: Editor `@mention` Autocomplete Popover**
+  - [x] Created `frontend/src/features/tasks/components/MentionAutocomplete.tsx`
+  - [x] Exported from `frontend/src/features/tasks/index.ts`
+  - [x] Integrated into `TaskDetailWorkspace.tsx` comments input with real-time `@` detection
+  - [x] Keyboard navigation (`ArrowUp`/`ArrowDown`/`Enter`/`Escape`) and automatic formatting into `@[Name]`
+
+- [x] **Task 3: Member Public Profile Page**
+  - [x] Created `frontend/src/app/[workspaceSlug]/members/[id]/page.tsx`
+  - [x] Header profile card with avatar, role badge, job title, department, joined date
+  - [x] Contact information card with timezone and email
+  - [x] Assigned active tasks list in current workspace with priority, status, and direct task links
+  - [x] Linked member list rows in `/[workspaceSlug]/members/page.tsx` directly to profile
+
+- [x] **Task 4: Public Legal Compliance Pages**
+  - [x] Created `frontend/src/app/terms-of-service/page.tsx`
+  - [x] Created `frontend/src/app/privacy-policy/page.tsx`
+  - [x] Added public route exceptions in `frontend/src/middleware.ts`
+  - [x] Styled in Obsidian monochrome design system with responsive typography and navigation
+
+- [x] **Checkpoint: Phase 9 Build & Verification**
+  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors (all 22 static + dynamic routes generated)
   - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
-  - [x] Dev servers healthy on ports 3000 and 3001
+  - [x] Dev servers healthy on port 3000 (`/api/health`) and port 3001 (`/setup`, `/terms-of-service`, `/privacy-policy` return 200 OK)

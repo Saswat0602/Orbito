@@ -21,4 +21,5 @@ export * from './components/SortingManager';
 export * from './components/ColumnManager';
 export * from './components/BulkActionsBar';
 export * from './components/TodayAgendaDialog';
+export * from './components/MentionAutocomplete';
 export * from './utils/taskExport';
