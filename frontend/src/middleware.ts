@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   '/setup',
   '/terms-of-service',
   '/privacy-policy',
+  '/intro',
 ];
 
 export function middleware(request: NextRequest) {
