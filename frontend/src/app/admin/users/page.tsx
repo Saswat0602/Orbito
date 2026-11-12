@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Users,
   Search,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -205,15 +207,18 @@ export default function AdminUsersPage() {
                       key={u.id}
                       className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-zinc-850/40 transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Avatar className="h-9 w-9 rounded-md border border-zinc-800 shrink-0">
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="flex items-center gap-3 min-w-0 group"
+                      >
+                        <Avatar className="h-9 w-9 rounded-md border border-zinc-800 shrink-0 group-hover:border-zinc-500 transition-colors">
                           <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold">
                             {initials}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-zinc-100 truncate">
+                            <span className="text-xs font-semibold text-zinc-100 group-hover:text-white transition-colors truncate">
                               {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'Unnamed User'}
                             </span>
                             {isCurrent && (
@@ -224,7 +229,7 @@ export default function AdminUsersPage() {
                           </div>
                           <span className="text-[11px] text-zinc-400 font-mono truncate">{u.email}</span>
                         </div>
-                      </div>
+                      </Link>
 
                       <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                         {/* Status Badge */}
@@ -271,6 +276,13 @@ export default function AdminUsersPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-xs">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/users/${u.id}`} className="cursor-pointer flex items-center">
+                                  <Eye className="h-3.5 w-3.5 mr-2 text-zinc-400" />
+                                  Inspect User
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-zinc-800" />
                               <DropdownMenuItem
                                 onClick={() => handleStatusToggle(u.id, u.status)}
                                 className="cursor-pointer"

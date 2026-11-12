@@ -79,6 +79,21 @@ export const organizationsApi = apiSlice.injectEndpoints({
         { type: 'Organization', id: `MEMBERS_${organizationId}` },
       ],
     }),
+    getOrganizationCharts: builder.query<
+      Record<string, any>,
+      { orgId: string; types: string[]; workspaceId?: string; projectId?: string }
+    >({
+      query: ({ orgId, types, workspaceId, projectId }) => {
+        const params = new URLSearchParams();
+        types.forEach((t) => params.append('types', t));
+        if (workspaceId) params.append('workspaceId', workspaceId);
+        if (projectId) params.append('projectId', projectId);
+        return {
+          url: `/organizations/${orgId}/charts?${params.toString()}`,
+        };
+      },
+      providesTags: (_res, _err, { orgId }) => [{ type: 'Organization', id: `CHARTS_${orgId}` }],
+    }),
   }),
 });
 
@@ -90,5 +105,6 @@ export const {
   useGetOrganizationMembersQuery,
   useInviteOrganizationMemberMutation,
   useRemoveOrganizationMemberMutation,
+  useGetOrganizationChartsQuery,
 } = organizationsApi;
 

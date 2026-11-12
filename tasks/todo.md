@@ -98,6 +98,40 @@
   - [x] Verified `<ShareTaskDialog>` trigger in `TaskDetailWorkspace.tsx` and `TaskDetailDrawer.tsx`
   - [x] Accessible from drawer and fullpage task workspaces
 
+---
+
+# Phase 8: Organization Intelligence & Super Admin Console
+
+- [x] **Task 1: Executive Organization Analytics Dashboard**
+  - [x] Implement `frontend/src/app/organization/page.tsx` and `frontend/src/app/dashboard/page.tsx`
+  - [x] Query `GET /organizations/:id/charts` for KPI metrics, project portfolio, team utilization, and task distribution
+  - [x] Render portfolio health cards, completion rates, work breakdown bars, and workspace quick-jump grid
+  - [x] Export endpoint `getOrganizationCharts` in `frontend/src/lib/store/api/organizationsApi.ts`
+
+- [x] **Task 2: Organization Workspaces Directory & Archive Management**
+  - [x] Implement `frontend/src/app/workspaces/page.tsx`
+  - [x] Tabbed views for Active vs Archived workspaces
+  - [x] Endpoints for `getArchivedWorkspaces`, `archiveWorkspace`, and `unarchiveWorkspace` in `frontend/src/lib/store/api/workspacesApi.ts`
+  - [x] Dialog to create new workspace with name, slug preview, and description
+
+- [x] **Task 3: Super Admin User Drill-Down Inspector**
+  - [x] Implement `frontend/src/app/admin/users/[id]/page.tsx`
+  - [x] Status toggle (`ACTIVE` / `INACTIVE`), Role elevation (`SUPER_ADMIN` / `MEMBER`), Password reset email dispatch, and Account deletion
+  - [x] Link to user inspector from admin user directory table and dropdowns
+
+- [x] **Task 4: Super Admin Organization Drill-Down Inspector**
+  - [x] Implement `frontend/src/app/admin/organizations/[id]/page.tsx`
+  - [x] Organization details, primary owner, member list, and workspace directory
+  - [x] Actions: Suspend/Activate tenant, Transfer ownership dialog, and Permanent deletion dialog
+  - [x] Export `getAdminOrganizationDetail` and `deleteAdminOrganization` in `frontend/src/lib/store/api/adminApi.ts`
+  - [x] Link to organization inspector from admin organizations table and dropdowns
+
+- [x] **Checkpoint: Phase 8 Build & Verification**
+  - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
+  - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors
+  - [x] Live servers healthy: API on port 3000 (`/api/health`), Web on port 3001
+
+
 - [x] **Checkpoint: Build & Verification**
   - [x] `npm run build --workspace=@orbito/frontend` passes with 0 errors
   - [x] `npm run build --workspace=@orbito/backend` passes with 0 errors

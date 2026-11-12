@@ -23,6 +23,47 @@ export interface GetAdminOrganizationsParams {
   search?: string;
 }
 
+export interface AdminOrganizationDetail {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  archive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  owner: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  } | null;
+  members: Array<{
+    role: string;
+    createdAt: string;
+    user: {
+      id: string;
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+      avatar: string | null;
+      status: string;
+    };
+  }>;
+  workspaces: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    _count?: {
+      projects: number;
+      members: number;
+    };
+  }>;
+  _count?: {
+    members: number;
+    workspaces: number;
+  };
+}
+
 export interface AdminSystemConfigResponse {
   settings: Array<{
     id: string;
@@ -119,6 +160,19 @@ export const adminApi = apiSlice.injectEndpoints({
       providesTags: ['Admin', 'Organization'],
     }),
 
+    getAdminOrganizationDetail: builder.query<AdminOrganizationDetail, string>({
+      query: (id) => ENDPOINTS.admin.organizationById(id),
+      providesTags: (_result, _error, id) => [{ type: 'Organization', id }],
+    }),
+
+    deleteAdminOrganization: builder.mutation<{ success: boolean; message: string }, string>({
+      query: (id) => ({
+        url: ENDPOINTS.admin.organizationById(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Admin', 'Organization'],
+    }),
+
     toggleAdminOrgArchive: builder.mutation<
       { id: string; name: string; archive: boolean },
       string
@@ -181,6 +235,8 @@ export const {
   useDeleteAdminUserMutation,
   useResetAdminUserPasswordMutation,
   useGetAdminOrganizationsQuery,
+  useGetAdminOrganizationDetailQuery,
+  useDeleteAdminOrganizationMutation,
   useToggleAdminOrgArchiveMutation,
   useTransferAdminOrgOwnershipMutation,
   useGetAdminConfigQuery,

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Building2,
   Search,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -107,13 +109,16 @@ export default function AdminOrganizationsPage() {
                       key={org.id}
                       className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-850/40 transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-9 w-9 rounded-md bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-sm font-bold text-zinc-200 shrink-0">
+                      <Link
+                        href={`/admin/organizations/${org.id}`}
+                        className="flex items-center gap-3 min-w-0 group"
+                      >
+                        <div className="h-9 w-9 rounded-md bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-sm font-bold text-zinc-200 shrink-0 group-hover:border-zinc-500 transition-colors">
                           {org.name[0]?.toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-zinc-100 truncate">
+                            <span className="text-xs font-semibold text-zinc-100 group-hover:text-white truncate transition-colors">
                               {org.name}
                             </span>
                             {org.archive && (
@@ -126,7 +131,7 @@ export default function AdminOrganizationsPage() {
                             slug: {org.slug} • id: {org.id.slice(0, 8)}...
                           </span>
                         </div>
-                      </div>
+                      </Link>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-400">
                         {/* Owner Info */}
@@ -148,6 +153,19 @@ export default function AdminOrganizationsPage() {
                           <Users className="h-3.5 w-3.5 text-zinc-500" />
                           <span>{org._count?.members ?? 0} users</span>
                         </div>
+
+                        {/* Detail Link */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="h-7 text-xs border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800"
+                        >
+                          <Link href={`/admin/organizations/${org.id}`}>
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            View
+                          </Link>
+                        </Button>
 
                         {/* Archive Toggle Button */}
                         <Button

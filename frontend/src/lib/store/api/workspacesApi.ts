@@ -106,6 +106,38 @@ export const workspacesApi = apiSlice.injectEndpoints({
         { type: 'Workspace', id: `MEMBERS_${workspaceId}` },
       ],
     }),
+    getArchivedWorkspaces: builder.query<Workspace[], string>({
+      query: (organizationId) => ({
+        url: `/workspaces/archived?organizationId=${organizationId}`,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Workspace' as const, id })),
+              { type: 'Workspace', id: 'ARCHIVED_LIST' },
+            ]
+          : [{ type: 'Workspace', id: 'ARCHIVED_LIST' }],
+    }),
+    archiveWorkspace: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/workspaces/archive/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: [
+        { type: 'Workspace', id: 'LIST' },
+        { type: 'Workspace', id: 'ARCHIVED_LIST' },
+      ],
+    }),
+    unarchiveWorkspace: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/workspaces/unarchive/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: [
+        { type: 'Workspace', id: 'LIST' },
+        { type: 'Workspace', id: 'ARCHIVED_LIST' },
+      ],
+    }),
   }),
 });
 
@@ -120,5 +152,8 @@ export const {
   useAddWorkspaceMemberMutation,
   useRemoveWorkspaceMemberMutation,
   useUpdateWorkspaceMemberRoleMutation,
+  useGetArchivedWorkspacesQuery,
+  useArchiveWorkspaceMutation,
+  useUnarchiveWorkspaceMutation,
 } = workspacesApi;
 

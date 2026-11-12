@@ -373,6 +373,7 @@ export class AdminService {
         name: true,
         slug: true,
         description: true,
+        archive: true,
         createdAt: true,
         updatedAt: true,
         owner: {
