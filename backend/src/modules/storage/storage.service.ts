@@ -35,8 +35,7 @@ export class StorageService implements OnModuleInit {
       try {
         const connected = await this.checkS3Connection(awsBucket as string);
         this.useS3 = connected;
-        if (connected) {
-        } else {
+        if (!connected) {
           this.logger.warn('❌ S3 connection check failed, falling back to local storage');
           if (!fs.existsSync(this.uploadDir)) {
             fs.mkdirSync(this.uploadDir, { recursive: true });

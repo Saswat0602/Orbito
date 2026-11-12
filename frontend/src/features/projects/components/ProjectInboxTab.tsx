@@ -769,7 +769,7 @@ export function ProjectInboxTab({
                 </div>
               ) : messages.length === 0 ? (
                 <div className="py-12 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-md">
-                  No incoming emails received yet. Click "Sync Now" to fetch from IMAP.
+                  No incoming emails received yet. Click &ldquo;Sync Now&rdquo; to fetch from IMAP.
                 </div>
               ) : (
                 <div className="divide-y divide-zinc-800 border border-zinc-850 rounded-md overflow-hidden">

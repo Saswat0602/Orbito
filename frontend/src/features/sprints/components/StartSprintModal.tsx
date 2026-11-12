@@ -25,10 +25,10 @@ export function StartSprintModal({
 }: StartSprintModalProps) {
   const [startSprint, { isLoading }] = useStartSprintMutation();
 
-  const [startDate, setStartDate] = useState(
+  const [startDate, setStartDate] = useState(() =>
     new Date().toISOString().split('T')[0]
   );
-  const [endDate, setEndDate] = useState(
+  const [endDate, setEndDate] = useState(() =>
     new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
   const [goal, setGoal] = useState(sprint?.goal || '');

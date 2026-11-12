@@ -51,9 +51,13 @@ export const TaskGanttView: React.FC<TaskGanttViewProps> = ({
     return `${y}-${m}-${d}`;
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayKey = toDateKey(today);
+  const todayKey = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }, []);
 
   // Generate column dates
   const columns = useMemo(() => {
@@ -109,7 +113,7 @@ export const TaskGanttView: React.FC<TaskGanttViewProps> = ({
 
   // Task bar positioning calculation
   const getTaskBarStyle = (task: Task) => {
-    const taskStart = task.startDate ? new Date(task.startDate) : task.createdAt ? new Date(task.createdAt) : today;
+    const taskStart = task.startDate ? new Date(task.startDate) : task.createdAt ? new Date(task.createdAt) : new Date();
     const taskEnd = task.dueDate ? new Date(task.dueDate) : new Date(taskStart.getTime() + 86400000);
 
     const taskStartMs = Math.max(startMs, taskStart.getTime());

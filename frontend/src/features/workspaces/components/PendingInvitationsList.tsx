@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Mail,
   Copy,
@@ -36,6 +36,7 @@ export function PendingInvitationsList({
   onOpenInviteModal,
 }: PendingInvitationsListProps) {
   const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
+  const [currentTime] = useState(() => Date.now());
 
   const {
     data: invitations = [],
@@ -149,7 +150,7 @@ export function PendingInvitationsList({
       {pendingInvites.map((inv) => {
         const roleStyle = getRoleBadgeStyle(inv.role);
         const expiresDate = inv.expiresAt ? new Date(inv.expiresAt) : null;
-        const isExpired = expiresDate ? expiresDate.getTime() < Date.now() : false;
+        const isExpired = expiresDate ? expiresDate.getTime() < currentTime : false;
 
         return (
           <div

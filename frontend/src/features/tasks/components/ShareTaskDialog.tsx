@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Share2,
   Copy,
@@ -44,6 +44,8 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
     taskId,
     { skip: !isOpen || !taskId }
   );
+
+  const [currentTime] = useState(() => Date.now());
 
   const [createTaskShare, { isLoading: isCreating }] = useCreateTaskShareMutation();
   const [revokeTaskShare, { isLoading: isRevoking }] = useRevokeTaskShareMutation();
@@ -166,7 +168,7 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
             <div className="max-h-56 overflow-y-auto space-y-2">
               {shares.map((share) => {
                 const expiresDate = new Date(share.expiresAt);
-                const isExpired = expiresDate.getTime() < Date.now();
+                const isExpired = expiresDate.getTime() < currentTime;
                 const isCopied = copiedToken === share.token;
 
                 return (

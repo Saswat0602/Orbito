@@ -280,8 +280,8 @@ export function AiChatDrawer() {
       isSending,
       messages,
       sendChatMessage,
-      activeWorkspace?.id,
-      activeProject?.id,
+      activeWorkspace,
+      activeProject,
       currentSessionId,
       activeOrgId,
     ]

@@ -494,7 +494,6 @@ export class EmailSyncService {
         );
         // Don't throw - message processing succeeded, auto-reply is non-critical
       }
-    } else if (ruleResult.autoReplySent) {
     }
 
     // ⭐ Mark as read on IMAP server after successful processing
@@ -553,8 +552,6 @@ export class EmailSyncService {
           source: UserSource.EMAIL_INBOX, // Mark as email-created user
         },
       });
-
-    } else {
     }
 
     // Add user to organization, workspace, and project with VIEWER role
@@ -944,8 +941,6 @@ export class EmailSyncService {
 
         if (existingComment?.task && existingComment.task.projectId === inbox.projectId) {
           existingTask = existingComment.task;
-          if (existingTask) {
-          }
         }
       }
 
@@ -974,8 +969,6 @@ export class EmailSyncService {
 
         if (existingInboxMessage?.task) {
           existingTask = existingInboxMessage.task;
-          if (existingTask) {
-          }
         }
       }
 
@@ -1056,7 +1049,6 @@ export class EmailSyncService {
         } else {
           this.logger.warn(`   No existing tasks with email threads found in this project`);
         }
-      } else {
       }
       const taskNumber = await EmailSyncUtils.getNextTaskNumber(
         String(inbox.projectId),

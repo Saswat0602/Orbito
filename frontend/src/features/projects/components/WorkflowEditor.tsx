@@ -657,7 +657,7 @@ export function WorkflowEditor({
             <DialogDescription className="text-xs text-zinc-400">
               Are you sure you want to remove the stage column{' '}
               <strong className="text-zinc-200">
-                "{deletingStatus?.name}"
+                &ldquo;{deletingStatus?.name}&rdquo;
               </strong>
               ?
             </DialogDescription>
