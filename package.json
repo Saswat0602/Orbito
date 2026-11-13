@@ -42,7 +42,14 @@
     "db:generate": "dotenv -- npm run prisma:generate --workspace=@orbito/backend",
     "db:studio": "dotenv -- npm run prisma:studio --workspace=@orbito/backend",
     "prisma": "dotenv -- npm run prisma --workspace=@orbito/backend",
-    "preflight": "node scripts/production-readiness.js"
+    "preflight": "node scripts/production-readiness.js",
+    "prune:backend": "turbo prune @orbito/backend --docker",
+    "prune:frontend": "turbo prune @orbito/frontend --docker",
+    "docker:build": "docker compose -f docker-compose.prod.yml build",
+    "docker:up": "docker compose -f docker-compose.prod.yml up -d",
+    "docker:down": "docker compose -f docker-compose.prod.yml down",
+    "docker:logs": "docker compose -f docker-compose.prod.yml logs -f",
+    "docker:ps": "docker compose -f docker-compose.prod.yml ps"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

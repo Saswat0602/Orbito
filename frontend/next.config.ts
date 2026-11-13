@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  transpilePackages: ["@orbito/types", "@orbito/ui"],
   poweredByHeader: false,
   reactStrictMode: true,
   images: {

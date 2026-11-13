@@ -7,16 +7,26 @@
     "DATABASE_URL",
     "JWT_SECRET",
     "JWT_REFRESH_SECRET",
+    "ENCRYPTION_KEY",
     "NEXT_PUBLIC_API_BASE_URL",
     "NEXT_PUBLIC_SOCKET_URL",
+    "FRONTEND_URL",
     "CORS_ORIGIN",
-    "CORS_ORIGINS"
+    "CORS_ORIGINS",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "ENABLE_SWAGGER",
+    "SKIP_REDIS_CHECK"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "public/**", "prisma/**", "package.json", "tsconfig.json"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "prisma/**", "public/**"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "dev": {
       "dependsOn": ["^build"],
