@@ -1,67 +1,82 @@
 @import "tailwindcss";
 @import "tailwindcss/utilities";
 
+@theme {
+  /* Orbito Obsidian Design System Tokens */
+  --color-canvas: #09090b;
+  --color-card-dark: #121215;
+  --color-surface: #18181b;
+  --color-surface-elevated: #27272a;
+  --color-zinc-750: #333338;
+  --color-zinc-850: #202024;
+
+  --color-obsidian-border: #27272a;
+  --color-obsidian-border-subtle: #1f1f23;
+  --color-obsidian-border-card: #333338;
+  --color-obsidian-border-active: #52525b;
+}
+
 :root {
-  /* Light Theme Colors */
-  --color-primary: 79 70 229;
-  /* indigo-600 */
+  /* High-Contrast Clean Monochrome Light Theme */
+  --color-primary: 24 24 27;
+  /* zinc-900 */
   --color-primary-foreground: 255 255 255;
   /* white */
-  --color-primary-hover: 67 56 202;
-  /* indigo-700 */
-  --color-primary-light: 238 242 255;
-  /* indigo-50 */
+  --color-primary-hover: 9 9 11;
+  /* zinc-950 */
+  --color-primary-light: 244 244 245;
+  /* zinc-100 */
 
-  --color-secondary: 100 116 139;
-  /* slate-500 */
-  --color-secondary-hover: 71 85 105;
-  /* slate-600 */
+  --color-secondary: 113 113 122;
+  /* zinc-500 */
+  --color-secondary-hover: 82 82 91;
+  /* zinc-600 */
 
-  --color-success: 34 197 94;
-  /* green-500 */
-  --color-success-light: 240 253 244;
-  /* green-50 */
+  --color-success: 16 185 129;
+  /* emerald-500 */
+  --color-success-light: 236 253 245;
+  /* emerald-50 */
 
-  --color-warning: 251 146 60;
-  /* orange-400 */
-  --color-warning-light: 255 247 237;
-  /* orange-50 */
+  --color-warning: 245 158 11;
+  /* amber-500 */
+  --color-warning-light: 254 243 199;
+  /* amber-50 */
 
-  --color-error: 239 68 68;
-  /* red-500 */
-  --color-error-light: 254 242 242;
-  /* red-50 */
+  --color-error: 244 63 94;
+  /* rose-500 */
+  --color-error-light: 255 241 242;
+  /* rose-50 */
 
-  --color-info: 59 130 246;
-  /* blue-500 */
-  --color-info-light: 239 246 255;
-  /* blue-50 */
+  --color-info: 113 113 122;
+  /* zinc-500 */
+  --color-info-light: 244 244 245;
+  /* zinc-100 */
 
   /* Background Colors */
   --color-bg-primary: 255 255 255;
   /* white */
   --color-bg-secondary: 249 250 251;
-  /* slate-50 */
-  --color-bg-tertiary: 241 245 249;
-  /* slate-100 */
+  /* zinc-50 */
+  --color-bg-tertiary: 244 244 245;
+  /* zinc-100 */
 
   /* Text Colors */
-  --color-text-primary: 15 23 42;
-  /* slate-900 */
-  --color-text-secondary: 71 85 105;
-  /* slate-600 */
-  --color-text-tertiary: 148 163 184;
-  /* slate-400 */
+  --color-text-primary: 9 9 11;
+  /* zinc-950 */
+  --color-text-secondary: 82 82 91;
+  /* zinc-600 */
+  --color-text-tertiary: 161 161 170;
+  /* zinc-400 */
   --color-text-inverse: 255 255 255;
   /* white */
 
   /* Border Colors */
-  --color-border-primary: 226 232 240;
-  /* slate-200 */
-  --color-border-secondary: 241 245 249;
-  /* slate-100 */
-  --color-border-focus: 79 70 229;
-  /* indigo-600 */
+  --color-border-primary: 228 228 231;
+  /* zinc-200 */
+  --color-border-secondary: 212 212 216;
+  /* zinc-300 */
+  --color-border-focus: 24 24 27;
+  /* zinc-900 */
 
   /* Shadow */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -91,49 +106,50 @@
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme="dark"] {
-  /* Linear-style Modern Monochrome Dark Theme */
+[data-theme="dark"],
+.dark {
+  /* Signature Orbito Obsidian Monochrome Dark Theme */
   --color-primary: 250 250 250;
   /* zinc-50 crisp white */
   --color-primary-foreground: 9 9 11;
   /* zinc-950 near black */
   --color-primary-hover: 228 228 231;
   /* zinc-200 */
-  --color-primary-light: 39 39 42;
-  /* zinc-800 */
+  --color-primary-light: 32 32 36;
+  /* zinc-850 */
 
   --color-secondary: 161 161 170;
   /* zinc-400 */
   --color-secondary-hover: 212 212 216;
   /* zinc-300 */
 
-  --color-success: 34 197 94;
-  /* emerald-500 */
+  --color-success: 52 211 153;
+  /* emerald-400 */
   --color-success-light: 6 78 59;
   /* emerald-900 */
 
-  --color-warning: 245 158 11;
-  /* amber-500 */
+  --color-warning: 251 191 36;
+  /* amber-400 */
   --color-warning-light: 69 26 3;
   /* amber-950 */
 
-  --color-error: 244 63 94;
-  /* rose-500 */
+  --color-error: 251 113 133;
+  /* rose-400 */
   --color-error-light: 76 5 25;
   /* rose-950 */
 
-  --color-info: 56 189 248;
-  /* sky-400 */
-  --color-info-light: 12 74 110;
-  /* sky-900 */
+  --color-info: 161 161 170;
+  /* zinc-400 */
+  --color-info-light: 39 39 42;
+  /* zinc-800 */
 
   /* Background Colors - Deep Obsidian & Zinc */
   --color-bg-primary: 9 9 11;
-  /* zinc-950 #09090b */
+  /* zinc-950 #09090b canvas */
   --color-bg-secondary: 24 24 27;
-  /* zinc-900 #18181b */
+  /* zinc-900 #18181b panels */
   --color-bg-tertiary: 39 39 42;
-  /* zinc-800 #27272a */
+  /* zinc-800 #27272a borders/hover */
 
   /* Text Colors */
   --color-text-primary: 250 250 250;
@@ -148,8 +164,8 @@
   /* Border Colors - Crisp 1px hierarchy */
   --color-border-primary: 39 39 42;
   /* zinc-800 #27272a */
-  --color-border-secondary: 63 63 70;
-  /* zinc-700 #3f3f46 */
+  --color-border-secondary: 51 51 56;
+  /* zinc-750 #333338 */
   --color-border-focus: 250 250 250;
   /* zinc-50 */
 
@@ -172,6 +188,50 @@
 }
 
 @layer utilities {
+
+  /* Orbito Obsidian Design System Semantic Utilities */
+  .obsidian-canvas {
+    background-color: #09090b;
+  }
+
+  .obsidian-card {
+    background-color: rgba(24, 24, 27, 0.7);
+    border: 1px solid rgba(39, 39, 42, 0.8);
+    backdrop-filter: blur(8px);
+  }
+
+  .obsidian-card-hover {
+    transition: all var(--transition-base);
+  }
+  .obsidian-card-hover:hover {
+    background-color: rgba(32, 32, 36, 0.8);
+    border-color: rgba(63, 63, 70, 0.8);
+  }
+
+  .obsidian-panel {
+    background-color: #121215;
+    border: 1px solid #27272a;
+  }
+
+  .obsidian-badge-root {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid #333338;
+    background-color: rgba(32, 32, 36, 0.8);
+    color: #d4d4d8;
+  }
+
+  .obsidian-input {
+    background-color: #09090b;
+    border: 1px solid #27272a;
+    color: #fafafa;
+  }
+  .obsidian-input:focus {
+    border-color: #52525b;
+    outline: none;
+  }
 
   /* Custom utility classes */
   .bg-primary {
