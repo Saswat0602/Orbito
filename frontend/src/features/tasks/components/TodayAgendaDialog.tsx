@@ -89,7 +89,7 @@ export const TodayAgendaDialog: React.FC<TodayAgendaDialogProps> = ({
       <DialogContent className="sm:max-w-lg bg-zinc-950 border-zinc-800 text-zinc-200 p-0 overflow-hidden shadow-2xl rounded-xl">
         <DialogHeader className="p-5 pb-3 border-b border-zinc-850 bg-zinc-900/60">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-md bg-indigo-950/50 border border-indigo-800/40 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="h-10 w-10 rounded-md bg-zinc-850 border border-zinc-750 flex items-center justify-center text-zinc-200 shrink-0">
               <Calendar className="h-5 w-5" />
             </div>
             <div>
@@ -97,9 +97,9 @@ export const TodayAgendaDialog: React.FC<TodayAgendaDialogProps> = ({
                 <DialogTitle className="text-sm font-semibold text-zinc-100">
                   Today&apos;s Agenda
                 </DialogTitle>
-                <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                <Sparkles className="h-3.5 w-3.5 text-zinc-400" />
                 {tasks.length > 0 && (
-                  <Badge variant="outline" className="text-[10px] bg-indigo-950/40 text-indigo-300 border-indigo-800/40 font-mono">
+                  <Badge variant="outline" className="text-[10px] bg-zinc-850 text-zinc-300 border-zinc-750 font-mono">
                     {tasks.length} total
                   </Badge>
                 )}

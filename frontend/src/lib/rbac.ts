@@ -125,28 +125,28 @@ export function getRoleBadgeStyle(role: Role | string | undefined | null): {
     case Role.SUPER_ADMIN:
       return {
         label: 'Super Admin',
-        className: 'bg-rose-950/60 border-rose-800/60 text-rose-300',
+        className: 'bg-zinc-800/90 border-zinc-700 text-zinc-100 font-mono tracking-wide',
       };
     case Role.OWNER:
       return {
         label: 'Owner',
-        className: 'bg-amber-950/60 border-amber-800/60 text-amber-300',
+        className: 'bg-zinc-850 border-zinc-750 text-zinc-200 font-medium',
       };
     case Role.MANAGER:
       return {
         label: 'Manager',
-        className: 'bg-sky-950/60 border-sky-800/60 text-sky-300',
+        className: 'bg-zinc-900 border-zinc-800 text-zinc-300 font-medium',
       };
     case Role.MEMBER:
       return {
         label: 'Member',
-        className: 'bg-zinc-800 border-zinc-700 text-zinc-300',
+        className: 'bg-zinc-900/80 border-zinc-800 text-zinc-400 font-medium',
       };
     case Role.VIEWER:
     default:
       return {
         label: 'Viewer',
-        className: 'bg-zinc-900 border-zinc-800 text-zinc-400',
+        className: 'bg-zinc-950 border-zinc-850 text-zinc-500 font-medium',
       };
   }
 }

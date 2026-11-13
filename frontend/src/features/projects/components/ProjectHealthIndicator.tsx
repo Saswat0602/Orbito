@@ -116,9 +116,9 @@ export function ProjectHealthIndicator({
             const intensity = count / maxTasksInDay;
             let bgClass = 'bg-zinc-800/80';
             if (intensity > 0) {
-              if (intensity <= 0.3) bgClass = 'bg-violet-950 border border-violet-800/40';
-              else if (intensity <= 0.7) bgClass = 'bg-violet-700/80';
-              else bgClass = 'bg-violet-500 shadow-xs shadow-violet-500/50';
+              if (intensity <= 0.3) bgClass = 'bg-zinc-700/80 border border-zinc-600/40';
+              else if (intensity <= 0.7) bgClass = 'bg-zinc-400';
+              else bgClass = 'bg-zinc-100 shadow-xs shadow-white/20';
             }
 
             return (

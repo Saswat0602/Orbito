@@ -67,11 +67,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <button
         type="button"
         onClick={() => dispatch(toggleAiChat())}
-        className="fixed bottom-6 right-6 z-30 p-2.5 rounded-full bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-950/60 border border-violet-400/40 transition-all hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
+        className="fixed bottom-6 right-6 z-30 p-2.5 rounded-full bg-zinc-900 hover:bg-zinc-850 text-zinc-100 shadow-xl shadow-black/80 border border-zinc-750 hover:border-zinc-500 transition-all duration-150 hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
         title="Open Orbito Copilot (⌘J)"
         aria-label="Open Orbito AI Copilot"
       >
-        <Sparkles className="w-4 h-4 text-white" />
+        <Sparkles className="w-4 h-4 text-zinc-200" />
       </button>
 
       <Toaster

@@ -162,7 +162,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
         <div className="bg-zinc-900/95 border border-zinc-800 rounded-xl shadow-2xl backdrop-blur-md px-3 py-2 flex items-center gap-3 text-xs text-zinc-200">
           {/* Count Badge & Select All */}
           <div className="flex items-center gap-2 pr-3 border-r border-zinc-800">
-            <span className="flex items-center justify-center bg-indigo-600 text-white text-[11px] font-bold h-5 px-1.5 rounded-sm">
+            <span className="flex items-center justify-center bg-zinc-100 text-zinc-950 text-[11px] font-bold h-5 px-1.5 rounded-sm">
               {selectedCount}
             </span>
             <span className="font-medium text-zinc-300">

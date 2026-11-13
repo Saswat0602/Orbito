@@ -492,10 +492,10 @@ export default function ProjectTasksPage() {
             className="gap-1.5 text-xs h-8 border-zinc-800 bg-zinc-950/60 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer relative"
             title="Today's Agenda"
           >
-            <CalendarCheck className="h-3.5 w-3.5 text-indigo-400" />
+            <CalendarCheck className="h-3.5 w-3.5 text-zinc-400" />
             <span className="hidden sm:inline">Agenda</span>
             {todayTasksCount > 0 && (
-              <span className="flex items-center justify-center bg-indigo-600 text-white text-[10px] font-bold h-4 w-4 rounded-full">
+              <span className="flex items-center justify-center bg-zinc-100 text-zinc-950 text-[10px] font-bold h-4 w-4 rounded-full">
                 {todayTasksCount}
               </span>
             )}
@@ -653,7 +653,7 @@ export default function ProjectTasksPage() {
                               onClick={() => handleTaskClick(task.id)}
                               className={`flex items-center px-3 py-2.5 transition-colors cursor-pointer group select-none min-w-[750px] ${
                                 isSelected
-                                  ? 'bg-indigo-950/20 hover:bg-indigo-950/30'
+                                  ? 'bg-zinc-850/70 hover:bg-zinc-850'
                                   : 'hover:bg-zinc-900/60'
                               }`}
                             >
@@ -666,7 +666,7 @@ export default function ProjectTasksPage() {
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={() => {}}
-                                  className="rounded border-zinc-700 bg-zinc-800 text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5"
+                                  className="rounded border-zinc-700 bg-zinc-800 text-zinc-100 accent-zinc-200 focus:ring-0 cursor-pointer h-3.5 w-3.5"
                                 />
                               </div>
 

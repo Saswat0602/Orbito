@@ -79,8 +79,8 @@ export function Navbar() {
         <div className="flex items-center gap-2 min-w-0">
           {isAdminRoute ? (
             <div className="flex items-center gap-2 text-xs">
-              <div className="flex items-center gap-1.5 text-rose-400 font-semibold">
-                <Shield className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1.5 text-zinc-300 font-semibold">
+                <Shield className="h-3.5 w-3.5 text-zinc-400" />
                 <span>Administration</span>
               </div>
               <ChevronRight className="h-3 w-3 text-zinc-600" />
@@ -97,7 +97,7 @@ export function Navbar() {
                   ? 'Queues & Workers'
                   : 'Root Console'}
               </span>
-              <Badge variant="destructive" className="text-[9px] py-0 px-1 ml-1">
+              <Badge variant="outline" className="text-[9px] py-0 px-1 ml-1 border-zinc-750 bg-zinc-850/80 text-zinc-400 font-mono">
                 Root
               </Badge>
             </div>
@@ -158,12 +158,12 @@ export function Navbar() {
             variant="outline"
             size="sm"
             onClick={() => dispatch(toggleAiChat())}
-            className="h-8 text-xs border-violet-900/50 bg-violet-950/20 hover:bg-violet-900/40 text-violet-300 font-medium cursor-pointer flex items-center gap-1.5"
+            className="h-8 text-xs border-zinc-800 bg-zinc-900/80 hover:bg-zinc-850 hover:text-white text-zinc-300 font-medium cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors"
             title="Orbito AI Copilot (⌘J)"
           >
-            <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+            <Sparkles className="h-3.5 w-3.5 text-zinc-400" />
             <span className="hidden md:inline">Copilot</span>
-            <kbd className="hidden lg:inline-flex items-center text-[10px] font-mono text-violet-400/80 bg-violet-950/60 border border-violet-800/40 px-1 rounded-xs">
+            <kbd className="hidden lg:inline-flex items-center text-[10px] font-mono text-zinc-400 bg-zinc-800 border border-zinc-700/60 px-1 rounded-xs">
               ⌘J
             </kbd>
           </Button>

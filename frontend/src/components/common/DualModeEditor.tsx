@@ -307,7 +307,7 @@ export function DualModeEditor({
                   insertFormat('@', '', '');
                   setMentionQuery('');
                 }}
-                className="p-1 rounded-sm text-violet-400 hover:text-violet-300 hover:bg-violet-950/40 disabled:opacity-40 transition-colors"
+                className="p-1 rounded-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 transition-colors cursor-pointer"
                 title="Mention Collaborator (@)"
               >
                 <AtSign className="w-3.5 h-3.5" />
@@ -361,7 +361,7 @@ export function DualModeEditor({
             onKeyDown={handleTextareaKeyDown}
             onBlur={onBlur}
             placeholder={placeholder}
-            className="w-full bg-transparent border-0 resize-y p-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden font-mono leading-relaxed selection:bg-violet-900/60"
+            className="w-full bg-transparent border-0 resize-y p-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden font-mono leading-relaxed selection:bg-zinc-800"
           />
         ) : (
           <div className="p-3 min-h-[100px] text-xs leading-relaxed text-zinc-300 prose prose-invert prose-xs max-w-none [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:bg-zinc-900 [&_code]:border [&_code]:border-zinc-800 [&_code]:rounded-xs [&_code]:text-violet-300 [&_pre]:bg-zinc-950 [&_pre]:p-2.5 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-zinc-800">
@@ -393,7 +393,7 @@ export function DualModeEditor({
                   onClick={() => handleSelectMention(name)}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-sm text-left text-xs cursor-pointer transition-colors ${
                     isSelected
-                      ? 'bg-violet-950/60 text-violet-200 border border-violet-800/40'
+                      ? 'bg-zinc-800 text-zinc-100 border border-zinc-700'
                       : 'text-zinc-300 hover:bg-zinc-900'
                   }`}
                 >

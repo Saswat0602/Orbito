@@ -185,11 +185,7 @@ export function ProjectCard({
           <div className="h-1.5 w-full rounded-full bg-zinc-950 overflow-hidden border border-zinc-850">
             <div
               className={`h-full transition-all duration-500 ${
-                completionRate >= 75
-                  ? 'bg-emerald-500'
-                  : completionRate >= 40
-                  ? 'bg-amber-500'
-                  : 'bg-violet-600'
+                completionRate === 100 ? 'bg-zinc-100' : 'bg-zinc-300'
               }`}
               style={{ width: `${Math.min(100, Math.max(0, completionRate))}%` }}
             />

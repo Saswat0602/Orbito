@@ -177,22 +177,19 @@ export default function AdminUserDetailPage() {
                   <h1 className="text-xl font-bold tracking-tight text-zinc-100">{displayName}</h1>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${
-                      user.role === Role.SUPER_ADMIN
-                        ? 'border-purple-800 text-purple-400 bg-purple-950/40'
-                        : 'border-zinc-700 text-zinc-300 bg-zinc-900'
-                    }`}
+                    className="text-[10px] font-mono border-zinc-750 text-zinc-300 bg-zinc-850/80"
                   >
                     {user.role}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${
-                      user.status === UserStatus.ACTIVE
-                        ? 'border-emerald-800 text-emerald-400 bg-emerald-950/40'
-                        : 'border-rose-800 text-rose-400 bg-rose-950/40'
-                    }`}
+                    className="text-[10px] font-mono border-zinc-800 text-zinc-300 bg-zinc-900/80 flex items-center gap-1.5"
                   >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                        user.status === UserStatus.ACTIVE ? 'bg-emerald-400' : 'bg-rose-400'
+                      }`}
+                    />
                     {user.status}
                   </Badge>
                 </div>

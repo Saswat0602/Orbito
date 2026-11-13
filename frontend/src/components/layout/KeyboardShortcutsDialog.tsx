@@ -167,7 +167,7 @@ export function KeyboardShortcutsDialog({
       <DialogContent className="sm:max-w-xl bg-zinc-950 border-zinc-800 text-zinc-200 p-0 shadow-2xl rounded-xl overflow-hidden">
         <DialogHeader className="p-5 pb-3 border-b border-zinc-850 bg-zinc-900/60">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-md bg-indigo-950/50 border border-indigo-800/40 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="h-10 w-10 rounded-md bg-zinc-850 border border-zinc-750 flex items-center justify-center text-zinc-200 shrink-0">
               <Keyboard className="h-5 w-5" />
             </div>
             <div>

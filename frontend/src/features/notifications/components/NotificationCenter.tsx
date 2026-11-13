@@ -212,21 +212,21 @@ export function NotificationCenter() {
   const getNotificationIcon = (type: string) => {
     const upper = (type || '').toUpperCase();
     if (upper.includes('COMMENT') || upper.includes('MENTION')) {
-      return { icon: MessageSquare, color: 'text-violet-400 bg-violet-950/60' };
+      return { icon: MessageSquare, color: 'text-zinc-200 bg-zinc-850 border border-zinc-750' };
     }
     if (upper.includes('STATUS')) {
-      return { icon: CheckCircle2, color: 'text-emerald-400 bg-emerald-950/60' };
+      return { icon: CheckCircle2, color: 'text-zinc-200 bg-zinc-850 border border-zinc-750' };
     }
     if (upper.includes('DUE')) {
-      return { icon: Clock, color: 'text-amber-400 bg-amber-950/60' };
+      return { icon: Clock, color: 'text-zinc-200 bg-zinc-850 border border-zinc-750' };
     }
     if (upper.includes('INVIT')) {
-      return { icon: UserPlus, color: 'text-cyan-400 bg-cyan-950/60' };
+      return { icon: UserPlus, color: 'text-zinc-200 bg-zinc-850 border border-zinc-750' };
     }
     if (upper.includes('TASK')) {
-      return { icon: CheckSquare, color: 'text-blue-400 bg-blue-950/60' };
+      return { icon: CheckSquare, color: 'text-zinc-200 bg-zinc-850 border border-zinc-750' };
     }
-    return { icon: Bell, color: 'text-zinc-400 bg-zinc-900' };
+    return { icon: Bell, color: 'text-zinc-400 bg-zinc-900 border border-zinc-800' };
   };
 
   return (
@@ -372,7 +372,7 @@ export function NotificationCenter() {
                 }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                   isSelected
-                    ? 'bg-violet-600 text-white font-bold shadow-xs'
+                    ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
                     : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
                 }`}
               >

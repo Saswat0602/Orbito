@@ -25,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useUpdateProfileMutation } from '@/lib/store/api/usersApi';
 
@@ -122,7 +123,7 @@ export function AISettings() {
     <Card className="border-zinc-800 bg-zinc-900/80 max-w-2xl">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-indigo-400" />
+          <Bot className="h-5 w-5 text-zinc-200" />
           <CardTitle className="text-base text-zinc-100">Orbito AI Copilot Preferences</CardTitle>
         </div>
         <CardDescription className="text-xs text-zinc-400">
@@ -152,19 +153,19 @@ export function AISettings() {
                     onClick={() => setSelectedPersona(persona.id)}
                     className={`p-3.5 rounded-md border text-left cursor-pointer transition-all flex flex-col justify-between space-y-2 select-none ${
                       isSelected
-                        ? 'bg-indigo-950/20 border-indigo-500/60 ring-1 ring-indigo-500/30'
+                        ? 'bg-zinc-800/90 border-zinc-500 text-zinc-100 ring-1 ring-zinc-500/30'
                         : 'bg-zinc-950/60 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Icon className={`h-4 w-4 ${isSelected ? 'text-indigo-400' : 'text-zinc-400'}`} />
+                        <Icon className={`h-4 w-4 ${isSelected ? 'text-zinc-100' : 'text-zinc-400'}`} />
                         <span className="text-xs font-semibold text-zinc-200">
                           {persona.name}
                         </span>
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-zinc-100 shrink-0" />
                       )}
                     </div>
                     <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
@@ -188,7 +189,7 @@ export function AISettings() {
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="e.g. You are a senior QA engineer. Always verify testing coverage, boundary checks, and automated mock specifications..."
-                className="w-full rounded-md bg-zinc-950 border border-zinc-800 p-2.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/60"
+                className="w-full rounded-md bg-zinc-950 border border-zinc-800 p-2.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 font-sans"
               />
             </div>
           )}
@@ -200,7 +201,7 @@ export function AISettings() {
                 <Sliders className="h-3.5 w-3.5 text-zinc-400" />
                 <span>Creativity & Temperature</span>
               </Label>
-              <span className="text-xs font-mono font-bold text-indigo-400">
+              <span className="text-xs font-mono font-bold text-zinc-200">
                 {temperature.toFixed(2)}
               </span>
             </div>
@@ -213,7 +214,7 @@ export function AISettings() {
               step="0.05"
               value={temperature}
               onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+              className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-200"
             />
 
             <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
@@ -228,7 +229,7 @@ export function AISettings() {
             <div className="flex items-center justify-between p-3 rounded-md bg-zinc-950/40 border border-zinc-850">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
-                  <Mic className="h-4 w-4 text-indigo-400" />
+                  <Mic className="h-4 w-4 text-zinc-300" />
                 </div>
                 <div>
                   <h5 className="text-xs font-medium text-zinc-200">
@@ -240,11 +241,10 @@ export function AISettings() {
                 </div>
               </div>
 
-              <input
-                type="checkbox"
+              <Switch
                 checked={autoSendVoice}
-                onChange={(e) => setAutoSendVoice(e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-indigo-600 focus:ring-0 cursor-pointer"
+                onCheckedChange={setAutoSendVoice}
+                aria-label="Toggle voice dictation auto-submit"
               />
             </div>
           </div>
@@ -252,10 +252,9 @@ export function AISettings() {
           {/* Save Button */}
           <Button
             type="submit"
-            variant="primary"
             size="sm"
             disabled={isLoading}
-            className="gap-2 text-xs"
+            className="gap-2 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold shadow-xs cursor-pointer transition-colors"
           >
             <Save className="h-3.5 w-3.5" />
             <span>{isLoading ? 'Saving...' : 'Save AI Preferences'}</span>

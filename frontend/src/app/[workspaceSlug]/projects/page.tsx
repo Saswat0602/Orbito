@@ -228,7 +228,7 @@ export default function WorkspaceProjectsPage() {
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 transition-colors cursor-pointer px-2 py-1 rounded bg-violet-950/40 border border-violet-800/40"
+                className="flex items-center gap-1 text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 hover:border-zinc-750"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Reset Filters</span>

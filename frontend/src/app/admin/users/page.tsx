@@ -235,12 +235,13 @@ export default function AdminUsersPage() {
                         {/* Status Badge */}
                         <Badge
                           variant="outline"
-                          className={`text-[10px] uppercase font-semibold ${
-                            u.status === UserStatus.ACTIVE
-                              ? 'border-emerald-800/60 text-emerald-400 bg-emerald-950/30'
-                              : 'border-rose-800/60 text-rose-400 bg-rose-950/30'
-                          }`}
+                          className="text-[10px] uppercase font-medium border-zinc-800 bg-zinc-900/80 text-zinc-300 flex items-center gap-1.5"
                         >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                              u.status === UserStatus.ACTIVE ? 'bg-emerald-400' : 'bg-rose-400'
+                            }`}
+                          />
                           {u.status}
                         </Badge>
 

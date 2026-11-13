@@ -137,7 +137,7 @@ export const ColumnManager: React.FC<ColumnManagerProps> = ({
                   <div
                     className={`h-4 w-4 rounded flex items-center justify-center border transition-colors ${
                       column.visible
-                        ? 'bg-indigo-600 border-indigo-500 text-white'
+                        ? 'bg-zinc-100 border-white text-zinc-950 font-bold'
                         : 'border-zinc-700 bg-zinc-800/40'
                     }`}
                   >

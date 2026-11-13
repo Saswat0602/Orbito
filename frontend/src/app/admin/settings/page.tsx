@@ -12,8 +12,6 @@ import {
   Send,
   Lock,
   Globe,
-  ToggleLeft,
-  ToggleRight,
   Sparkles,
   Bot,
   Loader2,
@@ -34,6 +32,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 
 export default function AdminSettingsPage() {
   const { data: configData, isLoading: isConfigLoading } = useGetAdminConfigQuery();
@@ -192,7 +191,7 @@ export default function AdminSettingsPage() {
               <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
                 System & Security Settings
               </h1>
-              <Badge variant="destructive" className="text-[10px] uppercase font-bold tracking-wider">
+              <Badge variant="outline" className="text-[10px] uppercase font-mono tracking-wider border-zinc-700 bg-zinc-850/80 text-zinc-300">
                 Root Config
               </Badge>
             </div>
@@ -208,7 +207,7 @@ export default function AdminSettingsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-md bg-blue-950/60 border border-blue-900/60 flex items-center justify-center text-blue-400">
+                  <div className="h-8 w-8 rounded-md bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-zinc-200">
                     <Globe className="h-4 w-4" />
                   </div>
                   <div>
@@ -221,42 +220,29 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleToggleRegistration}
-                  disabled={isSaving}
-                  className={`h-8 text-xs border-zinc-800 cursor-pointer ${
-                    isPublicRegEnabled
-                      ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80 hover:bg-emerald-900/50'
-                      : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  {isPublicRegEnabled ? (
-                    <>
-                      <ToggleRight className="h-4 w-4 mr-1.5 text-emerald-400" />
-                      Public Registration: Enabled
-                    </>
-                  ) : (
-                    <>
-                      <ToggleLeft className="h-4 w-4 mr-1.5 text-zinc-500" />
-                      Public Registration: Restricted
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-medium text-zinc-400">
+                    {isPublicRegEnabled ? 'Enabled' : 'Restricted'}
+                  </span>
+                  <Switch
+                    checked={isPublicRegEnabled}
+                    onCheckedChange={handleToggleRegistration}
+                    disabled={isSaving}
+                    aria-label="Toggle Public Registration"
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="p-3 rounded-md bg-zinc-950/60 border border-zinc-850 text-xs text-zinc-400">
-                {isPublicRegEnabled ? (
-                  <p className="text-emerald-400/90 font-medium">
-                    ✓ Self-service signups are active at <code>/register</code>. Any user can register their own tenant organization.
-                  </p>
-                ) : (
-                  <p className="text-amber-400/90 font-medium">
-                    ⚠ Public signups are closed. Only users with a direct invite token from an existing workspace or organization can onboard.
-                  </p>
-                )}
+              <div className="p-3 rounded-md bg-zinc-950/60 border border-zinc-800/80 flex items-start gap-2.5 text-xs text-zinc-400">
+                <span className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${isPublicRegEnabled ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                <p className="leading-relaxed">
+                  {isPublicRegEnabled ? (
+                    <>Self-service registration is <strong className="text-zinc-200 font-medium">active</strong> at <code className="text-zinc-300 px-1 py-0.5 rounded bg-zinc-900 border border-zinc-800 font-mono">/register</code>. Any user can register their own tenant organization.</>
+                  ) : (
+                    <>Public registration is <strong className="text-zinc-200 font-medium">restricted</strong>. Only users with a direct invite token from an existing workspace or organization can onboard.</>
+                  )}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -266,7 +252,7 @@ export default function AdminSettingsPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-md bg-violet-950/60 border border-violet-900/60 flex items-center justify-center text-violet-400">
+                  <div className="h-8 w-8 rounded-md bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-zinc-200">
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <div>
@@ -274,7 +260,7 @@ export default function AdminSettingsPage() {
                       <CardTitle className="text-sm font-semibold text-zinc-100">
                         Orbito AI Copilot & LLM Provider
                       </CardTitle>
-                      <Badge variant="outline" className="text-[10px] bg-violet-950/40 border-violet-800/40 text-violet-400">
+                      <Badge variant="outline" className="text-[10px] font-mono tracking-wider border-zinc-800 bg-zinc-850/60 text-zinc-400">
                         Generative AI
                       </Badge>
                     </div>
@@ -284,29 +270,17 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleToggleAi}
-                  disabled={isSaving}
-                  className={`h-8 text-xs border-zinc-800 cursor-pointer ${
-                    isAiEnabled
-                      ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80 hover:bg-emerald-900/50'
-                      : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  {isAiEnabled ? (
-                    <>
-                      <ToggleRight className="h-4 w-4 mr-1.5 text-emerald-400" />
-                      AI Copilot: Enabled
-                    </>
-                  ) : (
-                    <>
-                      <ToggleLeft className="h-4 w-4 mr-1.5 text-zinc-500" />
-                      AI Copilot: Disabled
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-medium text-zinc-400">
+                    {isAiEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                  <Switch
+                    checked={isAiEnabled}
+                    onCheckedChange={handleToggleAi}
+                    disabled={isSaving}
+                    aria-label="Toggle AI Copilot"
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-0">
@@ -320,7 +294,7 @@ export default function AdminSettingsPage() {
                       setAiApiUrl('https://openrouter.ai/api/v1');
                       setAiModel('anthropic/claude-3.5-sonnet');
                     }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
                   >
                     OpenRouter (Claude 3.5 Sonnet)
                   </button>
@@ -330,7 +304,7 @@ export default function AdminSettingsPage() {
                       setAiApiUrl('https://api.openai.com/v1');
                       setAiModel('gpt-4o-mini');
                     }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
                   >
                     OpenAI (GPT-4o Mini)
                   </button>
@@ -340,7 +314,7 @@ export default function AdminSettingsPage() {
                       setAiApiUrl('http://localhost:11434');
                       setAiModel('llama3.2');
                     }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-violet-600/50 hover:text-violet-300 transition-colors"
+                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
                   >
                     Ollama Local (llama3.2)
                   </button>
@@ -399,12 +373,12 @@ export default function AdminSettingsPage() {
                 >
                   {isTestingAi ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin text-violet-400" />
+                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin text-zinc-300" />
                       Testing Endpoint...
                     </>
                   ) : (
                     <>
-                      <Cpu className="h-3.5 w-3.5 mr-1.5 text-violet-400" />
+                      <Cpu className="h-3.5 w-3.5 mr-1.5 text-zinc-400" />
                       Test AI Connection
                     </>
                   )}
@@ -415,7 +389,7 @@ export default function AdminSettingsPage() {
                   size="sm"
                   onClick={handleSaveAiConfig}
                   disabled={isSaving}
-                  className="h-8 text-xs bg-violet-600 hover:bg-violet-500 text-white cursor-pointer"
+                  className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold shadow-xs cursor-pointer transition-colors"
                 >
                   Save AI Configuration
                 </Button>
@@ -427,7 +401,7 @@ export default function AdminSettingsPage() {
           <Card className="border-zinc-800 bg-zinc-900/60">
             <CardHeader>
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-md bg-purple-950/60 border border-purple-900/60 flex items-center justify-center text-purple-400">
+                <div className="h-8 w-8 rounded-md bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-zinc-200">
                   <KeyRound className="h-4 w-4" />
                 </div>
                 <div>
@@ -444,8 +418,8 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-md bg-zinc-950/60 border border-zinc-850 space-y-1">
                   <span className="text-[10px] uppercase font-bold text-zinc-500">SSO Provider Status</span>
-                  <div className="flex items-center gap-2 font-medium text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <div className="flex items-center gap-2 font-medium text-zinc-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     <span>OIDC Exchange Active</span>
                   </div>
                 </div>
@@ -479,7 +453,7 @@ export default function AdminSettingsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-md bg-amber-950/60 border border-amber-900/60 flex items-center justify-center text-amber-400">
+                  <div className="h-8 w-8 rounded-md bg-zinc-800/80 border border-zinc-700/80 flex items-center justify-center text-zinc-200">
                     <Mail className="h-4 w-4" />
                   </div>
                   <div>
@@ -497,7 +471,7 @@ export default function AdminSettingsPage() {
                   size="sm"
                   onClick={handleTestSmtp}
                   disabled={isTestingSmtp}
-                  className="h-8 text-xs border-zinc-800 text-zinc-300 hover:bg-zinc-850"
+                  className="h-8 text-xs border-zinc-800 text-zinc-300 hover:bg-zinc-850 cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5 mr-1.5 text-zinc-400" />
                   {isTestingSmtp ? 'Testing Connection...' : 'Test SMTP Connection'}

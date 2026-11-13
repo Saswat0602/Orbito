@@ -312,7 +312,7 @@ export default function WorkspaceMembersPage() {
                           {isCurrentUser && (
                             <Badge
                               variant="outline"
-                              className="text-[9px] uppercase font-mono px-1 py-0 bg-violet-950/40 text-violet-300 border-violet-800/50"
+                              className="text-[9px] uppercase font-mono px-1.5 py-0 bg-zinc-850 text-zinc-300 border-zinc-750"
                             >
                               You
                             </Badge>

@@ -51,7 +51,7 @@ export default function AdminConsolePage() {
               <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
                 System Administration
               </h1>
-              <Badge variant="destructive" className="text-[10px] uppercase font-bold tracking-wider">
+              <Badge variant="outline" className="text-[10px] uppercase font-mono tracking-wider border-zinc-750 bg-zinc-850/80 text-zinc-300">
                 Root Access
               </Badge>
             </div>
@@ -144,10 +144,10 @@ export default function AdminConsolePage() {
           <Link href="/admin/users" className="group">
             <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="h-9 w-9 rounded-md bg-blue-950/60 border border-blue-900/60 flex items-center justify-center text-blue-400">
+                <div className="h-9 w-9 rounded-md bg-zinc-850/80 border border-zinc-750 flex items-center justify-center text-zinc-300 group-hover:border-zinc-600 group-hover:text-white transition-colors">
                   <Users className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors">
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
                   User Directory
                 </h3>
                 <p className="text-xs text-zinc-400">
@@ -163,10 +163,10 @@ export default function AdminConsolePage() {
           <Link href="/admin/organizations" className="group">
             <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="h-9 w-9 rounded-md bg-emerald-950/60 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                <div className="h-9 w-9 rounded-md bg-zinc-850/80 border border-zinc-750 flex items-center justify-center text-zinc-300 group-hover:border-zinc-600 group-hover:text-white transition-colors">
                   <Building2 className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
                   Tenant Organizations
                 </h3>
                 <p className="text-xs text-zinc-400">
@@ -182,10 +182,10 @@ export default function AdminConsolePage() {
           <Link href="/admin/settings" className="group">
             <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="h-9 w-9 rounded-md bg-purple-950/60 border border-purple-900/60 flex items-center justify-center text-purple-400">
+                <div className="h-9 w-9 rounded-md bg-zinc-850/80 border border-zinc-750 flex items-center justify-center text-zinc-300 group-hover:border-zinc-600 group-hover:text-white transition-colors">
                   <Sliders className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors">
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
                   System & SSO
                 </h3>
                 <p className="text-xs text-zinc-400">
@@ -201,10 +201,10 @@ export default function AdminConsolePage() {
           <Link href="/admin/queues" className="group">
             <Card className="border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700 transition-all p-5 h-full flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="h-9 w-9 rounded-md bg-amber-950/60 border border-amber-900/60 flex items-center justify-center text-amber-400">
+                <div className="h-9 w-9 rounded-md bg-zinc-850/80 border border-zinc-750 flex items-center justify-center text-zinc-300 group-hover:border-zinc-600 group-hover:text-white transition-colors">
                   <Cpu className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-amber-400 transition-colors">
+                <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
                   Queue & Workers
                 </h3>
                 <p className="text-xs text-zinc-400">

@@ -384,7 +384,7 @@ export function Sidebar() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Administration
                 </span>
-                <span className="text-[9px] font-semibold tracking-wider text-rose-500 bg-rose-950/60 border border-rose-900/60 px-1 py-0.2 rounded-sm">
+                <span className="text-[9px] font-mono font-medium tracking-wider text-zinc-400 bg-zinc-850 border border-zinc-750 px-1.5 py-0.2 rounded-sm">
                   ROOT
                 </span>
               </div>
@@ -403,7 +403,7 @@ export function Sidebar() {
                       flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors
                       ${
                         isActive
-                          ? 'bg-rose-950/80 text-rose-200 border border-rose-800 shadow-xs'
+                          ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-xs'
                           : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
                       }
                     `}
@@ -414,9 +414,9 @@ export function Sidebar() {
                     </div>
                     {item.badge && (
                       <span
-                        className={`text-[9px] px-1 py-0.2 rounded-sm font-semibold uppercase tracking-wider ${
+                        className={`text-[9px] px-1.5 py-0.2 rounded-sm font-semibold uppercase tracking-wider ${
                           isActive
-                            ? 'bg-rose-900/90 text-rose-100'
+                            ? 'bg-zinc-200 text-zinc-900 font-bold'
                             : 'bg-zinc-800 text-zinc-400'
                         }`}
                       >

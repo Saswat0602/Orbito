@@ -166,12 +166,13 @@ export default function AdminOrganizationDetailPage() {
           </div>
           <Badge
             variant="outline"
-            className={`text-[10px] uppercase font-semibold ${
-              org.archive
-                ? 'border-amber-800/60 text-amber-400 bg-amber-950/30'
-                : 'border-emerald-800/60 text-emerald-400 bg-emerald-950/30'
-            }`}
+            className="text-[10px] uppercase font-medium border-zinc-800 bg-zinc-900/80 text-zinc-300 flex items-center gap-1.5"
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                org.archive ? 'bg-amber-400' : 'bg-emerald-400'
+              }`}
+            />
             {org.archive ? 'Suspended / Archived' : 'Active Tenant'}
           </Badge>
         </div>
@@ -215,11 +216,7 @@ export default function AdminOrganizationDetailPage() {
                   size="sm"
                   onClick={handleToggleArchive}
                   disabled={isTogglingArchive}
-                  className={`h-8 text-xs border-zinc-800 ${
-                    org.archive
-                      ? 'text-emerald-400 hover:bg-emerald-950/40'
-                      : 'text-amber-400 hover:bg-amber-950/40'
-                  }`}
+                  className="h-8 text-xs border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 cursor-pointer"
                 >
                   {org.archive ? (
                     <>
@@ -238,17 +235,17 @@ export default function AdminOrganizationDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsTransferModalOpen(true)}
-                  className="h-8 text-xs border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800"
+                  className="h-8 text-xs border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 cursor-pointer"
                 >
                   <UserCog className="h-3.5 w-3.5 mr-1.5 text-zinc-400" />
                   Transfer Ownership
                 </Button>
 
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsDeleteModalOpen(true)}
-                  className="h-8 text-xs bg-rose-950/50 hover:bg-rose-900 border border-rose-800/80 text-rose-300"
+                  className="h-8 text-xs bg-zinc-900 hover:bg-zinc-850 border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-rose-400 cursor-pointer transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1.5" />
                   Delete Tenant

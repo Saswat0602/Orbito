@@ -77,7 +77,7 @@ export const SortingManager: React.FC<SortingManagerProps> = ({
           size="sm"
           className={`h-8 border-zinc-800 bg-zinc-950/60 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 transition-colors gap-1.5 cursor-pointer ${
             sortField !== 'createdAt'
-              ? 'border-indigo-500/40 bg-indigo-950/20 text-indigo-300'
+              ? 'border-zinc-700 bg-zinc-850 text-zinc-100 font-medium'
               : ''
           }`}
           title="Sort tasks"

@@ -27,6 +27,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-theme="dark" className="dark" suppressHydrationWarning>
+      <head>
+        <title>Orbito | Enterprise Work Management</title>
+        <meta name="description" content="Enterprise Task, Project & Work Management Platform" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+      </head>
       <body className="bg-[#09090b] text-zinc-100 antialiased min-h-screen">
         <StoreProvider>
           <AuthProvider>

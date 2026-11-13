@@ -51,6 +51,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -535,13 +536,11 @@ export function ProjectInboxTab({
                 </h4>
 
                 <div className="flex items-center gap-3">
-                  <input
+                  <Switch
                     id="autoTask"
-                    type="checkbox"
                     checked={autoCreateTask}
-                    onChange={(e) => setAutoCreateTask(e.target.checked)}
+                    onCheckedChange={setAutoCreateTask}
                     disabled={!canEdit}
-                    className="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-indigo-600 focus:ring-0"
                   />
                   <Label htmlFor="autoTask" className="text-xs text-zinc-300 cursor-pointer">
                     Automatically create tasks from incoming emails
@@ -962,13 +961,11 @@ export function ProjectInboxTab({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <input
+              <div className="flex items-center gap-2.5 pt-1">
+                <Switch
                   id="stopMatch"
-                  type="checkbox"
                   checked={stopOnMatch}
-                  onChange={(e) => setStopOnMatch(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-zinc-700 bg-zinc-950 text-indigo-600"
+                  onCheckedChange={setStopOnMatch}
                 />
                 <Label htmlFor="stopMatch" className="text-xs text-zinc-400 cursor-pointer">
                   Stop evaluating subsequent rules on match

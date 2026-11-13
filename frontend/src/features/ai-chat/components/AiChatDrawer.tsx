@@ -314,13 +314,13 @@ export function AiChatDrawer() {
         {/* Top Header */}
         <div className="h-14 px-4 border-b border-zinc-800/80 flex items-center justify-between shrink-0 bg-[#09090b]/80 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-md bg-violet-950/60 border border-violet-800/50 text-violet-400">
-              <Sparkles className="w-4 h-4 animate-pulse" />
+            <div className="p-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-200">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-zinc-100 tracking-tight">Orbito Copilot</span>
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-sm bg-zinc-850 text-zinc-300 border border-zinc-750">
                   AI
                 </span>
               </div>
@@ -378,7 +378,7 @@ export function AiChatDrawer() {
                 type="button"
                 onClick={handleNewChat}
                 disabled={isCreatingConv}
-                className="flex items-center gap-1 text-[11px] font-medium text-violet-400 hover:text-violet-300 px-2 py-0.5 rounded-sm bg-violet-950/40 border border-violet-800/40 hover:bg-violet-900/40 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium text-zinc-200 hover:text-white px-2 py-0.5 rounded-sm bg-zinc-850 border border-zinc-750 hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <Plus className="w-3 h-3" />
                 New Chat
@@ -475,7 +475,7 @@ export function AiChatDrawer() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col justify-center items-center text-center p-4 space-y-5">
-              <div className="w-12 h-12 rounded-xl bg-violet-950/40 border border-violet-800/40 flex items-center justify-center text-violet-400 shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-zinc-850 border border-zinc-750 flex items-center justify-center text-zinc-200 shadow-inner">
                 <Sparkles className="w-6 h-6" />
               </div>
               <div className="space-y-1.5">
@@ -497,10 +497,10 @@ export function AiChatDrawer() {
                       key={idx}
                       type="button"
                       onClick={() => handleSendMessage(item.prompt)}
-                      className="text-left px-3 py-2 rounded-md bg-zinc-900/60 border border-zinc-800/80 hover:border-violet-700/50 hover:bg-zinc-800/60 text-xs text-zinc-300 transition-all flex items-center justify-between group"
+                      className="text-left px-3 py-2 rounded-md bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-600 hover:bg-zinc-850/60 text-xs text-zinc-300 transition-all flex items-center justify-between group cursor-pointer"
                     >
                       <span className="font-medium text-zinc-200">{item.label}</span>
-                      <span className="text-[11px] text-zinc-500 group-hover:text-violet-400 truncate ml-2">
+                      <span className="text-[11px] text-zinc-500 group-hover:text-zinc-300 truncate ml-2">
                         {item.prompt}
                       </span>
                     </button>
@@ -618,7 +618,7 @@ export function AiChatDrawer() {
                 type="button"
                 onClick={() => handleSendMessage()}
                 disabled={!inputValue.trim() || isSending}
-                className="p-1.5 rounded-md bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-40 disabled:hover:bg-violet-600 transition-colors"
+                className="p-1.5 rounded-md bg-zinc-100 text-zinc-950 hover:bg-white disabled:opacity-40 disabled:hover:bg-zinc-100 transition-colors cursor-pointer shadow-xs"
                 title="Send Message"
               >
                 <Send className="w-4 h-4" />

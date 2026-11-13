@@ -122,7 +122,7 @@ export default function AdminOrganizationsPage() {
                               {org.name}
                             </span>
                             {org.archive && (
-                              <Badge variant="destructive" className="text-[9px] py-0 px-1">
+                              <Badge variant="outline" className="text-[9px] py-0 px-1 border-zinc-750 bg-zinc-850/80 text-zinc-300 font-mono">
                                 Suspended
                               </Badge>
                             )}
@@ -172,20 +172,16 @@ export default function AdminOrganizationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleArchive(org.id, org.archive)}
-                          className={`h-7 text-xs border-zinc-800 ${
-                            org.archive
-                              ? 'text-emerald-400 hover:bg-emerald-950/40'
-                              : 'text-zinc-400 hover:text-amber-400 hover:bg-zinc-800'
-                          }`}
+                          className="h-7 text-xs border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 cursor-pointer"
                         >
                           {org.archive ? (
                             <>
-                              <ArchiveRestore className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                              <ArchiveRestore className="h-3.5 w-3.5 mr-1 text-zinc-300" />
                               Restore
                             </>
                           ) : (
                             <>
-                              <Archive className="h-3.5 w-3.5 mr-1" />
+                              <Archive className="h-3.5 w-3.5 mr-1 text-zinc-400" />
                               Suspend
                             </>
                           )}
