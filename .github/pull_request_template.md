@@ -19,3 +19,4 @@ Please verify before requesting review:
 - [ ] **Obsidian Monochrome System**: UI adheres to Obsidian design tokens (`#09090b` canvas, `zinc-900` cards, 1px `border-zinc-800`, 4px radii)
 - [ ] **No Hallucinated Imports / Zero `any`**: All imports verified and strict types maintained
 - [ ] **Security**: No secrets or hardcoded production credentials committed
+

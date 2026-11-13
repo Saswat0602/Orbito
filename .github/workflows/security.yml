@@ -46,3 +46,4 @@ jobs:
 
       - name: Run NPM Audit
         run: npm audit --audit-level=critical || echo "⚠️ Critical dependencies found, review required."
+
