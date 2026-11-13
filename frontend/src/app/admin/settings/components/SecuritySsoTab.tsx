@@ -5,6 +5,13 @@ import { Eye, EyeOff, Copy, Check, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface SecuritySsoTabProps {
   isSsoEnabled: boolean;
@@ -185,30 +192,44 @@ export function SecuritySsoTab({
         <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-zinc-300">Default Role for New SSO Users</label>
-            <select
+            <Select
               value={ssoDefaultRole}
-              onChange={(e) => setSsoDefaultRole(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
+              onValueChange={(val) => setSsoDefaultRole(val)}
             >
-              <option value="MEMBER">MEMBER (Standard Workspace Contributor)</option>
-              <option value="VIEWER">VIEWER (Read-Only Access)</option>
-              <option value="MANAGER">MANAGER (Workspace Manager)</option>
-            </select>
+              <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="MEMBER" className="text-xs">
+                  MEMBER (Standard Workspace Contributor)
+                </SelectItem>
+                <SelectItem value="VIEWER" className="text-xs">
+                  VIEWER (Read-Only Access)
+                </SelectItem>
+                <SelectItem value="MANAGER" className="text-xs">
+                  MANAGER (Workspace Manager)
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-zinc-300">Session Inactivity Timeout</label>
-            <select
+            <Select
               value={sessionTimeout}
-              onChange={(e) => setSessionTimeout(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
+              onValueChange={(val) => setSessionTimeout(val)}
             >
-              <option value="15">15 Minutes (High Security)</option>
-              <option value="60">1 Hour (Standard)</option>
-              <option value="240">4 Hours</option>
-              <option value="1440">24 Hours</option>
-              <option value="10080">7 Days (Extended Remember Me)</option>
-            </select>
+              <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="15" className="text-xs">15 Minutes (High Security)</SelectItem>
+                <SelectItem value="60" className="text-xs">1 Hour (Standard)</SelectItem>
+                <SelectItem value="240" className="text-xs">4 Hours</SelectItem>
+                <SelectItem value="1440" className="text-xs">24 Hours</SelectItem>
+                <SelectItem value="10080" className="text-xs">7 Days (Extended Remember Me)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

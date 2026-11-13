@@ -17,6 +17,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface InviteMemberModalProps {
   open: boolean;
@@ -125,16 +132,28 @@ export function InviteMemberModal({
               <Label htmlFor="inviteRole" className="text-xs text-zinc-300">
                 Workspace Role
               </Label>
-              <select
-                id="inviteRole"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full h-9 px-3 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-zinc-600"
-              >
-                <option value="MEMBER">Member (Can create & edit tasks)</option>
-                <option value="MANAGER">Manager (Can manage projects & settings)</option>
-                <option value="VIEWER">Viewer (Read-only access)</option>
-              </select>
+              <Select value={role} onValueChange={(val) => setRole(val)}>
+                <SelectTrigger
+                  id="inviteRole"
+                  className="w-full h-9 bg-zinc-950 border-zinc-800 text-xs text-zinc-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-3.5 w-3.5 text-zinc-400" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectItem value="MEMBER" className="text-xs">
+                    Member (Can create & edit tasks)
+                  </SelectItem>
+                  <SelectItem value="MANAGER" className="text-xs">
+                    Manager (Can manage projects & settings)
+                  </SelectItem>
+                  <SelectItem value="VIEWER" className="text-xs">
+                    Viewer (Read-only access)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter className="pt-2 flex sm:justify-end gap-2">

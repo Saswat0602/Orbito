@@ -37,6 +37,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function WorkspaceMembersPage() {
   const params = useParams<{ workspaceSlug: string }>();
@@ -49,6 +57,7 @@ export default function WorkspaceMembersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
 
   // Debounce search
   useEffect(() => {
@@ -76,7 +85,7 @@ export default function WorkspaceMembersPage() {
     (inv) => inv.status === 'PENDING' || !inv.status
   );
 
-  const [removeMember] = useRemoveWorkspaceMemberMutation();
+  const [removeMember, { isLoading: isRemoving }] = useRemoveWorkspaceMemberMutation();
   const [updateMemberRole, { isLoading: isUpdatingRole }] =
     useUpdateWorkspaceMemberRoleMutation();
 
@@ -119,15 +128,14 @@ export default function WorkspaceMembersPage() {
     }
   };
 
-  const handleRemoveMember = async (memberId: string, memberName: string) => {
-    if (!workspace?.id || !canManage) return;
-    if (confirm(`Are you sure you want to remove ${memberName} from this workspace?`)) {
-      try {
-        await removeMember({ workspaceId: workspace.id, memberId }).unwrap();
-        toast.success(`${memberName} removed from workspace`);
-      } catch {
-        toast.error('Failed to remove member');
-      }
+  const handleConfirmRemoveMember = async () => {
+    if (!workspace?.id || !canManage || !memberToRemove) return;
+    try {
+      await removeMember({ workspaceId: workspace.id, memberId: memberToRemove.id }).unwrap();
+      toast.success(`${memberToRemove.name} removed from workspace`);
+      setMemberToRemove(null);
+    } catch {
+      toast.error('Failed to remove member');
     }
   };
 
@@ -328,19 +336,31 @@ export default function WorkspaceMembersPage() {
                     {/* Role Selector & Actions */}
                     <div className="flex items-center gap-3 self-end sm:self-center">
                       {canManage && !isCurrentUser ? (
-                        <select
+                        <Select
                           value={member.role}
                           disabled={isUpdatingRole}
-                          onChange={(e) =>
-                            handleRoleChange(member.id, e.target.value, memberDisplayName)
+                          onValueChange={(val) =>
+                            handleRoleChange(member.id, val, memberDisplayName)
                           }
-                          className="bg-zinc-950 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
                         >
-                          <option value={Role.MEMBER}>Member</option>
-                          <option value={Role.MANAGER}>Manager</option>
-                          <option value={Role.VIEWER}>Viewer</option>
-                          <option value={Role.OWNER}>Owner</option>
-                        </select>
+                          <SelectTrigger className="w-28 h-7 bg-zinc-950 border-zinc-800 text-zinc-200 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                            <SelectItem value={Role.MEMBER} className="text-xs">
+                              Member
+                            </SelectItem>
+                            <SelectItem value={Role.MANAGER} className="text-xs">
+                              Manager
+                            </SelectItem>
+                            <SelectItem value={Role.VIEWER} className="text-xs">
+                              Viewer
+                            </SelectItem>
+                            <SelectItem value={Role.OWNER} className="text-xs">
+                              Owner
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       ) : (
                         <Badge
                           className={`text-[10px] uppercase font-mono px-2 py-0.5 ${roleStyle.className}`}
@@ -352,7 +372,7 @@ export default function WorkspaceMembersPage() {
                       {canManage && !isCurrentUser && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveMember(member.id, memberDisplayName)}
+                          onClick={() => setMemberToRemove({ id: member.id, name: memberDisplayName })}
                           className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
                           title="Remove member"
                         >
@@ -385,6 +405,24 @@ export default function WorkspaceMembersPage() {
           workspaceId={workspace.id}
         />
       )}
+
+      {/* Remove Member Confirmation Modal */}
+      <ConfirmationModal
+        open={!!memberToRemove}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+        title="Remove Workspace Member"
+        description={
+          <span>
+            Are you sure you want to remove{' '}
+            <strong className="text-zinc-200">{memberToRemove?.name}</strong> from this workspace?
+            They will lose access to all projects, tasks, and sprints immediately.
+          </span>
+        }
+        confirmLabel="Remove Member"
+        variant="destructive"
+        isLoading={isRemoving}
+        onConfirm={handleConfirmRemoveMember}
+      />
     </div>
   );
 }

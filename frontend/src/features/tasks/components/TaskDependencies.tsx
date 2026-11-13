@@ -19,6 +19,14 @@ import {
 } from '@/lib/store/api/tasksApi';
 import type { TaskDependenciesProps } from '@/types';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
   taskId,
@@ -28,6 +36,7 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
   const [isAdding, setIsAdding] = useState(false);
   const [relationType, setRelationType] = useState<'IS_BLOCKED_BY' | 'BLOCKS'>('IS_BLOCKED_BY');
   const [selectedTargetTaskId, setSelectedTargetTaskId] = useState('');
+  const [depToDelete, setDepToDelete] = useState<string | null>(null);
 
   // Fetch dependencies for this task
   const { data: dependencies, isLoading: isDepsLoading } = useGetTaskDependenciesQuery(taskId);
@@ -88,10 +97,12 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleConfirmDelete = async () => {
+    if (!depToDelete) return;
     try {
-      await deleteDependency({ id, taskId }).unwrap();
+      await deleteDependency({ id: depToDelete, taskId }).unwrap();
       toast.success('Dependency removed');
+      setDepToDelete(null);
     } catch {
       toast.error('Failed to remove dependency');
     }
@@ -143,30 +154,44 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
 
           <div className="space-y-1.5">
             <label className="text-[11px] text-zinc-400">Relationship Type</label>
-            <select
+            <Select
               value={relationType}
-              onChange={(e) => setRelationType(e.target.value as 'IS_BLOCKED_BY' | 'BLOCKS')}
-              className="w-full rounded border border-zinc-700 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-200 focus:border-zinc-500 focus:outline-none"
+              onValueChange={(val) => setRelationType(val as 'IS_BLOCKED_BY' | 'BLOCKS')}
             >
-              <option value="IS_BLOCKED_BY">This task is blocked by...</option>
-              <option value="BLOCKS">This task blocks...</option>
-            </select>
+              <SelectTrigger className="w-full h-8 rounded border-zinc-700 bg-zinc-950 text-xs text-zinc-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="IS_BLOCKED_BY" className="text-xs">
+                  This task is blocked by...
+                </SelectItem>
+                <SelectItem value="BLOCKS" className="text-xs">
+                  This task blocks...
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-[11px] text-zinc-400">Select Task</label>
-            <select
-              value={selectedTargetTaskId}
-              onChange={(e) => setSelectedTargetTaskId(e.target.value)}
-              className="w-full rounded border border-zinc-700 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-200 focus:border-zinc-500 focus:outline-none"
+            <Select
+              value={selectedTargetTaskId || '__none__'}
+              onValueChange={(val) => setSelectedTargetTaskId(val === '__none__' ? '' : val)}
             >
-              <option value="">-- Choose task from project --</option>
-              {availableTargetTasks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.slug ? `[${t.slug}] ` : ''}{t.title}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-8 rounded border-zinc-700 bg-zinc-950 text-xs text-zinc-200">
+                <SelectValue placeholder="-- Choose task from project --" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200 max-h-56">
+                <SelectItem value="__none__" className="text-xs text-zinc-500">
+                  -- Choose task from project --
+                </SelectItem>
+                {availableTargetTasks.map((t) => (
+                  <SelectItem key={t.id} value={t.id} className="text-xs">
+                    {t.slug ? `[${t.slug}] ` : ''}{t.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <button
@@ -235,7 +260,7 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
                       {canEdit && (
                         <button
                           type="button"
-                          onClick={() => handleDelete(dep.id)}
+                          onClick={() => setDepToDelete(dep.id)}
                           disabled={isDeleting}
                           className="ml-2 text-zinc-500 transition-colors hover:text-red-400"
                           title="Remove dependency"
@@ -282,7 +307,7 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
                       {canEdit && (
                         <button
                           type="button"
-                          onClick={() => handleDelete(dep.id)}
+                          onClick={() => setDepToDelete(dep.id)}
                           disabled={isDeleting}
                           className="ml-2 text-zinc-500 transition-colors hover:text-red-400"
                           title="Remove dependency"
@@ -298,6 +323,18 @@ export const TaskDependencies: React.FC<TaskDependenciesProps> = ({
           )}
         </div>
       )}
+
+      {/* Remove Dependency Confirmation Modal */}
+      <ConfirmationModal
+        open={!!depToDelete}
+        onOpenChange={(open) => !open && setDepToDelete(null)}
+        title="Remove Task Dependency"
+        description="Are you sure you want to remove this dependency relationship between tasks?"
+        confirmLabel="Remove Dependency"
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

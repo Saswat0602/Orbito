@@ -38,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { AutomationsTab } from '@/features/automations';
 import { InviteMemberModal } from '@/components/modals/InviteMemberModal';
 import { getRoleBadgeStyle } from '@/lib/rbac';
@@ -58,6 +59,7 @@ export default function WorkspaceSettingsPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (workspace) {
@@ -73,7 +75,7 @@ export default function WorkspaceSettingsPage() {
     workspace?.id || '',
     { skip: !workspace?.id }
   );
-  const [removeMember] = useRemoveWorkspaceMemberMutation();
+  const [removeMember, { isLoading: isRemovingMember }] = useRemoveWorkspaceMemberMutation();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,15 +99,14 @@ export default function WorkspaceSettingsPage() {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const handleRemoveMember = async (memberId: string, memberName: string) => {
-    if (!workspace?.id) return;
-    if (confirm(`Remove ${memberName} from this workspace?`)) {
-      try {
-        await removeMember({ workspaceId: workspace.id, memberId }).unwrap();
-        toast.success(`${memberName} removed`);
-      } catch {
-        toast.error('Failed to remove member');
-      }
+  const handleConfirmRemoveMember = async () => {
+    if (!workspace?.id || !memberToRemove) return;
+    try {
+      await removeMember({ workspaceId: workspace.id, memberId: memberToRemove.id }).unwrap();
+      toast.success(`${memberToRemove.name} removed`);
+      setMemberToRemove(null);
+    } catch {
+      toast.error('Failed to remove member');
     }
   };
 
@@ -342,7 +343,7 @@ export default function WorkspaceSettingsPage() {
                           {(isManager || isOwner) && member.role !== 'OWNER' && (
                             <button
                               type="button"
-                              onClick={() => handleRemoveMember(member.id, memberName)}
+                              onClick={() => setMemberToRemove({ id: member.id, name: memberName })}
                               className="p-1 rounded text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
                               title="Remove from workspace"
                             >
@@ -423,6 +424,25 @@ export default function WorkspaceSettingsPage() {
         workspaceId={workspace.id}
         workspaceName={workspace.name}
         organizationId={workspace.organizationId}
+      />
+
+      {/* Remove Member Confirmation Modal */}
+      <ConfirmationModal
+        open={!!memberToRemove}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+        title="Remove Member from Workspace"
+        description={
+          <span>
+            Are you sure you want to remove{' '}
+            <strong className="text-zinc-200">{memberToRemove?.name}</strong> from{' '}
+            <strong className="text-zinc-200">{workspace.name}</strong>?
+            They will lose access to all projects and tasks in this workspace.
+          </span>
+        }
+        confirmLabel="Remove Member"
+        variant="destructive"
+        isLoading={isRemovingMember}
+        onConfirm={handleConfirmRemoveMember}
       />
     </div>
   );

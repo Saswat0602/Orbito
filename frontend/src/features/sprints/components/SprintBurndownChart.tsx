@@ -23,6 +23,13 @@ import type { SprintBurndownTask } from '@/types';
 import { useGetSprintBurndownQuery } from '@/lib/store/api/sprintsApi';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface SprintBurndownChartProps {
   projectSlug: string;
@@ -165,17 +172,21 @@ export const SprintBurndownChart: React.FC<SprintBurndownChartProps> = ({
         {/* Sprint Picker */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-400">Sprint:</span>
-          <select
-            value={selectedSprint?.id || ''}
-            onChange={(e) => setSelectedSprintId(e.target.value)}
-            className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded px-2.5 py-1 text-xs outline-none focus:border-zinc-500 h-8 cursor-pointer"
+          <Select
+            value={selectedSprint?.id || (sprints[0]?.id ?? 'none')}
+            onValueChange={(val) => setSelectedSprintId(val)}
           >
-            {sprints.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.status})
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-52 h-8 bg-zinc-900 border-zinc-700 text-zinc-200 text-xs">
+              <SelectValue placeholder="Choose a sprint" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+              {sprints.map((s) => (
+                <SelectItem key={s.id} value={s.id} className="text-xs">
+                  {s.name} ({s.status})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

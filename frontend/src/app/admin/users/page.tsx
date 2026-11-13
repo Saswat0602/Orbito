@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -48,6 +49,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<UserStatus | undefined>(undefined);
+  const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
 
   const { data: usersResponse, isLoading } = useGetAdminUsersQuery({
     page,
@@ -59,7 +61,7 @@ export default function AdminUsersPage() {
 
   const [updateUserRole] = useUpdateAdminUserRoleMutation();
   const [updateUserStatus] = useUpdateAdminUserStatusMutation();
-  const [deleteUser] = useDeleteAdminUserMutation();
+  const [deleteUser, { isLoading: isDeletingUser }] = useDeleteAdminUserMutation();
   const [resetPassword] = useResetAdminUserPasswordMutation();
 
   const handleRoleChange = async (userId: string, newRole: Role) => {
@@ -97,14 +99,13 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to delete user ${email}? This action cannot be undone.`)) {
-      return;
-    }
+  const handleConfirmDeleteUser = async () => {
+    if (!userToDelete) return;
     try {
-      await deleteUser(userId).unwrap();
-      toast.success(`User ${email} deleted.`);
-    } catch (err: unknown) {
+      await deleteUser(userToDelete.id).unwrap();
+      toast.success(`User ${userToDelete.email} deleted.`);
+      setUserToDelete(null);
+    } catch {
       toast.error('Failed to delete user');
     }
   };
@@ -309,7 +310,7 @@ export default function AdminUsersPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-zinc-800" />
                               <DropdownMenuItem
-                                onClick={() => handleDeleteUser(u.id, u.email)}
+                                onClick={() => setUserToDelete({ id: u.id, email: u.email })}
                                 className="text-rose-400 hover:text-rose-300 cursor-pointer"
                               >
                                 <Trash2 className="h-3.5 w-3.5 mr-2" />
@@ -355,6 +356,24 @@ export default function AdminUsersPage() {
             </div>
           </div>
         )}
+
+        {/* Delete User Confirmation Modal */}
+        <ConfirmationModal
+          open={!!userToDelete}
+          onOpenChange={(open) => !open && setUserToDelete(null)}
+          title="Delete User Account"
+          description={
+            <span>
+              Are you sure you want to delete user{' '}
+              <strong className="text-zinc-200">{userToDelete?.email}</strong>?
+              This action cannot be undone and will permanently remove their account, memberships, and session records.
+            </span>
+          }
+          confirmLabel="Delete User"
+          variant="destructive"
+          isLoading={isDeletingUser}
+          onConfirm={handleConfirmDeleteUser}
+        />
       </div>
     </RoleGuard>
   );

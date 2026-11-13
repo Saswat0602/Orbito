@@ -9,6 +9,13 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAddWorkspaceMemberMutation } from '@/lib/store/api/workspacesApi';
 
 interface InviteMemberModalProps {
@@ -77,17 +84,28 @@ export function InviteMemberModal({
           <Label htmlFor="invite-role" className="text-xs text-zinc-300">
             Access Role
           </Label>
-          <select
-            id="invite-role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 rounded-md px-3 py-2 text-xs outline-none focus:border-zinc-700"
-          >
-            <option value={Role.MEMBER}>Member - Read & edit tasks</option>
-            <option value={Role.MANAGER}>Manager - Manage sprints & projects</option>
-            <option value={Role.VIEWER}>Viewer - Read-only access</option>
-            <option value={Role.OWNER}>Owner - Full administrative control</option>
-          </select>
+          <Select value={role} onValueChange={(val) => setRole(val as Role)}>
+            <SelectTrigger
+              id="invite-role"
+              className="w-full bg-zinc-950 border-zinc-800 text-zinc-200 text-xs h-9"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+              <SelectItem value={Role.MEMBER} className="text-xs">
+                Member - Read & edit tasks
+              </SelectItem>
+              <SelectItem value={Role.MANAGER} className="text-xs">
+                Manager - Manage sprints & projects
+              </SelectItem>
+              <SelectItem value={Role.VIEWER} className="text-xs">
+                Viewer - Read-only access
+              </SelectItem>
+              <SelectItem value={Role.OWNER} className="text-xs">
+                Owner - Full administrative control
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">

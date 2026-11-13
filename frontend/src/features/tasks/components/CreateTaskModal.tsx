@@ -10,6 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { DualModeEditor } from '@/components/common/DualModeEditor';
 import { TaskRecurrenceSelector } from './TaskRecurrenceSelector';
 import { useCreateTaskMutation } from '@/lib/store/api/tasksApi';
@@ -103,17 +110,31 @@ export function CreateTaskModal({
           <Label htmlFor="task-priority" className="text-xs text-zinc-300">
             Priority
           </Label>
-          <select
-            id="task-priority"
+          <Select
             value={priority}
-            onChange={(e) => setPriority(e.target.value as TaskPriority)}
-            className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 rounded-md px-3 py-2 text-xs outline-none focus:border-zinc-700"
+            onValueChange={(val) => setPriority(val as TaskPriority)}
           >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
-          </select>
+            <SelectTrigger
+              id="task-priority"
+              className="w-full bg-zinc-950 border-zinc-800 text-zinc-200 text-xs h-9"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+              <SelectItem value="LOW" className="text-xs">
+                Low
+              </SelectItem>
+              <SelectItem value="MEDIUM" className="text-xs">
+                Medium
+              </SelectItem>
+              <SelectItem value="HIGH" className="text-xs">
+                High
+              </SelectItem>
+              <SelectItem value="URGENT" className="text-xs">
+                Urgent
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-1.5">

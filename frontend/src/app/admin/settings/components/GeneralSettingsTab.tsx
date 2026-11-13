@@ -5,6 +5,13 @@ import { Globe, Save, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface GeneralSettingsTabProps {
   platformName: string;
@@ -141,18 +148,22 @@ export function GeneralSettingsTab({
             </p>
           </div>
           <div className="w-full sm:w-72 shrink-0">
-            <select
+            <Select
               value={defaultTimezone}
-              onChange={(e) => setDefaultTimezone(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
+              onValueChange={(val) => setDefaultTimezone(val)}
             >
-              <option value="UTC">UTC (Universal Coordinated)</option>
-              <option value="America/New_York">Eastern Time (US / New York)</option>
-              <option value="America/Los_Angeles">Pacific Time (US / Los Angeles)</option>
-              <option value="Europe/London">London (GMT / BST)</option>
-              <option value="Asia/Tokyo">Tokyo (JST)</option>
-              <option value="Asia/Kolkata">India Standard Time (IST)</option>
-            </select>
+              <SelectTrigger className="w-full h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="UTC" className="text-xs">UTC (Universal Coordinated)</SelectItem>
+                <SelectItem value="America/New_York" className="text-xs">Eastern Time (US / New York)</SelectItem>
+                <SelectItem value="America/Los_Angeles" className="text-xs">Pacific Time (US / Los Angeles)</SelectItem>
+                <SelectItem value="Europe/London" className="text-xs">London (GMT / BST)</SelectItem>
+                <SelectItem value="Asia/Tokyo" className="text-xs">Tokyo (JST)</SelectItem>
+                <SelectItem value="Asia/Kolkata" className="text-xs">India Standard Time (IST)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

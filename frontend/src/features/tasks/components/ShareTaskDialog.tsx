@@ -18,6 +18,14 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
+import {
   useCreateTaskShareMutation,
   useGetTaskSharesQuery,
   useRevokeTaskShareMutation,
@@ -38,6 +46,7 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
 }) => {
   const [expiresInDays, setExpiresInDays] = useState<number>(7);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [shareToRevoke, setShareToRevoke] = useState<string | null>(null);
 
   // Queries & Mutations
   const { data: shares = [], isLoading: isSharesLoading } = useGetTaskSharesQuery(
@@ -84,10 +93,12 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
     }
   };
 
-  const handleRevoke = async (shareId: string) => {
+  const handleConfirmRevoke = async () => {
+    if (!shareToRevoke) return;
     try {
-      await revokeTaskShare({ shareId, taskId }).unwrap();
+      await revokeTaskShare({ shareId: shareToRevoke, taskId }).unwrap();
       toast.success('Share link revoked successfully');
+      setShareToRevoke(null);
     } catch {
       toast.error('Failed to revoke share link');
     }
@@ -113,18 +124,22 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
               </p>
             </div>
 
-            <select
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(Number(e.target.value))}
+            <Select
+              value={String(expiresInDays)}
+              onValueChange={(val) => setExpiresInDays(Number(val))}
               disabled={isCreating}
-              className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-500 h-8 cursor-pointer"
             >
-              <option value={1}>1 Day</option>
-              <option value={3}>3 Days</option>
-              <option value={7}>7 Days (Default)</option>
-              <option value={14}>14 Days</option>
-              <option value={30}>30 Days</option>
-            </select>
+              <SelectTrigger className="w-36 bg-zinc-900 border-zinc-700 text-zinc-200 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                <SelectItem value="1" className="text-xs">1 Day</SelectItem>
+                <SelectItem value="3" className="text-xs">3 Days</SelectItem>
+                <SelectItem value="7" className="text-xs">7 Days (Default)</SelectItem>
+                <SelectItem value="14" className="text-xs">14 Days</SelectItem>
+                <SelectItem value="30" className="text-xs">30 Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Button
@@ -226,7 +241,7 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRevoke(share.id)}
+                        onClick={() => setShareToRevoke(share.id)}
                         disabled={isRevoking}
                         className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400"
                         title="Revoke Share Link"
@@ -249,6 +264,18 @@ export const ShareTaskDialog: React.FC<ShareTaskDialogProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Revoke Confirmation Modal */}
+      <ConfirmationModal
+        open={!!shareToRevoke}
+        onOpenChange={(open) => !open && setShareToRevoke(null)}
+        title="Revoke Public Share Link"
+        description="Are you sure you want to revoke this public link? Anyone attempting to visit this link will immediately receive a 404 access expired page."
+        confirmLabel="Revoke Link"
+        variant="destructive"
+        isLoading={isRevoking}
+        onConfirm={handleConfirmRevoke}
+      />
     </Modal>
   );
 };

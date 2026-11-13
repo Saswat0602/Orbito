@@ -60,6 +60,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 interface ProjectInboxTabProps {
   projectId: string;
@@ -94,6 +102,7 @@ export function ProjectInboxTab({
   canEdit,
 }: ProjectInboxTabProps) {
   const [activeSection, setActiveSection] = useState<'config' | 'rules' | 'messages'>('config');
+  const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Queries
   const { data: inbox, isLoading: isInboxLoading } = useGetProjectInboxQuery(projectId, {
@@ -287,10 +296,12 @@ export function ProjectInboxTab({
     }
   };
 
-  const handleDeleteRule = async (ruleId: string, name: string) => {
+  const handleConfirmDeleteRule = async () => {
+    if (!ruleToDelete) return;
     try {
-      await deleteRule({ projectId, ruleId }).unwrap();
-      toast.success(`Removed rule "${name}"`);
+      await deleteRule({ projectId, ruleId: ruleToDelete.id }).unwrap();
+      toast.success(`Removed rule "${ruleToDelete.name}"`);
+      setRuleToDelete(null);
     } catch {
       toast.error('Failed to delete rule');
     }
@@ -550,55 +561,67 @@ export function ProjectInboxTab({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-300">Default Task Type</Label>
-                    <select
+                    <Select
                       value={defaultTaskType}
-                      onChange={(e) => setDefaultTaskType(e.target.value as TaskType)}
+                      onValueChange={(val) => setDefaultTaskType(val as TaskType)}
                       disabled={!canEdit}
-                      className="w-full h-9 rounded-md bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-200"
                     >
-                      <option value="TASK">Task</option>
-                      <option value="BUG">Bug</option>
-                      <option value="STORY">Story</option>
-                      <option value="EPIC">Epic</option>
-                    </select>
+                      <SelectTrigger className="w-full h-9 rounded-md bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectItem value="TASK" className="text-xs">Task</SelectItem>
+                        <SelectItem value="BUG" className="text-xs">Bug</SelectItem>
+                        <SelectItem value="STORY" className="text-xs">Story</SelectItem>
+                        <SelectItem value="EPIC" className="text-xs">Epic</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-300">Default Priority</Label>
-                    <select
+                    <Select
                       value={defaultPriority}
-                      onChange={(e) => setDefaultPriority(e.target.value as TaskPriority)}
+                      onValueChange={(val) => setDefaultPriority(val as TaskPriority)}
                       disabled={!canEdit}
-                      className="w-full h-9 rounded-md bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-200"
                     >
-                      <option value="LOW">Low</option>
-                      <option value="MEDIUM">Medium</option>
-                      <option value="HIGH">High</option>
-                      <option value="URGENT">Urgent</option>
-                    </select>
+                      <SelectTrigger className="w-full h-9 rounded-md bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectItem value="LOW" className="text-xs">Low</SelectItem>
+                        <SelectItem value="MEDIUM" className="text-xs">Medium</SelectItem>
+                        <SelectItem value="HIGH" className="text-xs">High</SelectItem>
+                        <SelectItem value="URGENT" className="text-xs">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-300">Default Assignee</Label>
-                    <select
-                      value={defaultAssigneeId}
-                      onChange={(e) => setDefaultAssigneeId(e.target.value)}
+                    <Select
+                      value={defaultAssigneeId || 'unassigned'}
+                      onValueChange={(val) => setDefaultAssigneeId(val === 'unassigned' ? '' : val)}
                       disabled={!canEdit}
-                      className="w-full h-9 rounded-md bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-200"
                     >
-                      <option value="">Unassigned</option>
-                      {workspaceMembers.map((m) => {
-                        const name =
-                          m.user?.firstName && m.user?.lastName
-                            ? `${m.user.firstName} ${m.user.lastName}`
-                            : m.user?.username || m.user?.email || 'User';
-                        return (
-                          <option key={m.id} value={m.user?.id || m.id}>
-                            {name}
-                          </option>
-                        );
-                      })}
-                    </select>
+                      <SelectTrigger className="w-full h-9 rounded-md bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectItem value="unassigned" className="text-xs">Unassigned</SelectItem>
+                        {workspaceMembers.map((m) => {
+                          const name =
+                            m.user?.firstName && m.user?.lastName
+                              ? `${m.user.firstName} ${m.user.lastName}`
+                              : m.user?.username || m.user?.email || 'User';
+                          return (
+                            <SelectItem key={m.id} value={m.user?.id || m.id} className="text-xs">
+                              {name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -733,7 +756,7 @@ export function ProjectInboxTab({
                             variant="ghost"
                             size="sm"
                             disabled={isDeletingRule}
-                            onClick={() => handleDeleteRule(rule.id, rule.name)}
+                            onClick={() => setRuleToDelete({ id: rule.id, name: rule.name })}
                             className="h-7 w-7 p-0 text-zinc-500 hover:text-rose-400"
                             title="Delete rule"
                           >
@@ -926,38 +949,46 @@ export function ProjectInboxTab({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-zinc-300">Set Priority</Label>
-                  <select
+                  <Select
                     value={rulePriority}
-                    onChange={(e) => setRulePriority(e.target.value as TaskPriority)}
-                    className="w-full h-8 rounded bg-zinc-950 border border-zinc-800 px-2.5 text-xs text-zinc-200"
+                    onValueChange={(val) => setRulePriority(val as TaskPriority)}
                   >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                    <option value="URGENT">Urgent</option>
-                  </select>
+                    <SelectTrigger className="w-full h-8 rounded bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                      <SelectItem value="LOW" className="text-xs">Low</SelectItem>
+                      <SelectItem value="MEDIUM" className="text-xs">Medium</SelectItem>
+                      <SelectItem value="HIGH" className="text-xs">High</SelectItem>
+                      <SelectItem value="URGENT" className="text-xs">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs text-zinc-300">Assign Collaborator</Label>
-                  <select
-                    value={ruleAssigneeId}
-                    onChange={(e) => setRuleAssigneeId(e.target.value)}
-                    className="w-full h-8 rounded bg-zinc-950 border border-zinc-800 px-2.5 text-xs text-zinc-200"
+                  <Select
+                    value={ruleAssigneeId || 'none'}
+                    onValueChange={(val) => setRuleAssigneeId(val === 'none' ? '' : val)}
                   >
-                    <option value="">(None)</option>
-                    {workspaceMembers.map((m) => {
-                      const name =
-                        m.user?.firstName && m.user?.lastName
-                          ? `${m.user.firstName} ${m.user.lastName}`
-                          : m.user?.username || m.user?.email || 'User';
-                      return (
-                        <option key={m.id} value={m.user?.id || m.id}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </select>
+                    <SelectTrigger className="w-full h-8 rounded bg-zinc-950 border-zinc-800 text-xs text-zinc-200">
+                      <SelectValue placeholder="(None)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                      <SelectItem value="none" className="text-xs">(None)</SelectItem>
+                      {workspaceMembers.map((m) => {
+                        const name =
+                          m.user?.firstName && m.user?.lastName
+                            ? `${m.user.firstName} ${m.user.lastName}`
+                            : m.user?.username || m.user?.email || 'User';
+                        return (
+                          <SelectItem key={m.id} value={m.user?.id || m.id} className="text-xs">
+                            {name}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -996,6 +1027,24 @@ export function ProjectInboxTab({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Rule Confirmation Modal */}
+      <ConfirmationModal
+        open={!!ruleToDelete}
+        onOpenChange={(open) => !open && setRuleToDelete(null)}
+        title="Delete Inbound Email Rule"
+        description={
+          <span>
+            Are you sure you want to delete inbound rule{' '}
+            <strong className="text-zinc-200">&ldquo;{ruleToDelete?.name}&rdquo;</strong>?
+            Incoming emails will no longer be routed by this rule.
+          </span>
+        }
+        confirmLabel="Delete Rule"
+        variant="destructive"
+        isLoading={isDeletingRule}
+        onConfirm={handleConfirmDeleteRule}
+      />
     </div>
   );
 }

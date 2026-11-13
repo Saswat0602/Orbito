@@ -57,6 +57,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -380,30 +387,38 @@ export default function ProjectTasksPage() {
           </div>
 
           {/* Status Filter */}
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-zinc-950/80 border border-zinc-800 text-zinc-300 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer h-8"
+            onValueChange={(val) => setStatusFilter(val)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="IN_REVIEW">In Review</option>
-            <option value="DONE">Done</option>
-          </select>
+            <SelectTrigger className="w-32 bg-zinc-950/80 border-zinc-800 text-zinc-300 h-8 text-xs">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+              <SelectItem value="ALL" className="text-xs">All Statuses</SelectItem>
+              <SelectItem value="TODO" className="text-xs">To Do</SelectItem>
+              <SelectItem value="IN_PROGRESS" className="text-xs">In Progress</SelectItem>
+              <SelectItem value="IN_REVIEW" className="text-xs">In Review</SelectItem>
+              <SelectItem value="DONE" className="text-xs">Done</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Priority Filter */}
-          <select
+          <Select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="bg-zinc-950/80 border border-zinc-800 text-zinc-300 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer h-8"
+            onValueChange={(val) => setPriorityFilter(val)}
           >
-            <option value="ALL">All Priorities</option>
-            <option value="URGENT">Urgent</option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
+            <SelectTrigger className="w-32 bg-zinc-950/80 border-zinc-800 text-zinc-300 h-8 text-xs">
+              <SelectValue placeholder="All Priorities" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+              <SelectItem value="ALL" className="text-xs">All Priorities</SelectItem>
+              <SelectItem value="URGENT" className="text-xs">Urgent</SelectItem>
+              <SelectItem value="HIGH" className="text-xs">High</SelectItem>
+              <SelectItem value="MEDIUM" className="text-xs">Medium</SelectItem>
+              <SelectItem value="LOW" className="text-xs">Low</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* GroupBy Manager */}
           <GroupByManager groupBy={groupBy} onGroupByChange={setGroupBy} />

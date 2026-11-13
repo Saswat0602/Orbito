@@ -16,6 +16,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useBulkCreateTasksMutation,
   useGetTaskStatusesByProjectQuery,
 } from '@/lib/store/api/tasksApi';
@@ -366,18 +373,22 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
         {parsedRows.length > 0 && (
           <div className="space-y-1.5">
             <Label className="text-xs text-zinc-300">Target Status</Label>
-            <select
-              value={selectedStatusId}
-              onChange={(e) => setSelectedStatusId(e.target.value)}
+            <Select
+              value={selectedStatusId || (statuses[0]?.id ?? 'default')}
+              onValueChange={(val) => setSelectedStatusId(val)}
               disabled={isStatusesLoading}
-              className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 rounded px-3 py-1.5 text-xs outline-none focus:border-zinc-700 h-8"
             >
-              {statuses.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.category})
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-200 h-8 text-xs">
+                <SelectValue placeholder="Select target status" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                {statuses.map((s) => (
+                  <SelectItem key={s.id} value={s.id} className="text-xs">
+                    {s.name} ({s.category})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 

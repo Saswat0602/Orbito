@@ -25,6 +25,13 @@ import {
 } from '@/lib/store/api/tasksApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface TaskRecurrenceSelectorProps {
   taskId?: string;
@@ -222,17 +229,31 @@ export function TaskRecurrenceSelector({
             {/* Recurrence Frequency */}
             <div className="space-y-1">
               <label className="text-[11px] font-medium text-zinc-400">Frequency</label>
-              <select
+              <Select
                 value={recurrenceType}
-                onChange={(e) => setRecurrenceType(e.target.value as RecurrenceType)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-hidden focus:border-zinc-700"
+                onValueChange={(val) => setRecurrenceType(val as RecurrenceType)}
               >
-                <option value={RecurrenceType.DAILY}>Daily</option>
-                <option value={RecurrenceType.WEEKLY}>Weekly</option>
-                <option value={RecurrenceType.MONTHLY}>Monthly</option>
-                <option value={RecurrenceType.YEARLY}>Yearly</option>
-                <option value={RecurrenceType.CUSTOM}>Custom</option>
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 rounded-md text-xs text-zinc-200 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectItem value={RecurrenceType.DAILY} className="text-xs">
+                    Daily
+                  </SelectItem>
+                  <SelectItem value={RecurrenceType.WEEKLY} className="text-xs">
+                    Weekly
+                  </SelectItem>
+                  <SelectItem value={RecurrenceType.MONTHLY} className="text-xs">
+                    Monthly
+                  </SelectItem>
+                  <SelectItem value={RecurrenceType.YEARLY} className="text-xs">
+                    Yearly
+                  </SelectItem>
+                  <SelectItem value={RecurrenceType.CUSTOM} className="text-xs">
+                    Custom
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Interval */}
