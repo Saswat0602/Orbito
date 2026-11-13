@@ -25,13 +25,22 @@ export const organizationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getOrganizations: builder.query<Organization[], void>({
       query: () => ENDPOINTS.organizations.list,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Organization' as const, id })),
-              { type: 'Organization', id: 'LIST' },
-            ]
-          : [{ type: 'Organization', id: 'LIST' }],
+      transformResponse: (response: unknown): Organization[] => {
+        if (Array.isArray(response)) return response as Organization[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Organization[];
+          if (Array.isArray(obj.organizations)) return obj.organizations as Organization[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Organization' as const, id })),
+          { type: 'Organization', id: 'LIST' },
+        ];
+      },
     }),
     getOrganization: builder.query<Organization, string>({
       query: (id) => ENDPOINTS.organizations.byId(id),

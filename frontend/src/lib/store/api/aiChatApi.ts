@@ -15,13 +15,22 @@ export const aiChatApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getConversations: builder.query<AiConversation[], void>({
       query: () => ENDPOINTS.aiChat.conversations,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'AiChat' as const, id })),
-              { type: 'AiChat', id: 'LIST' },
-            ]
-          : [{ type: 'AiChat', id: 'LIST' }],
+      transformResponse: (response: unknown): AiConversation[] => {
+        if (Array.isArray(response)) return response as AiConversation[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as AiConversation[];
+          if (Array.isArray(obj.conversations)) return obj.conversations as AiConversation[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'AiChat' as const, id })),
+          { type: 'AiChat', id: 'LIST' },
+        ];
+      },
     }),
 
     createConversation: builder.mutation<

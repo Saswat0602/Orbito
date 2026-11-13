@@ -94,24 +94,28 @@ export default function WorkspaceOverviewPage() {
   );
 
   // Fetch recent workspace activity
-  const { data: recentLogs = [] } = useGetActivityLogsQuery({ limit: 4 });
+  const { data: recentLogs = [] } = useGetActivityLogsQuery(
+    workspace?.id ? { workspaceId: workspace.id, limit: 4 } : { limit: 4 },
+    { skip: !workspace?.id }
+  );
 
   // Workspace-wide metric calculations
   const metrics = useMemo(() => {
-    const total = tasks.length;
-    const completed = tasks.filter((t) => t.status?.category === 'DONE').length;
-    const inProgress = tasks.filter((t) => t.status?.category === 'IN_PROGRESS').length;
-    const inReview = tasks.filter((t) => t.status?.category === 'IN_REVIEW').length;
-    const todo = tasks.filter((t) => t.status?.category === 'TODO' || !t.status).length;
-    const overdue = tasks.filter(
+    const taskList = Array.isArray(tasks) ? tasks : [];
+    const total = taskList.length;
+    const completed = taskList.filter((t) => t.status?.category === 'DONE').length;
+    const inProgress = taskList.filter((t) => t.status?.category === 'IN_PROGRESS').length;
+    const inReview = taskList.filter((t) => t.status?.category === 'IN_REVIEW').length;
+    const todo = taskList.filter((t) => t.status?.category === 'TODO' || !t.status).length;
+    const overdue = taskList.filter(
       (t) => t.dueDate && dayjs(t.dueDate).isBefore(dayjs(), 'day') && t.status?.category !== 'DONE'
     ).length;
     const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    const urgent = tasks.filter((t) => t.priority === 'URGENT').length;
-    const high = tasks.filter((t) => t.priority === 'HIGH').length;
-    const medium = tasks.filter((t) => t.priority === 'MEDIUM').length;
-    const low = tasks.filter((t) => t.priority === 'LOW').length;
+    const urgent = taskList.filter((t) => t.priority === 'URGENT').length;
+    const high = taskList.filter((t) => t.priority === 'HIGH').length;
+    const medium = taskList.filter((t) => t.priority === 'MEDIUM').length;
+    const low = taskList.filter((t) => t.priority === 'LOW').length;
 
     return {
       total,

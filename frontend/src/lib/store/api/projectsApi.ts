@@ -20,13 +20,22 @@ export const projectsApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.projects.list,
         params: params || {},
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Project' as const, id })),
-              { type: 'Project', id: 'LIST' },
-            ]
-          : [{ type: 'Project', id: 'LIST' }],
+      transformResponse: (response: unknown): Project[] => {
+        if (Array.isArray(response)) return response as Project[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Project[];
+          if (Array.isArray(obj.projects)) return obj.projects as Project[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Project' as const, id })),
+          { type: 'Project', id: 'LIST' },
+        ];
+      },
     }),
 
     getProject: builder.query<Project, string>({

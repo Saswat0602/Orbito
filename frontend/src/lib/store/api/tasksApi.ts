@@ -33,13 +33,22 @@ export const tasksApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.tasks.list,
         params: params || undefined,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Task' as const, id })),
-              { type: 'Task', id: 'LIST' },
-            ]
-          : [{ type: 'Task', id: 'LIST' }],
+      transformResponse: (response: unknown): Task[] => {
+        if (Array.isArray(response)) return response as Task[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Task[];
+          if (Array.isArray(obj.tasks)) return obj.tasks as Task[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Task' as const, id })),
+          { type: 'Task', id: 'LIST' },
+        ];
+      },
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         try {
           await cacheDataLoaded;
@@ -51,7 +60,7 @@ export const tasksApi = apiSlice.injectEndpoints({
 
           const onTaskCreated = (payload: { data: Task }) => {
             updateCachedData((draft) => {
-              if (payload?.data && !draft.some((t) => t.id === payload.data.id)) {
+              if (payload?.data && Array.isArray(draft) && !draft.some((t) => t.id === payload.data.id)) {
                 draft.unshift(payload.data);
               }
             });
@@ -61,16 +70,21 @@ export const tasksApi = apiSlice.injectEndpoints({
             data: { taskId: string; updates: Partial<Task> };
           }) => {
             updateCachedData((draft) => {
-              const task = draft.find((t) => t.id === payload?.data?.taskId);
-              if (task && payload?.data?.updates) {
-                Object.assign(task, payload.data.updates);
+              if (Array.isArray(draft)) {
+                const task = draft.find((t) => t.id === payload?.data?.taskId);
+                if (task && payload?.data?.updates) {
+                  Object.assign(task, payload.data.updates);
+                }
               }
             });
           };
 
           const onTaskDeleted = (payload: { data: { taskId: string } }) => {
             updateCachedData((draft) => {
-              return draft.filter((t) => t.id !== payload?.data?.taskId);
+              if (Array.isArray(draft)) {
+                return draft.filter((t) => t.id !== payload?.data?.taskId);
+              }
+              return draft;
             });
           };
 
@@ -244,6 +258,15 @@ export const tasksApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.tasks.list,
         params: { parentTaskId },
       }),
+      transformResponse: (response: unknown): Task[] => {
+        if (Array.isArray(response)) return response as Task[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Task[];
+          if (Array.isArray(obj.tasks)) return obj.tasks as Task[];
+        }
+        return [];
+      },
       providesTags: (_res, _err, parentTaskId) => [{ type: 'Task', id: `SUBTASKS_${parentTaskId}` }],
     }),
 

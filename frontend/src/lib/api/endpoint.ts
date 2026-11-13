@@ -325,8 +325,8 @@ export const ENDPOINTS = {
   },
 
   activityLog: {
-    list: '/activity-log',
-    byProject: (projectId: string) => `/activity-log/project/${projectId}`,
+    list: '/activity-logs',
+    byProject: (projectId: string) => `/activity-logs/project/${projectId}`,
     taskActivities: (taskId: string) => `/activity-logs/task/${taskId}/activities`,
   },
 

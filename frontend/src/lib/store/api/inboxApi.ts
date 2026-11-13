@@ -95,13 +95,22 @@ export const inboxApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.inbox.messages(projectId),
         params: filters || undefined,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Inbox' as const, id: `MSG_${id}` })),
-              { type: 'Inbox', id: 'MESSAGES' },
-            ]
-          : [{ type: 'Inbox', id: 'MESSAGES' }],
+      transformResponse: (response: unknown): InboxMessage[] => {
+        if (Array.isArray(response)) return response as InboxMessage[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as InboxMessage[];
+          if (Array.isArray(obj.messages)) return obj.messages as InboxMessage[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Inbox' as const, id: `MSG_${id}` })),
+          { type: 'Inbox', id: 'MESSAGES' },
+        ];
+      },
     }),
 
     getInboxMessage: builder.query<
@@ -147,13 +156,22 @@ export const inboxApi = apiSlice.injectEndpoints({
 
     getInboxRules: builder.query<InboxRule[], string>({
       query: (projectId) => ENDPOINTS.inbox.rules(projectId),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Inbox' as const, id: `RULE_${id}` })),
-              { type: 'Inbox', id: 'RULES' },
-            ]
-          : [{ type: 'Inbox', id: 'RULES' }],
+      transformResponse: (response: unknown): InboxRule[] => {
+        if (Array.isArray(response)) return response as InboxRule[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as InboxRule[];
+          if (Array.isArray(obj.rules)) return obj.rules as InboxRule[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Inbox' as const, id: `RULE_${id}` })),
+          { type: 'Inbox', id: 'RULES' },
+        ];
+      },
     }),
 
     createInboxRule: builder.mutation<

@@ -10,14 +10,91 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ActivityLogService } from './activity-log.service';
 
 @ApiTags('Activity Logs')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
-@Controller('activity-logs')
+@Controller(['activity-logs', 'activity-log'])
 export class ActivityLogController {
   constructor(private readonly activityLogService: ActivityLogService) {}
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get activity logs',
+    description: 'Retrieves recent activities filtered by workspace, organization, project, or user',
+  })
+  @ApiQuery({ name: 'workspaceId', required: false, description: 'Workspace ID' })
+  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID' })
+  @ApiQuery({ name: 'projectId', required: false, description: 'Project ID' })
+  @ApiQuery({ name: 'entityType', required: false, description: 'Entity Type (Task, Project, Workspace)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limit' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page' })
+  async getActivityLogs(
+    @CurrentUser() user: any,
+    @Query('workspaceId') workspaceId?: string,
+    @Query('organizationId') organizationId?: string,
+    @Query('projectId') projectId?: string,
+    @Query('entityType') entityType?: string,
+    @Query('limit') limit: string = '20',
+    @Query('page') page: string = '1',
+  ) {
+    const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 20), 100);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+
+    if (workspaceId) {
+      const result = await this.activityLogService.getRecentActivityByWorkspaceOptimized(
+        workspaceId,
+        limitNum,
+        pageNum,
+      );
+      return result.activities || [];
+    }
+
+    if (projectId) {
+      const result = await this.activityLogService.getRecentActivityByProject(
+        projectId,
+        limitNum,
+        pageNum,
+      );
+      return result.activities || [];
+    }
+
+    if (organizationId) {
+      const result = await this.activityLogService.getRecentActivityByOrganizationComprehensive(
+        organizationId,
+        limitNum,
+        pageNum,
+        entityType ? { entityType } : undefined,
+      );
+      return result.activities || [];
+    }
+
+    if (user?.id) {
+      const result = await this.activityLogService.getUserRecentActivity(
+        user.id,
+        limitNum,
+        pageNum,
+      );
+      return result.activities || [];
+    }
+
+    return [];
+  }
+
+  @Get('project/:projectId')
+  @ApiOperation({ summary: 'Get project activities' })
+  async getProjectActivities(
+    @Param('projectId') projectId: string,
+    @Query('limit') limit: string = '20',
+    @Query('page') page: string = '1',
+  ) {
+    const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 20), 100);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const result = await this.activityLogService.getRecentActivityByProject(projectId, limitNum, pageNum);
+    return result.activities || [];
+  }
 
   @Get('organization/:organizationId/recent')
   @ApiOperation({

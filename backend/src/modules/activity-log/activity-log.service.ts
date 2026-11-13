@@ -916,4 +916,84 @@ export class ActivityLogService {
       },
     };
   }
+
+  async getRecentActivityByProject(
+    projectIdOrSlug: string,
+    limit: number = 20,
+    page: number = 1,
+  ) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      projectIdOrSlug,
+    );
+    const project = await this.prisma.project.findFirst({
+      where: isUuid ? { id: projectIdOrSlug } : { slug: projectIdOrSlug },
+      select: { id: true, slug: true, workspace: { select: { slug: true } } },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const tasks = await this.prisma.task.findMany({
+      where: { projectId: project.id },
+      select: { id: true, slug: true },
+    });
+    const taskIds = tasks.map((t) => t.id);
+
+    const whereClause: Prisma.ActivityLogWhereInput = {
+      OR: [
+        { entityType: 'Project', entityId: project.id },
+        ...(taskIds.length > 0 ? [{ entityType: 'Task', entityId: { in: taskIds } }] : []),
+      ],
+    };
+
+    const [totalCount, activities] = await Promise.all([
+      this.prisma.activityLog.count({ where: whereClause }),
+      this.prisma.activityLog.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      activities: activities.map((activity) => ({
+        id: activity.id,
+        type: activity.type,
+        description: activity.description,
+        entityType: activity.entityType,
+        entityId: activity.entityId,
+        createdAt: activity.createdAt,
+        projectSlug: project.slug,
+        workspaceSlug: project.workspace?.slug || null,
+        user: {
+          id: activity.user?.id,
+          name: `${activity.user?.firstName || ''} ${activity.user?.lastName || ''}`.trim(),
+          email: activity.user?.email,
+          avatar: activity.user?.avatar,
+        },
+      })),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
 }

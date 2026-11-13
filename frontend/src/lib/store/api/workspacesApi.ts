@@ -19,13 +19,22 @@ export const workspacesApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.workspaces.list,
         params: params || {},
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Workspace' as const, id })),
-              { type: 'Workspace', id: 'LIST' },
-            ]
-          : [{ type: 'Workspace', id: 'LIST' }],
+      transformResponse: (response: unknown): Workspace[] => {
+        if (Array.isArray(response)) return response as Workspace[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Workspace[];
+          if (Array.isArray(obj.workspaces)) return obj.workspaces as Workspace[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Workspace' as const, id })),
+          { type: 'Workspace', id: 'LIST' },
+        ];
+      },
     }),
     getWorkspace: builder.query<Workspace, string>({
       query: (id) => ENDPOINTS.workspaces.byId(id),
@@ -110,13 +119,22 @@ export const workspacesApi = apiSlice.injectEndpoints({
       query: (organizationId) => ({
         url: `/workspaces/archived?organizationId=${organizationId}`,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Workspace' as const, id })),
-              { type: 'Workspace', id: 'ARCHIVED_LIST' },
-            ]
-          : [{ type: 'Workspace', id: 'ARCHIVED_LIST' }],
+      transformResponse: (response: unknown): Workspace[] => {
+        if (Array.isArray(response)) return response as Workspace[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Workspace[];
+          if (Array.isArray(obj.workspaces)) return obj.workspaces as Workspace[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Workspace' as const, id })),
+          { type: 'Workspace', id: 'ARCHIVED_LIST' },
+        ];
+      },
     }),
     archiveWorkspace: builder.mutation<void, string>({
       query: (id) => ({

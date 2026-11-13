@@ -11,13 +11,22 @@ export const sprintsApi = apiSlice.injectEndpoints({
         url: ENDPOINTS.sprints.list,
         params: arg?.projectId ? { projectId: arg.projectId } : undefined,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Sprint' as const, id })),
-              { type: 'Sprint', id: 'LIST' },
-            ]
-          : [{ type: 'Sprint', id: 'LIST' }],
+      transformResponse: (response: unknown): Sprint[] => {
+        if (Array.isArray(response)) return response as Sprint[];
+        if (response && typeof response === 'object') {
+          const obj = response as Record<string, unknown>;
+          if (Array.isArray(obj.data)) return obj.data as Sprint[];
+          if (Array.isArray(obj.sprints)) return obj.sprints as Sprint[];
+        }
+        return [];
+      },
+      providesTags: (result) => {
+        const items = Array.isArray(result) ? result : [];
+        return [
+          ...items.map(({ id }) => ({ type: 'Sprint' as const, id })),
+          { type: 'Sprint', id: 'LIST' },
+        ];
+      },
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         try {
           await cacheDataLoaded;
