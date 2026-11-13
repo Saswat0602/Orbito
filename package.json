@@ -41,7 +41,8 @@
     "db:seed:demo": "dotenv -- npm run seed:demo --workspace=@orbito/backend",
     "db:generate": "dotenv -- npm run prisma:generate --workspace=@orbito/backend",
     "db:studio": "dotenv -- npm run prisma:studio --workspace=@orbito/backend",
-    "prisma": "dotenv -- npm run prisma --workspace=@orbito/backend"
+    "prisma": "dotenv -- npm run prisma --workspace=@orbito/backend",
+    "preflight": "node scripts/production-readiness.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

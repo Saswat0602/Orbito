@@ -11,6 +11,8 @@ export class HealthController {
   @Get()
   async getHealth(@Res() res: Response): Promise<Response> {
     const health: HealthStatus = await this.healthService.checkHealth();
-    return res.status(HttpStatus.OK).json(health);
+    const statusCode =
+      health.status === 'healthy' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+    return res.status(statusCode).json(health);
   }
 }

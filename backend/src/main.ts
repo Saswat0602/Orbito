@@ -10,6 +10,7 @@ import {
 } from './middleware/static-routing.middleware';
 import { RequestContextInterceptor } from './common/request-context.interceptor';
 import * as cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
 // Suppress unhandled promise rejections from Redis connection failures
 process.on('unhandledRejection', (reason: unknown) => {
@@ -35,6 +36,21 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const appConfig = configService.get('app');
+
+  // Trust proxy for reverse proxies (Nginx, Traefik, AWS ALB, Cloudflare)
+  const expressApp = app.getHttpAdapter().getInstance() as express.Express;
+  expressApp.set('trust proxy', 1);
+
+  // Enable graceful shutdown hooks for SIGTERM / SIGINT
+  app.enableShutdownHooks();
+
+  // Apply Helmet security headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Swagger UI & Next.js frontend handle CSP
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Increase body parser limits for AI chat and large payloads
   app.use(express.json({ limit: '10mb' }));
@@ -81,35 +97,41 @@ async function bootstrap() {
 
   // Configure Swagger documentation
   const swaggerConfig = appConfig.swagger;
-  const swaggerOptions = new DocumentBuilder()
-    .setTitle(swaggerConfig.title as string)
-    .setDescription(swaggerConfig.description as string)
-    .setVersion(swaggerConfig.version as string)
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter JWT token',
-        in: 'header',
+  if (process.env.ENABLE_SWAGGER !== 'false') {
+    const swaggerOptions = new DocumentBuilder()
+      .setTitle(swaggerConfig.title as string)
+      .setDescription(swaggerConfig.description as string)
+      .setVersion(swaggerConfig.version as string)
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addServer(`http://${host}:${port}`, 'Development server')
+      .addServer('https://api.orbito.io', 'Production server')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, swaggerOptions);
+
+    // Setup Swagger UI at /api/docs
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
       },
-      'JWT-auth',
-    )
-    .addServer(`http://${host}:${port}`, 'Development server')
-    .addServer('https://api.orbito.io', 'Production server')
-    .build();
+    });
 
-  const document = SwaggerModule.createDocument(app, swaggerOptions);
-
-  // Setup Swagger UI at /api/docs
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
-    },
-  });
+    logger.log(
+      `Swagger documentation available at: http://${host}:${port}/${swaggerConfig.path as string}`,
+    );
+  }
 
   await app.listen(port as string | number, host as string);
   logger.log(`Application is running on: http://${host}:${port}`);

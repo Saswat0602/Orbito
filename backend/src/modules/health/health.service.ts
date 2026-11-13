@@ -35,8 +35,14 @@ export class HealthService {
       this.checkRedis(),
     ]);
 
+    const isHealthy =
+      databaseHealth.status === 'up' &&
+      (redisHealth.status === 'up' ||
+        process.env.SKIP_REDIS_CHECK === 'true' ||
+        this.configService.get('SKIP_REDIS_CHECK') === 'true');
+
     return {
-      status: 'healthy',
+      status: isHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: Math.floor((Date.now() - this.startTime) / 1000),
       services: {

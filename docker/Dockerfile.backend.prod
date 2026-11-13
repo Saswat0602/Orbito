@@ -1,0 +1,85 @@
+# =============================================================================
+# Orbito Backend Production Dockerfile (NestJS + Prisma + BullMQ)
+# =============================================================================
+# Stage 1: Build & Dependencies
+# =============================================================================
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+# Install build essentials for native packages (bcrypt, etc.) and OpenSSL for Prisma
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package manifests
+COPY package.json package-lock.json turbo.json ./
+COPY packages/ ./packages/
+COPY backend/package.json ./backend/
+
+# Install all dependencies across the monorepo
+RUN npm ci
+
+# Copy backend source code & Prisma schema
+COPY backend/ ./backend/
+
+# Generate Prisma Client with dummy DB URL (required at compile time)
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+RUN npm run prisma:generate --workspace=@orbito/backend
+
+# Build shared packages and backend
+RUN npm run build --workspace=@orbito/types
+RUN npm run build --workspace=@orbito/backend
+
+# =============================================================================
+# Stage 2: Production Minimal Runtime
+# =============================================================================
+FROM node:22-slim AS runner
+
+WORKDIR /app
+
+# Install runtime dependencies (OpenSSL for Prisma, curl for healthchecks, netcat for DB readiness)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    curl \
+    netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create dedicated non-root application user
+RUN addgroup --system --gid 1001 orbito && \
+    adduser --system --uid 1001 --ingroup orbito orbito
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+# Copy root manifests and node_modules
+COPY --chown=orbito:orbito package.json package-lock.json ./
+COPY --chown=orbito:orbito --from=builder /app/node_modules ./node_modules
+COPY --chown=orbito:orbito --from=builder /app/packages ./packages
+COPY --chown=orbito:orbito --from=builder /app/backend/package.json ./backend/package.json
+COPY --chown=orbito:orbito --from=builder /app/backend/prisma ./backend/prisma
+COPY --chown=orbito:orbito --from=builder /app/backend/dist ./backend/dist
+COPY --chown=orbito:orbito --from=builder /app/backend/node_modules ./backend/node_modules
+
+# Create uploads directory with correct permissions
+RUN mkdir -p /app/backend/uploads && chown -R orbito:orbito /app/backend/uploads
+
+USER orbito
+
+EXPOSE 3000
+
+# Container healthcheck
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start NestJS production server
+CMD ["node", "backend/dist/main.js"]
