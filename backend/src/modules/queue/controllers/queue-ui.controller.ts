@@ -32,6 +32,11 @@ export class QueueUIController {
     return { status: 'ok', message: 'Queue UI Controller is reachable' };
   }
 
+  @Get('health')
+  getHealthRedirect(@Res() res: Response) {
+    return res.redirect(307, '/api/health/queue');
+  }
+
   @All(['/', '/*'])
   handle(@Req() req: Request, @Res() res: Response) {
     if (this.bullBoardEmail && this.bullBoardPassword) {

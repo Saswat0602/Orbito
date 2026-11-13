@@ -361,7 +361,7 @@ export const ENDPOINTS = {
   },
 
   queues: {
-    health: '/queues/health',
+    health: '/health/queue',
     ui: '/queues',
   },
 } as const;
