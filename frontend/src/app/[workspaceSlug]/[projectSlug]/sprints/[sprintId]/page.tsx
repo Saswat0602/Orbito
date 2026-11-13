@@ -44,6 +44,7 @@ import {
 } from '@/features/tasks';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SprintsSkeleton } from '@/components/skeletons';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import {
@@ -141,12 +142,7 @@ export default function DedicatedSprintBoardPage() {
   };
 
   if (isProjectLoading || isSprintLoading || isTasksLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-        Loading sprint iteration...
-      </div>
-    );
+    return <SprintsSkeleton />;
   }
 
   if (!project || !sprint) {

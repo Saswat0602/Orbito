@@ -9,6 +9,7 @@ import {
   setActiveWorkspaceSlug,
 } from '@/lib/store/slices/authSlice';
 import { useGetWorkspaceBySlugQuery } from '@/lib/store/api/workspacesApi';
+import { DashboardSkeleton } from '@/components/skeletons';
 
 export default function WorkspaceLayout({
   children,
@@ -36,14 +37,7 @@ export default function WorkspaceLayout({
   }, [workspace, dispatch]);
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] min-h-[50vh]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-          <span className="text-xs text-zinc-400">Loading workspace...</span>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isError || (!isLoading && !workspace)) {

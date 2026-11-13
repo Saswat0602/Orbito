@@ -21,6 +21,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DashboardSkeleton } from '@/components/skeletons';
 
 export default function RootRedirectPage() {
   const router = useRouter();
@@ -74,14 +75,7 @@ export default function RootRedirectPage() {
   };
 
   if (isWorkspacesLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] min-h-screen">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-          <span className="text-xs text-zinc-400">Resolving workspace...</span>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // If authenticated but no workspaces exist yet:

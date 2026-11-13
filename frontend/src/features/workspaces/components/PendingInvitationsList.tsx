@@ -23,6 +23,7 @@ import { getRoleBadgeStyle } from '@/lib/rbac';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 interface PendingInvitationsListProps {
@@ -96,11 +97,25 @@ export function PendingInvitationsList({
 
   if (isLoading) {
     return (
-      <div className="flex h-40 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-          <span className="text-xs text-zinc-500">Checking pending invitations...</span>
-        </div>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-between p-3.5 rounded-md border border-zinc-800 bg-zinc-950/40"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-3.5 w-36" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-16 rounded" />
+              <Skeleton className="h-7 w-16 rounded" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

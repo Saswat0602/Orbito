@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Calendar,
   Clock,
@@ -113,9 +114,19 @@ export const TodayAgendaDialog: React.FC<TodayAgendaDialogProps> = ({
 
         <div className="max-h-[60vh] overflow-y-auto p-4 space-y-4">
           {isLoading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-3">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-200" />
-              <span className="text-xs text-zinc-400">Loading today&apos;s tasks...</span>
+            <div className="space-y-2.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-md border border-zinc-800 bg-zinc-950/60">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-3.5 w-36" />
+                      <Skeleton className="h-2.5 w-24" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded" />
+                </div>
+              ))}
             </div>
           ) : tasks.length === 0 ? (
             /* All Clear Empty State */

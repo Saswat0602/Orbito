@@ -35,6 +35,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AdminDetailSkeleton } from '@/components/skeletons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
@@ -111,12 +112,7 @@ export default function AdminOrganizationDetailPage() {
   if (isLoading) {
     return (
       <RoleGuard requiredRole={Role.SUPER_ADMIN}>
-        <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-          <div className="flex flex-col items-center gap-3 text-zinc-500">
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-            <span className="text-xs">Loading organization profile...</span>
-          </div>
-        </div>
+        <AdminDetailSkeleton />
       </RoleGuard>
     );
   }

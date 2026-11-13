@@ -52,6 +52,7 @@ import {
   type SortField,
   type SortOrder,
 } from '@/features/tasks';
+import { TasksViewSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -352,14 +353,7 @@ export default function ProjectTasksPage() {
   const visibleColumns = useMemo(() => columns.filter((c) => c.visible), [columns]);
 
   if (isProjectLoading || isTasksLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-          <span className="text-xs text-zinc-400">Loading tasks...</span>
-        </div>
-      </div>
-    );
+    return <TasksViewSkeleton view={viewMode === 'board' ? 'kanban' : 'list'} />;
   }
 
   if (!project) {

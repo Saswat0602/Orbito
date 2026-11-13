@@ -37,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
@@ -403,11 +404,30 @@ export function NotificationCenter() {
       {/* Notifications List Container */}
       <Card className="border-zinc-800 bg-zinc-900/80 divide-y divide-zinc-850 overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="flex h-56 items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-              <span className="text-xs text-zinc-400">Loading notifications...</span>
-            </div>
+          <div className="divide-y divide-zinc-850/80">
+            {[1, 2, 3, 4, 5].map((idx) => (
+              <div
+                key={idx}
+                className="p-4 flex items-start justify-between gap-3 bg-zinc-950/20"
+              >
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <Skeleton className="h-8 w-8 rounded-full bg-zinc-800 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-3.5 w-36 bg-zinc-800" />
+                      <Skeleton className="h-3 w-16 rounded bg-zinc-850" />
+                    </div>
+                    <Skeleton
+                      className={`h-3 bg-zinc-850 ${
+                        idx % 2 === 0 ? 'w-4/5' : 'w-3/5'
+                      }`}
+                    />
+                    <Skeleton className="h-2.5 w-20 bg-zinc-850/60" />
+                  </div>
+                </div>
+                <Skeleton className="h-6 w-6 rounded bg-zinc-850 shrink-0" />
+              </div>
+            ))}
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="py-16 text-center space-y-3 px-4">

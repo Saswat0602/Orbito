@@ -8,6 +8,7 @@ import { useAuthRbac } from '@/lib/hooks/useAuthRbac';
 import { useGetProjectBySlugQuery } from '@/lib/store/api/projectsApi';
 import { useGetTasksQuery } from '@/lib/store/api/tasksApi';
 import { TaskCalendarView, CreateTaskModal } from '@/features/tasks';
+import { CalendarTimelineSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 
 export default function ProjectCalendarPage() {
@@ -33,13 +34,8 @@ export default function ProjectCalendarPage() {
     setIsCreateModalOpen(true);
   };
 
-  if (isProjectLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-        Loading calendar schedule...
-      </div>
-    );
+  if (isProjectLoading || isTasksLoading) {
+    return <CalendarTimelineSkeleton view="calendar" />;
   }
 
   if (!project) {

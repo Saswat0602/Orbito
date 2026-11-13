@@ -20,6 +20,7 @@ import { API_BASE_URL } from '@/lib/api/endpoint';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AdminOverviewSkeleton } from '@/components/skeletons';
 
 export default function AdminQueuesPage() {
   const { data: queueHealth, isLoading, refetch, isFetching } = useGetQueueHealthQuery(undefined, {
@@ -35,6 +36,14 @@ export default function AdminQueuesPage() {
     activeJobs: 0,
     successRate: 100,
   };
+
+  if (isLoading) {
+    return (
+      <RoleGuard requiredRole={Role.SUPER_ADMIN}>
+        <AdminOverviewSkeleton />
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard requiredRole={Role.SUPER_ADMIN}>

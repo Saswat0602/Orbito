@@ -329,6 +329,12 @@
     }
   }
 
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   @keyframes zoomIn {
     from {
       transform: scale(0.95);

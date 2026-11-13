@@ -23,6 +23,7 @@ import type { SprintBurndownTask } from '@/types';
 import { useGetSprintBurndownQuery } from '@/lib/store/api/sprintsApi';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -239,9 +240,18 @@ export const SprintBurndownChart: React.FC<SprintBurndownChartProps> = ({
       <Card className="border-zinc-800 bg-zinc-950/80 p-6 space-y-4">
         <div className="h-80 w-full">
           {isLoading ? (
-            <div className="h-full flex items-center justify-center text-xs text-zinc-500">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-              Loading burndown points...
+            <div className="h-full flex flex-col justify-between py-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-52 w-full rounded-md" />
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-2.5 w-16" />
+              </div>
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-full flex items-center justify-center text-xs text-zinc-500 italic">

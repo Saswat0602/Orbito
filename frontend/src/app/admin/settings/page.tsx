@@ -29,6 +29,7 @@ import { SecuritySsoTab } from './components/SecuritySsoTab';
 import { AiCopilotTab } from './components/AiCopilotTab';
 import { MailSmtpTab } from './components/MailSmtpTab';
 import { StorageSettingsTab } from './components/StorageSettingsTab';
+import { AdminSettingsSkeleton } from '@/components/skeletons';
 
 export default function AdminSettingsPage() {
   const { data: configData, isLoading: isConfigLoading, refetch: refetchConfig } = useGetAdminConfigQuery();
@@ -416,6 +417,14 @@ export default function AdminSettingsPage() {
     toast.success('OIDC Callback URL copied to clipboard');
     setTimeout(() => setCopiedCallback(false), 2000);
   };
+
+  if (isConfigLoading && !hasInitialized) {
+    return (
+      <RoleGuard requiredRole={Role.SUPER_ADMIN}>
+        <AdminSettingsSkeleton />
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard requiredRole={Role.SUPER_ADMIN}>

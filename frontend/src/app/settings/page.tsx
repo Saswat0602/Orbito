@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { AISettings } from '@/features/settings';
+import { AdminSettingsSkeleton } from '@/components/skeletons';
 
 export default function SettingsPage() {
   const { user, isManager, isOwner, roleBadge } = useAuthRbac();
@@ -167,6 +168,10 @@ export default function SettingsPage() {
       toast.error(message);
     }
   };
+
+  if (!user) {
+    return <AdminSettingsSkeleton />;
+  }
 
   const initials = ((firstName?.[0] || '') + (lastName?.[0] || '')).toUpperCase() || 'U';
 

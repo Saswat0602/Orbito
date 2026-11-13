@@ -28,6 +28,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 
 export default function AdminOrganizationsPage() {
@@ -98,7 +99,29 @@ export default function AdminOrganizationsPage() {
         <Card className="border-zinc-800 bg-zinc-900/60">
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="py-16 text-center text-xs text-zinc-500">Loading organizations...</div>
+              <div className="divide-y divide-zinc-800/80">
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-950/20"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Skeleton className="h-9 w-9 rounded-md bg-zinc-800 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-40 bg-zinc-800" />
+                          <Skeleton className="h-4 w-14 rounded bg-zinc-850" />
+                        </div>
+                        <Skeleton className="h-3 w-48 bg-zinc-850" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Skeleton className="h-6 w-16 rounded bg-zinc-850" />
+                      <Skeleton className="h-6 w-6 rounded bg-zinc-850" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : organizations.length === 0 ? (
               <div className="py-16 text-center text-xs text-zinc-500">No organizations found.</div>
             ) : (

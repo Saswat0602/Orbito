@@ -29,6 +29,7 @@ import {
 } from '@/features/projects';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
 const STATUS_FILTER_OPTIONS: Array<{
@@ -315,11 +316,32 @@ export default function WorkspaceProjectsPage() {
 
       {/* Projects Grid Content */}
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-7 w-7 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-            <span className="text-xs text-zinc-400">Loading projects catalog...</span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div
+              key={idx}
+              className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5 space-y-4"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-md bg-zinc-800" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32 bg-zinc-800" />
+                    <Skeleton className="h-3 w-16 bg-zinc-850 font-mono" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-14 rounded bg-zinc-850" />
+              </div>
+              <div className="space-y-1.5">
+                <Skeleton className="h-3 w-full bg-zinc-850/80" />
+                <Skeleton className="h-3 w-3/4 bg-zinc-850/60" />
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-zinc-850/80">
+                <Skeleton className="h-3 w-20 bg-zinc-850" />
+                <Skeleton className="h-5 w-5 rounded-full bg-zinc-800" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : projects.length === 0 ? (
         /* Workspace Empty State */

@@ -36,6 +36,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import {
@@ -268,11 +269,25 @@ export default function WorkspaceMembersPage() {
           {/* Members Table / List */}
           <Card className="border-zinc-800 bg-zinc-900/80 divide-y divide-zinc-850 overflow-hidden">
             {isMembersLoading ? (
-              <div className="flex h-40 items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-                  <span className="text-xs text-zinc-500">Loading workspace directory...</span>
-                </div>
+              <div className="divide-y divide-zinc-850/60">
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-md bg-zinc-800 shrink-0" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-32 bg-zinc-800" />
+                        <Skeleton className="h-3 w-44 bg-zinc-850" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Skeleton className="h-5 w-20 rounded-md bg-zinc-850" />
+                      <Skeleton className="h-6 w-6 rounded bg-zinc-850" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredMembers.length === 0 ? (
               <div className="py-12 text-center text-xs text-zinc-500 space-y-2">

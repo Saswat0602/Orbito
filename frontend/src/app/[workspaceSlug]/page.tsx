@@ -49,6 +49,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DashboardSkeleton } from '@/components/skeletons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WorkspaceOverviewPage() {
   const params = useParams<{ workspaceSlug: string }>();
@@ -133,11 +135,7 @@ export default function WorkspaceOverviewPage() {
   }, [tasks]);
 
   if (isWsLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#09090b]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isWsError || !workspace) {
@@ -510,8 +508,23 @@ export default function WorkspaceOverviewPage() {
         </div>
 
         {isProjectsLoading ? (
-          <div className="flex h-32 items-center justify-center">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Skeleton className="h-7 w-7 rounded-md" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                  <Skeleton className="h-4 w-12 rounded" />
+                </div>
+                <Skeleton className="h-3 w-3/4" />
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-850">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : projects.length === 0 ? (
           <Card className="border-zinc-800 bg-zinc-900/60 p-8 text-center">

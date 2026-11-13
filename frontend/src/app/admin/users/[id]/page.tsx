@@ -36,6 +36,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AdminDetailSkeleton } from '@/components/skeletons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -119,10 +120,7 @@ export default function AdminUserDetailPage() {
   if (isLoading) {
     return (
       <RoleGuard requiredRole={Role.SUPER_ADMIN}>
-        <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-          Loading user record...
-        </div>
+        <AdminDetailSkeleton />
       </RoleGuard>
     );
   }

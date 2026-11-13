@@ -13,6 +13,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export default function WorkspaceActivitiesPage() {
@@ -64,8 +65,16 @@ export default function WorkspaceActivitiesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex h-48 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 divide-y divide-zinc-850/80 overflow-hidden">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div key={idx} className="p-4 flex items-start gap-3 bg-zinc-950/20">
+              <Skeleton className="h-8 w-8 rounded-full bg-zinc-800 shrink-0" />
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <Skeleton className="h-3.5 w-3/4 bg-zinc-800" />
+                <Skeleton className="h-2.5 w-24 bg-zinc-850" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : logs.length === 0 ? (
         <Card className="border-zinc-800 bg-zinc-900/60 p-12 text-center">

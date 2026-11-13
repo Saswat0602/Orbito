@@ -38,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { AdminSettingsSkeleton } from '@/components/skeletons';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getRoleBadgeStyle } from '@/lib/rbac';
 import { WorkflowEditor } from '@/features/projects/components/WorkflowEditor';
@@ -116,11 +117,7 @@ export default function ProjectSettingsPage() {
   };
 
   if (isProjectLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-      </div>
-    );
+    return <AdminSettingsSkeleton />;
   }
 
   if (!project) {

@@ -11,6 +11,7 @@ import {
   setActiveProjectSlug,
 } from '@/lib/store/slices/authSlice';
 import { useGetProjectBySlugQuery } from '@/lib/store/api/projectsApi';
+import { TasksViewSkeleton } from '@/components/skeletons';
 import { Badge } from '@/components/ui/badge';
 
 export default function ProjectLayout({
@@ -42,14 +43,7 @@ export default function ProjectLayout({
   }, [project, dispatch]);
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] min-h-[50vh]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-          <span className="text-xs text-zinc-400">Loading project context...</span>
-        </div>
-      </div>
-    );
+    return <TasksViewSkeleton view="kanban" />;
   }
 
   if (isError || (!isLoading && !project)) {

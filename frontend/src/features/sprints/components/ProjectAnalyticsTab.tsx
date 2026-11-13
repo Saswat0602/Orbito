@@ -31,6 +31,7 @@ import type {
 import { useGetProjectChartsQuery } from '@/lib/store/api/projectsApi';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProjectAnalyticsTabProps {
   projectSlug: string;
@@ -104,9 +105,29 @@ export const ProjectAnalyticsTab: React.FC<ProjectAnalyticsTabProps> = ({
 
   if (isLoading) {
     return (
-      <div className="py-16 flex flex-col items-center justify-center gap-3 text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-        <span className="text-xs">Loading project KPI metrics and charts...</span>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <Card key={idx} className="border-zinc-800 bg-zinc-950/80 p-5 space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-4 rounded-full" />
+              </div>
+              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-2.5 w-32" />
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-zinc-800 bg-zinc-950/80 p-5 space-y-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-64 w-full rounded-md" />
+          </Card>
+          <Card className="border-zinc-800 bg-zinc-950/80 p-5 space-y-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-64 w-full rounded-md" />
+          </Card>
+        </div>
       </div>
     );
   }

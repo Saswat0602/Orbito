@@ -34,6 +34,7 @@ import { useGetWorkspacesQuery } from '@/lib/store/api/workspacesApi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DashboardSkeleton } from '@/components/skeletons';
 
 const CHART_TYPES = [
   'kpi-metrics',
@@ -101,6 +102,10 @@ export default function OrganizationDashboardPage() {
     await refetchCharts();
     toast.success('Organization analytics updated');
   };
+
+  if (isWorkspacesLoading || (isChartsLoading && !kpi.totalWorkspaces)) {
+    return <DashboardSkeleton />;
+  }
 
   if (!currentOrg) {
     return (

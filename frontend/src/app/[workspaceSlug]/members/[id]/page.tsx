@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRoleBadgeStyle } from '@/lib/rbac';
+import { AdminDetailSkeleton } from '@/components/skeletons';
 
 export default function WorkspaceMemberProfilePage() {
   const params = useParams<{ workspaceSlug: string; id: string }>();
@@ -63,14 +64,7 @@ export default function WorkspaceMemberProfilePage() {
   const isLoading = isWorkspaceLoading || isUserLoading;
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh] bg-[#09090b]">
-        <div className="flex flex-col items-center gap-3 text-zinc-500">
-          <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-          <span className="text-xs">Loading member profile...</span>
-        </div>
-      </div>
-    );
+    return <AdminDetailSkeleton />;
   }
 
   if (!memberUser) {

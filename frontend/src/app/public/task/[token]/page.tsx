@@ -21,6 +21,7 @@ import { useGetPublicTaskQuery } from '@/lib/store/api/tasksApi';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { TaskDetailSkeleton } from '@/components/skeletons';
 import {
   AttachmentLightboxModal,
   LightboxAttachment,
@@ -117,10 +118,7 @@ export default function PublicSharedTaskPage() {
       <main className="flex-1 flex justify-center p-4 sm:p-8">
         <div className="w-full max-w-3xl space-y-6">
           {isLoading ? (
-            <div className="p-16 border border-zinc-800 rounded-md bg-zinc-950/60 flex flex-col items-center justify-center gap-3">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-              <span className="text-xs text-zinc-400">Loading shared task...</span>
-            </div>
+            <TaskDetailSkeleton />
           ) : isError || !task ? (
             <div className="p-12 border border-zinc-800 rounded-md bg-zinc-950/60 text-center space-y-3">
               <div className="mx-auto h-12 w-12 rounded-full bg-red-950/50 border border-red-800/80 flex items-center justify-center text-red-400">

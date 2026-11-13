@@ -31,6 +31,7 @@ import {
   CompleteSprintModal,
 } from '@/features/sprints';
 import { CreateTaskModal } from '@/features/tasks';
+import { SprintsSkeleton } from '@/components/skeletons';
 import type { Sprint } from '@orbito/types';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/Modal';
@@ -112,12 +113,7 @@ export default function ScopedSprintsPage() {
   };
 
   if (isProjectLoading || isSprintsLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-        Loading agile workspace...
-      </div>
-    );
+    return <SprintsSkeleton />;
   }
 
   if (!project) {

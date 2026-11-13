@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminConsolePage() {
   const { data: stats, isLoading: isStatsLoading } = useGetAdminDashboardStatsQuery();
@@ -86,7 +87,11 @@ export default function AdminConsolePage() {
               <Building2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {stats?.totalOrganizations ?? organizations.length}
+              {isStatsLoading ? (
+                <Skeleton className="h-8 w-16 bg-zinc-800" />
+              ) : (
+                stats?.totalOrganizations ?? organizations.length
+              )}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
               +{stats?.newOrgsThisWeek ?? 0} provisioned this week
@@ -101,7 +106,11 @@ export default function AdminConsolePage() {
               <Users className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {stats?.totalUsers ?? '...'}
+              {isStatsLoading ? (
+                <Skeleton className="h-8 w-16 bg-zinc-800" />
+              ) : (
+                stats?.totalUsers ?? 0
+              )}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
               {stats?.activeUsers ?? 0} active accounts
@@ -116,7 +125,11 @@ export default function AdminConsolePage() {
               <FolderGit2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {stats ? `${stats.totalWorkspaces} / ${stats.totalProjects}` : '...'}
+              {isStatsLoading ? (
+                <Skeleton className="h-8 w-24 bg-zinc-800" />
+              ) : (
+                `${stats?.totalWorkspaces ?? 0} / ${stats?.totalProjects ?? 0}`
+              )}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
               Active operational clusters
@@ -131,7 +144,11 @@ export default function AdminConsolePage() {
               <ListTodo className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">
-              {stats?.totalTasks ?? '...'}
+              {isStatsLoading ? (
+                <Skeleton className="h-8 w-16 bg-zinc-800" />
+              ) : (
+                stats?.totalTasks ?? 0
+              )}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
               +{stats?.newTasksThisWeek ?? 0} created this week

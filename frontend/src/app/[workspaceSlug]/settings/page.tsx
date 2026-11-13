@@ -41,6 +41,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { AutomationsTab } from '@/features/automations';
 import { InviteMemberModal } from '@/components/modals/InviteMemberModal';
+import { AdminSettingsSkeleton } from '@/components/skeletons';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getRoleBadgeStyle } from '@/lib/rbac';
 
 export default function WorkspaceSettingsPage() {
@@ -128,11 +130,7 @@ export default function WorkspaceSettingsPage() {
   };
 
   if (isWsLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-      </div>
-    );
+    return <AdminSettingsSkeleton />;
   }
 
   if (!workspace) {
@@ -302,8 +300,19 @@ export default function WorkspaceSettingsPage() {
             </CardHeader>
             <CardContent>
               {isMembersLoading ? (
-                <div className="flex h-32 items-center justify-center">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+                <div className="space-y-3 py-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-md border border-zinc-850 bg-zinc-950/40">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-3.5 w-28" />
+                          <Skeleton className="h-3 w-36" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-5 w-16 rounded" />
+                    </div>
+                  ))}
                 </div>
               ) : members.length === 0 ? (
                 <div className="py-8 text-center text-xs text-zinc-500">No members found.</div>

@@ -33,6 +33,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MembersSkeleton } from '@/components/skeletons';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -124,12 +126,7 @@ export default function DedicatedProjectMembersPage() {
   };
 
   if (isProjectLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-        Loading project members directory...
-      </div>
-    );
+    return <MembersSkeleton />;
   }
 
   if (!project) {
@@ -208,9 +205,24 @@ export default function DedicatedProjectMembersPage() {
       {/* Members Table */}
       <div className="flex-1 min-h-0 overflow-auto rounded-md border border-zinc-800 bg-zinc-950/60">
         {isMembersLoading ? (
-          <div className="flex items-center justify-center p-12 text-xs text-zinc-500">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-            Loading project members...
+          <div className="p-4 space-y-3">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="flex items-center justify-between py-2.5 px-3 border-b border-zinc-850/60 last:border-b-0">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-7 w-7 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-3.5 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <Skeleton className="h-3.5 w-36 hidden sm:block" />
+                  <Skeleton className="h-5 w-20 rounded" />
+                  <Skeleton className="h-3.5 w-24 hidden md:block" />
+                  <Skeleton className="h-7 w-16 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : members.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center space-y-2">

@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -233,9 +234,35 @@ export default function WorkspacesDirectoryPage() {
       {/* Workspaces Grid */}
       {activeTab === 'active' ? (
         isActiveLoading ? (
-          <div className="flex items-center justify-center p-16 text-xs text-zinc-500">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-            Loading active workspaces...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <div
+                key={idx}
+                className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-5 space-y-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 rounded-md bg-zinc-800" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-32 bg-zinc-800" />
+                      <Skeleton className="h-3 w-20 bg-zinc-850 font-mono" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-4 w-12 rounded bg-zinc-850" />
+                </div>
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-full bg-zinc-850/80" />
+                  <Skeleton className="h-3 w-3/4 bg-zinc-850/60" />
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-zinc-850/80">
+                  <div className="flex -space-x-1.5">
+                    <Skeleton className="h-5 w-5 rounded-full bg-zinc-800 border border-zinc-900" />
+                    <Skeleton className="h-5 w-5 rounded-full bg-zinc-800 border border-zinc-900" />
+                  </div>
+                  <Skeleton className="h-3 w-16 bg-zinc-850" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredActive.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-16 text-center border border-zinc-800/80 rounded-md bg-zinc-950/40 space-y-3">
@@ -330,9 +357,26 @@ export default function WorkspacesDirectoryPage() {
           </div>
         )
       ) : isArchivedLoading ? (
-        <div className="flex items-center justify-center p-16 text-xs text-zinc-500">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100 mr-2" />
-          Loading archived workspaces...
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Card key={idx} className="border-zinc-800 bg-zinc-900/60 p-5 space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-md" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-16 rounded" />
+              </div>
+              <Skeleton className="h-3 w-3/4" />
+              <div className="pt-2 border-t border-zinc-850 flex items-center justify-between">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-7 w-16 rounded" />
+              </div>
+            </Card>
+          ))}
         </div>
       ) : filteredArchived.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-16 text-center border border-zinc-800/80 rounded-md bg-zinc-950/40 space-y-2">

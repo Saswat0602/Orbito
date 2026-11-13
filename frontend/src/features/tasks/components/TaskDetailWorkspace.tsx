@@ -53,6 +53,7 @@ import { useGetWorkspaceMembersQuery } from '@/lib/store/api/workspacesApi';
 import { useGetSprintsQuery } from '@/lib/store/api/sprintsApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { TaskDetailSkeleton } from '@/components/skeletons';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DualModeEditor } from '@/components/common/DualModeEditor';
@@ -547,12 +548,7 @@ export function TaskDetailWorkspace({
 
   // Loading State
   if (isTaskLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
-        <span className="text-xs text-zinc-400">Loading task workspace...</span>
-      </div>
-    );
+    return <TaskDetailSkeleton />;
   }
 
   // Error State

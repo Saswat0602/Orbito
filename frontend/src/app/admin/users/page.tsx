@@ -31,6 +31,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
@@ -192,7 +193,29 @@ export default function AdminUsersPage() {
         <Card className="border-zinc-800 bg-zinc-900/60">
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="py-16 text-center text-xs text-zinc-500">Loading accounts...</div>
+              <div className="divide-y divide-zinc-800/80">
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-md bg-zinc-800 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-36 bg-zinc-800" />
+                          <Skeleton className="h-4 w-12 rounded bg-zinc-850" />
+                        </div>
+                        <Skeleton className="h-3 w-48 bg-zinc-850" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Skeleton className="h-5 w-20 rounded bg-zinc-850" />
+                      <Skeleton className="h-6 w-6 rounded bg-zinc-850" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : users.length === 0 ? (
               <div className="py-16 text-center text-xs text-zinc-500">No users found matching criteria.</div>
             ) : (

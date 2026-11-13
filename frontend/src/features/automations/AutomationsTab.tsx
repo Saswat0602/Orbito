@@ -13,6 +13,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CreateRuleModal } from '@/components/modals/CreateRuleModal';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { RuleStatus } from '@/types';
@@ -94,8 +95,20 @@ export function AutomationsTab({
       </div>
 
       {isLoading ? (
-        <div className="flex h-32 items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500 border-t-zinc-100" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Card key={idx} className="border-zinc-800 bg-zinc-900/60 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-4 w-14 rounded" />
+                </div>
+                <Skeleton className="h-7 w-20 rounded" />
+              </div>
+              <Skeleton className="h-3 w-3/4" />
+            </Card>
+          ))}
         </div>
       ) : rules.length === 0 ? (
         <Card className="border-zinc-800 bg-zinc-900/60 p-10 text-center space-y-3">
