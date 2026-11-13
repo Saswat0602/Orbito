@@ -1,0 +1,23 @@
+# =============================================================================
+# Dependabot Configuration for Automated Dependency & Action Security Updates
+# =============================================================================
+version: 2
+updates:
+  # Monorepo NPM packages
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "automated"
+
+  # GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "ci-cd"
+      - "automated"
