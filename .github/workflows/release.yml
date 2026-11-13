@@ -138,7 +138,7 @@ jobs:
 
       - name: Generate Release Notes & Changelog
         id: changelog
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.release_meta.outputs.tag }}
           name: "Orbito Enterprise ${{ steps.release_meta.outputs.tag }}"
