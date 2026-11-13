@@ -48,10 +48,13 @@ export default function ScopedSprintsPage() {
     'planning' | 'burndown' | 'velocity' | 'analytics'
   >('planning');
 
-  const { data: project, isLoading: isProjectLoading } = useGetProjectBySlugQuery(
-    projectSlug || '',
-    { skip: !projectSlug }
-  );
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useGetProjectBySlugQuery(projectSlug || '', {
+    skip: !projectSlug,
+  });
 
   const { data: sprints = [], isLoading: isSprintsLoading } = useGetSprintsQuery(
     project?.id ? { projectId: project.id } : undefined,
@@ -112,11 +115,11 @@ export default function ScopedSprintsPage() {
     setActiveTab('burndown');
   };
 
-  if (isProjectLoading || isSprintsLoading) {
+  if (isProjectLoading || isSprintsLoading || !projectSlug || (!project && !isProjectError)) {
     return <SprintsSkeleton />;
   }
 
-  if (!project) {
+  if (isProjectError || !project) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
         Project not found.

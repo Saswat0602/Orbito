@@ -68,7 +68,7 @@ export default function WorkspaceMembersPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const { data: workspace } = useGetWorkspaceBySlugQuery(workspaceSlug, {
+  const { data: workspace, isLoading: isWsLoading } = useGetWorkspaceBySlugQuery(workspaceSlug, {
     skip: !workspaceSlug,
   });
 
@@ -268,7 +268,7 @@ export default function WorkspaceMembersPage() {
 
           {/* Members Table / List */}
           <Card className="border-zinc-800 bg-zinc-900/80 divide-y divide-zinc-850 overflow-hidden">
-            {isMembersLoading ? (
+            {isMembersLoading || isWsLoading || !workspace?.id ? (
               <div className="divide-y divide-zinc-850/60">
                 {[1, 2, 3, 4, 5].map((idx) => (
                   <div

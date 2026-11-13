@@ -51,10 +51,13 @@ export default function WorkspaceSettingsPage() {
   const { workspaceSlug } = params;
   const { isManager, isOwner, isSuperAdmin, roleBadge } = useAuthRbac();
 
-  const { data: workspace, isLoading: isWsLoading } = useGetWorkspaceBySlugQuery(
-    workspaceSlug || '',
-    { skip: !workspaceSlug }
-  );
+  const {
+    data: workspace,
+    isLoading: isWsLoading,
+    isError: isWsError,
+  } = useGetWorkspaceBySlugQuery(workspaceSlug || '', {
+    skip: !workspaceSlug,
+  });
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -129,11 +132,11 @@ export default function WorkspaceSettingsPage() {
     }
   };
 
-  if (isWsLoading) {
+  if (isWsLoading || !workspaceSlug || (!workspace && !isWsError)) {
     return <AdminSettingsSkeleton />;
   }
 
-  if (!workspace) {
+  if (isWsError || !workspace) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
         Workspace not found.

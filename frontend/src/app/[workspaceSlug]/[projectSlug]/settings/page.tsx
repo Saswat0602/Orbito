@@ -50,10 +50,13 @@ export default function ProjectSettingsPage() {
   const { workspaceSlug, projectSlug } = params;
   const { isManager, isOwner, isSuperAdmin, roleBadge } = useAuthRbac();
 
-  const { data: project, isLoading: isProjectLoading } = useGetProjectBySlugQuery(
-    projectSlug || '',
-    { skip: !projectSlug }
-  );
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useGetProjectBySlugQuery(projectSlug || '', {
+    skip: !projectSlug,
+  });
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -116,11 +119,11 @@ export default function ProjectSettingsPage() {
     }
   };
 
-  if (isProjectLoading) {
+  if (isProjectLoading || !projectSlug || (!project && !isProjectError)) {
     return <AdminSettingsSkeleton />;
   }
 
-  if (!project) {
+  if (isProjectError || !project) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
         Project not found.

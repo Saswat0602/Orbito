@@ -134,7 +134,7 @@ export default function WorkspaceOverviewPage() {
     };
   }, [tasks]);
 
-  if (isWsLoading) {
+  if (isWsLoading || !workspaceSlug || (!workspace && !isWsError)) {
     return <DashboardSkeleton />;
   }
 
@@ -507,7 +507,7 @@ export default function WorkspaceOverviewPage() {
           </div>
         </div>
 
-        {isProjectsLoading ? (
+        {isProjectsLoading || !workspace?.id ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {Array.from({ length: 3 }).map((_, idx) => (
               <div key={idx} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 space-y-3">

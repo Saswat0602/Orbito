@@ -29,7 +29,7 @@ export default function RootRedirectPage() {
   const { user, isAuthenticated } = useAuthRbac();
   const authState = useAppSelector((state) => state.auth);
 
-  const { data: organizations = [] } = useGetOrganizationsQuery(undefined, {
+  const { data: organizations = [], isLoading: isOrgsLoading } = useGetOrganizationsQuery(undefined, {
     skip: !authState.isAuthenticated || !authState.user,
   });
   const activeOrgId = authState.activeOrganizationId || organizations[0]?.id;
@@ -37,6 +37,8 @@ export default function RootRedirectPage() {
   const {
     data: workspaces = [],
     isLoading: isWorkspacesLoading,
+    isFetching: isWorkspacesFetching,
+    isSuccess: isWorkspacesSuccess,
   } = useGetWorkspacesQuery(
     activeOrgId ? { organizationId: activeOrgId } : undefined,
     { skip: !activeOrgId }
@@ -74,7 +76,17 @@ export default function RootRedirectPage() {
     }
   };
 
-  if (isWorkspacesLoading) {
+  // Determine if we are still resolving the user's workspace destination
+  // Show continuous skeleton without flashing "Create Your Workspace"
+  const isResolving =
+    !authState.isAuthenticated ||
+    !authState.user ||
+    isOrgsLoading ||
+    (organizations.length > 0 && !activeOrgId) ||
+    (activeOrgId && (!isWorkspacesSuccess || isWorkspacesLoading || isWorkspacesFetching)) ||
+    workspaces.length > 0;
+
+  if (isResolving) {
     return <DashboardSkeleton />;
   }
 

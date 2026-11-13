@@ -59,7 +59,7 @@ export default function WorkspacesDirectoryPage() {
   const { user, isOwner, isManager, isSuperAdmin } = useAuthRbac();
   const canManage = isOwner || isManager || isSuperAdmin;
 
-  const { data: organizations = [] } = useGetOrganizationsQuery();
+  const { data: organizations = [], isLoading: isOrgsLoading } = useGetOrganizationsQuery();
   const currentOrg = useMemo(() => {
     return organizations.find((o) => o.id === activeOrgId) || organizations[0] || null;
   }, [organizations, activeOrgId]);
@@ -233,7 +233,7 @@ export default function WorkspacesDirectoryPage() {
 
       {/* Workspaces Grid */}
       {activeTab === 'active' ? (
-        isActiveLoading ? (
+        isActiveLoading || isOrgsLoading || !orgId ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((idx) => (
               <div

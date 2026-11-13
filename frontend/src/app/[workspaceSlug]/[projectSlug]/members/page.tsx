@@ -69,10 +69,13 @@ export default function DedicatedProjectMembersPage() {
   }, [searchQuery]);
 
   // Query Project
-  const { data: project, isLoading: isProjectLoading } = useGetProjectBySlugQuery(
-    projectSlug || '',
-    { skip: !projectSlug }
-  );
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useGetProjectBySlugQuery(projectSlug || '', {
+    skip: !projectSlug,
+  });
 
   // Query Project Members
   const { data: members = [], isLoading: isMembersLoading } = useGetProjectMembersQuery(
@@ -125,11 +128,11 @@ export default function DedicatedProjectMembersPage() {
     }
   };
 
-  if (isProjectLoading) {
+  if (isProjectLoading || !projectSlug || (!project && !isProjectError)) {
     return <MembersSkeleton />;
   }
 
-  if (!project) {
+  if (isProjectError || !project) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-[#09090b] p-6 text-center space-y-3">
         <AlertCircle className="h-8 w-8 text-zinc-600" />

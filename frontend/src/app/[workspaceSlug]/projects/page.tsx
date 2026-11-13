@@ -83,7 +83,7 @@ export default function WorkspaceProjectsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: workspace } = useGetWorkspaceBySlugQuery(workspaceSlug, {
+  const { data: workspace, isLoading: isWsLoading } = useGetWorkspaceBySlugQuery(workspaceSlug, {
     skip: !workspaceSlug,
   });
 
@@ -315,7 +315,7 @@ export default function WorkspaceProjectsPage() {
       </div>
 
       {/* Projects Grid Content */}
-      {isLoading ? (
+      {isLoading || isWsLoading || !workspace?.id ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((idx) => (
             <div

@@ -42,11 +42,11 @@ export default function ProjectLayout({
     }
   }, [project, dispatch]);
 
-  if (isLoading) {
+  if (isLoading || !projectSlug || (!project && !isError)) {
     return <TasksViewSkeleton view="kanban" />;
   }
 
-  if (isError || (!isLoading && !project)) {
+  if (isError || !project) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] p-6">
         <div className="max-w-md w-full text-center space-y-4 p-8 rounded-md border border-zinc-800 bg-zinc-900/60">

@@ -106,10 +106,13 @@ export default function ProjectTasksPage() {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   // Fetch Project
-  const { data: project, isLoading: isProjectLoading } = useGetProjectBySlugQuery(
-    projectSlug || '',
-    { skip: !projectSlug }
-  );
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useGetProjectBySlugQuery(projectSlug || '', {
+    skip: !projectSlug,
+  });
 
   // Fetch Tasks for Project
   const { data: tasks = [], isLoading: isTasksLoading } = useGetTasksQuery(
@@ -352,11 +355,11 @@ export default function ProjectTasksPage() {
 
   const visibleColumns = useMemo(() => columns.filter((c) => c.visible), [columns]);
 
-  if (isProjectLoading || isTasksLoading) {
+  if (isProjectLoading || isTasksLoading || !projectSlug || (!project && !isProjectError)) {
     return <TasksViewSkeleton view={viewMode === 'board' ? 'kanban' : 'list'} />;
   }
 
-  if (!project) {
+  if (isProjectError || !project) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#09090b] text-xs text-zinc-500">
         Project not found.
