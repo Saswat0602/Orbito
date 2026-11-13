@@ -84,7 +84,8 @@ export default function ScopedSprintsPage() {
         name: newSprintName.trim(),
         goal: newSprintGoal.trim() || undefined,
         projectId: project.id,
-      }).unwrap();
+        projectSlug: project.slug,
+      } as any).unwrap();
 
       toast.success('Sprint created successfully');
       setNewSprintName('');

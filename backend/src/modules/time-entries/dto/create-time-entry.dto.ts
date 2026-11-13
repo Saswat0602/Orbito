@@ -8,6 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class CreateTimeEntryDto {
   @ApiProperty({
@@ -25,11 +26,28 @@ export class CreateTimeEntryDto {
     example: 120,
     minimum: 1,
     maximum: 1440, // 24 hours max
+    required: false,
+  })
+  @Transform(({ obj, value }) => {
+    if (value !== undefined && value !== null) return Number(value);
+    if (obj && (obj.duration !== undefined && obj.duration !== null)) {
+      // duration in seconds -> convert to minutes (minimum 1)
+      return Math.max(1, Math.round(Number(obj.duration) / 60));
+    }
+    return undefined;
   })
   @IsInt()
   @Min(1)
-  @IsNotEmpty()
-  timeSpent: number;
+  @IsOptional()
+  timeSpent?: number;
+
+  @ApiProperty({
+    description: 'Duration in seconds (frontend alternate to timeSpent)',
+    example: 7200,
+    required: false,
+  })
+  @IsOptional()
+  duration?: number;
 
   @ApiProperty({
     description: 'Start time of the work session',
@@ -72,11 +90,12 @@ export class CreateTimeEntryDto {
   taskId: string;
 
   @ApiProperty({
-    description: 'ID of the user who logged this time',
+    description: 'ID of the user who logged this time (defaults to authenticated caller)',
     example: '123e4567-e89b-12d3-a456-426614174001',
     format: 'uuid',
+    required: false,
   })
   @IsUUID()
-  @IsNotEmpty()
-  userId: string;
+  @IsOptional()
+  userId?: string;
 }

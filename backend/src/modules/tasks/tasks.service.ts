@@ -129,6 +129,7 @@ export class TasksService {
       select: {
         slug: true,
         id: true,
+        workflowId: true,
         workspaceId: true,
         workspace: {
           select: {
@@ -189,7 +190,27 @@ export class TasksService {
       if (taskData.type) taskCreateData.type = taskData.type;
       if (taskData.priority) taskCreateData.priority = taskData.priority;
       if (taskData.projectId) taskCreateData.projectId = taskData.projectId;
-      if (taskData.statusId) taskCreateData.statusId = taskData.statusId;
+
+      let targetStatusId = taskData.statusId;
+      if (!targetStatusId) {
+        if (project.workflowId) {
+          const firstStatus = await tx.taskStatus.findFirst({
+            where: { workflowId: project.workflowId },
+            orderBy: { position: 'asc' },
+            select: { id: true },
+          });
+          targetStatusId = firstStatus?.id;
+        }
+        if (!targetStatusId) {
+          const fallbackStatus = await tx.taskStatus.findFirst({
+            orderBy: { position: 'asc' },
+            select: { id: true },
+          });
+          targetStatusId = fallbackStatus?.id;
+        }
+      }
+      if (targetStatusId) taskCreateData.statusId = targetStatusId;
+
       if (taskData.startDate) taskCreateData.startDate = taskData.startDate;
       if (taskData.dueDate) taskCreateData.dueDate = taskData.dueDate;
       if (taskData.storyPoints !== undefined) taskCreateData.storyPoints = taskData.storyPoints;
@@ -580,6 +601,7 @@ export class TasksService {
       select: {
         slug: true,
         id: true,
+        workflowId: true,
         workspaceId: true,
         workspace: {
           select: {
@@ -640,7 +662,27 @@ export class TasksService {
       if (taskData.type) taskCreateData.type = taskData.type;
       if (taskData.priority) taskCreateData.priority = taskData.priority;
       if (taskData.projectId) taskCreateData.projectId = taskData.projectId;
-      if (taskData.statusId) taskCreateData.statusId = taskData.statusId;
+
+      let targetStatusId = taskData.statusId;
+      if (!targetStatusId) {
+        if (project.workflowId) {
+          const firstStatus = await tx.taskStatus.findFirst({
+            where: { workflowId: project.workflowId },
+            orderBy: { position: 'asc' },
+            select: { id: true },
+          });
+          targetStatusId = firstStatus?.id;
+        }
+        if (!targetStatusId) {
+          const fallbackStatus = await tx.taskStatus.findFirst({
+            orderBy: { position: 'asc' },
+            select: { id: true },
+          });
+          targetStatusId = fallbackStatus?.id;
+        }
+      }
+      if (targetStatusId) taskCreateData.statusId = targetStatusId;
+
       if (taskData.startDate) taskCreateData.startDate = taskData.startDate;
       if (taskData.dueDate) taskCreateData.dueDate = taskData.dueDate;
       if (taskData.storyPoints !== undefined) taskCreateData.storyPoints = taskData.storyPoints;

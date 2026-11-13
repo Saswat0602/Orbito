@@ -152,22 +152,33 @@ export class CreateTaskDto {
     format: 'uuid',
     required: false,
   })
-  @Transform(({ value }): string[] => {
+  @Transform(({ obj, value }): string[] => {
     if (typeof value === 'string') {
       try {
         const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed.map(String) : [];
+        return Array.isArray(parsed) ? parsed.map(String) : [value];
       } catch {
-        return [];
+        return [value];
       }
     }
-    return Array.isArray(value) ? value.map(String) : [];
+    if (Array.isArray(value)) return value.map(String);
+    if (obj && obj.assigneeId) return [String(obj.assigneeId)];
+    return [];
   })
   @IsArray()
   @IsUUID('all', { each: true })
   @ArrayUnique()
   @IsOptional()
   assigneeIds?: string[];
+
+  @ApiProperty({
+    description: 'Single user ID assigned to this task (alternate to assigneeIds)',
+    example: '123e4567-e89b-12d3-a456-426614174002',
+    format: 'uuid',
+    required: false,
+  })
+  @IsOptional()
+  assigneeId?: string;
 
   @ApiProperty({
     description: 'IDs of users who reported/created this task',
@@ -197,10 +208,11 @@ export class CreateTaskDto {
     description: 'ID of the current task status',
     example: '123e4567-e89b-12d3-a456-426614174004',
     format: 'uuid',
+    required: false,
   })
   @IsUUID()
-  @IsNotEmpty()
-  statusId: string;
+  @IsOptional()
+  statusId?: string;
 
   @ApiProperty({
     description: 'ID of the sprint this task is assigned to',

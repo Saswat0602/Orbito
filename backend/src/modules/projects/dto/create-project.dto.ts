@@ -8,6 +8,7 @@ import {
   IsUUID,
   Matches,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjectStatus, ProjectPriority, ProjectVisibility } from '@prisma/client';
 
@@ -42,12 +43,16 @@ export class CreateProjectDto {
     required: false,
     maxLength: 8,
   })
+  @Transform(({ obj, value }) => value || obj?.key)
   @IsString()
   @IsOptional()
   @Matches(/^[a-zA-Z0-9]{1,8}$/, {
     message: 'Task prefix can only contain letters and numbers, up to 8 characters',
   })
   taskPrefix?: string;
+
+  @IsOptional()
+  key?: string;
 
   @ApiProperty({
     description: 'Project color theme (hex code)',

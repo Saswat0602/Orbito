@@ -81,7 +81,8 @@ export class TimeEntriesService {
       throw new ForbiddenException('You do not have access to this task');
     }
 
-    // Validate start/end time logic
+    // Calculate time spent from start/end times (in minutes)
+    let timeSpent = createTimeEntryDto.timeSpent;
     if (createTimeEntryDto.startTime && createTimeEntryDto.endTime) {
       const startTime = new Date(createTimeEntryDto.startTime);
       const endTime = new Date(createTimeEntryDto.endTime);
@@ -90,15 +91,27 @@ export class TimeEntriesService {
         throw new BadRequestException('End time must be after start time');
       }
 
-      // Calculate time spent from start/end times (in minutes)
-      const calculatedTimeSpent = Math.round(
+      timeSpent = Math.max(1, Math.round(
         (endTime.getTime() - startTime.getTime()) / (1000 * 60),
-      );
-      createTimeEntryDto.timeSpent = calculatedTimeSpent;
+      ));
+    } else if (!timeSpent && createTimeEntryDto.duration) {
+      timeSpent = Math.max(1, Math.round(createTimeEntryDto.duration / 60));
+    }
+
+    if (!timeSpent || timeSpent < 1) {
+      timeSpent = 1;
     }
 
     return this.prisma.timeEntry.create({
-      data: createTimeEntryDto,
+      data: {
+        taskId,
+        userId: requestingUser.id,
+        timeSpent,
+        description: createTimeEntryDto.description,
+        startTime: createTimeEntryDto.startTime ? new Date(createTimeEntryDto.startTime) : undefined,
+        endTime: createTimeEntryDto.endTime ? new Date(createTimeEntryDto.endTime) : undefined,
+        date: createTimeEntryDto.date ? new Date(createTimeEntryDto.date) : new Date(),
+      },
       include: {
         task: {
           select: {

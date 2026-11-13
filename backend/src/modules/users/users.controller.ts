@@ -126,6 +126,21 @@ export class UsersController {
     return this.usersService.getPublicProfile(id, String(req.user.id));
   }
 
+  @Patch('profile')
+  @ApiOperation({ summary: 'Update current authenticated user profile' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile updated successfully.',
+    type: User,
+  })
+  updateCurrentUserProfile(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: any,
+  ) {
+    return this.update(String(req.user.id), updateUserDto, req);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID (UUID)', type: String })

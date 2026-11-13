@@ -120,10 +120,16 @@ export class SprintsService {
   }
 
   async create(createSprintDto: CreateSprintDto, userId: string): Promise<Sprint> {
+    if (!createSprintDto.projectSlug && !createSprintDto.projectId) {
+      throw new BadRequestException('Either projectSlug or projectId must be provided');
+    }
+
     // Check if project exists
     const project = await this.prisma.project.findFirst({
-      where: { slug: createSprintDto.projectSlug },
-      select: { id: true, name: true },
+      where: createSprintDto.projectId
+        ? { id: createSprintDto.projectId }
+        : { slug: createSprintDto.projectSlug },
+      select: { id: true, name: true, slug: true },
     });
 
     if (!project) {

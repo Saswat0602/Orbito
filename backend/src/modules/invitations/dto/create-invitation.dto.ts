@@ -2,8 +2,13 @@
 import { IsEmail, IsString, IsOptional, IsUUID, IsArray } from 'class-validator';
 
 export class CreateInvitationDto {
+  @IsOptional()
   @IsEmail()
-  inviteeEmail: string;
+  inviteeEmail?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @IsOptional()
   @IsUUID()

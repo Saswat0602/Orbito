@@ -116,6 +116,12 @@ export class InvitationsService {
   }
 
   async createInvitation(dto: CreateInvitationDto, inviterId: string) {
+    const email = (dto.inviteeEmail || dto.email || '').trim().toLowerCase();
+    if (!email) {
+      throw new BadRequestException('Either inviteeEmail or email must be provided');
+    }
+    dto.inviteeEmail = email;
+
     const isSmtpEnabled = await this.emailService.isSmtpEnabled();
     const isDev = this.configService.get('NODE_ENV') === 'development';
 

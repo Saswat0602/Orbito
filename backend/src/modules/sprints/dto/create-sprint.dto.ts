@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, IsEnum, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsEnum, IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SprintStatus } from '@prisma/client';
 
@@ -58,8 +58,18 @@ export class CreateSprintDto {
   @ApiProperty({
     description: 'Slug of the project this sprint belongs to',
     example: 'my-project',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  projectSlug: string;
+  @IsOptional()
+  projectSlug?: string;
+
+  @ApiProperty({
+    description: 'UUID of the project this sprint belongs to',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  projectId?: string;
 }
