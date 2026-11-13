@@ -23,6 +23,7 @@ import { getRoleBadgeStyle } from '@/lib/rbac';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 interface PendingInvitationsListProps {
   workspaceId: string;
@@ -36,6 +37,7 @@ export function PendingInvitationsList({
   onOpenInviteModal,
 }: PendingInvitationsListProps) {
   const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
+  const [invitationToRevoke, setInvitationToRevoke] = useState<{ id: string; email: string } | null>(null);
   const [currentTime] = useState(() => Date.now());
 
   const {
@@ -80,15 +82,15 @@ export function PendingInvitationsList({
     }
   };
 
-  const handleRevoke = async (id: string, email: string) => {
-    if (confirm(`Revoke invitation for ${email}? The invite link will become invalid immediately.`)) {
-      try {
-        await deleteInvitation(id).unwrap();
-        toast.success(`Invitation for ${email} revoked`);
-        refetch();
-      } catch {
-        toast.error('Failed to revoke invitation');
-      }
+  const handleConfirmRevoke = async () => {
+    if (!invitationToRevoke) return;
+    try {
+      await deleteInvitation(invitationToRevoke.id).unwrap();
+      toast.success(`Invitation for ${invitationToRevoke.email} revoked`);
+      setInvitationToRevoke(null);
+      refetch();
+    } catch {
+      toast.error('Failed to revoke invitation');
     }
   };
 
@@ -233,7 +235,7 @@ export function PendingInvitationsList({
                 <button
                   type="button"
                   disabled={isDeleting}
-                  onClick={() => handleRevoke(inv.id, inv.inviteeEmail)}
+                  onClick={() => setInvitationToRevoke({ id: inv.id, email: inv.inviteeEmail })}
                   className="p-1.5 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-500 hover:text-rose-400 hover:border-rose-900 transition-colors cursor-pointer disabled:opacity-50"
                   title="Revoke invitation"
                 >
@@ -244,6 +246,24 @@ export function PendingInvitationsList({
           </div>
         );
       })}
+
+      {/* Revoke Invitation Confirmation Modal */}
+      <ConfirmationModal
+        open={!!invitationToRevoke}
+        onOpenChange={(open) => !open && setInvitationToRevoke(null)}
+        title="Revoke Workspace Invitation"
+        description={
+          <span>
+            Are you sure you want to revoke the invitation for{' '}
+            <strong className="text-zinc-200">{invitationToRevoke?.email}</strong>?
+            The invitation link will become invalid immediately.
+          </span>
+        }
+        confirmLabel="Revoke Invitation"
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmRevoke}
+      />
     </Card>
   );
 }

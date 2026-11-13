@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CreateRuleModal } from '@/components/modals/CreateRuleModal';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { RuleStatus } from '@/types';
 
 interface AutomationsTabProps {
@@ -28,6 +29,7 @@ export function AutomationsTab({
   isManagerOrOwner,
 }: AutomationsTabProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: rules = [], isLoading } = useGetAutomationRulesQuery(
     workspaceId ? { workspaceId } : undefined,
@@ -50,14 +52,14 @@ export function AutomationsTab({
     }
   };
 
-  const handleDelete = async (id: string, ruleName: string) => {
-    if (confirm(`Are you sure you want to delete "${ruleName}"?`)) {
-      try {
-        await deleteRule(id).unwrap();
-        toast.success('Automation rule deleted');
-      } catch {
-        toast.error('Failed to delete automation rule');
-      }
+  const handleConfirmDelete = async () => {
+    if (!ruleToDelete) return;
+    try {
+      await deleteRule(ruleToDelete.id).unwrap();
+      toast.success('Automation rule deleted');
+      setRuleToDelete(null);
+    } catch {
+      toast.error('Failed to delete automation rule');
     }
   };
 
@@ -197,7 +199,7 @@ export function AutomationsTab({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(rule.id, rule.name)}
+                        onClick={() => setRuleToDelete({ id: rule.id, name: rule.name })}
                         disabled={isDeleting}
                         aria-label="Delete rule"
                         className="h-7 w-7 p-0 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/40"
@@ -219,6 +221,24 @@ export function AutomationsTab({
         onOpenChange={setIsCreateOpen}
         workspaceId={workspaceId}
         organizationId={organizationId}
+      />
+
+      {/* Delete Rule Confirmation Modal */}
+      <ConfirmationModal
+        open={!!ruleToDelete}
+        onOpenChange={(open) => !open && setRuleToDelete(null)}
+        title="Delete Automation Rule"
+        description={
+          <span>
+            Are you sure you want to delete automation rule{' '}
+            <strong className="text-zinc-200">&ldquo;{ruleToDelete?.name}&rdquo;</strong>?
+            This rule will be removed permanently and won&apos;t trigger again.
+          </span>
+        }
+        confirmLabel="Delete Rule"
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

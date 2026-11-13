@@ -65,6 +65,14 @@ import { TaskDependencies } from './TaskDependencies';
 import { TaskRecurrenceSelector } from './TaskRecurrenceSelector';
 import { ShareTaskDialog } from './ShareTaskDialog';
 import { MentionAutocomplete, type MentionMember } from './MentionAutocomplete';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 export interface TaskDetailWorkspaceProps {
   taskId: string;
@@ -211,6 +219,8 @@ export function TaskDetailWorkspace({
   const commentInputRef = useRef<HTMLInputElement>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isCopiedSlug, setIsCopiedSlug] = useState(false);
+  const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
   const mentionMembers: MentionMember[] = useMemo(() => {
     return workspaceMembers.map((m) => {
@@ -509,29 +519,29 @@ export function TaskDetailWorkspace({
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!task) return;
+  const handleConfirmDeleteComment = async () => {
+    if (!task || !commentToDelete) return;
     try {
-      await deleteComment({ id: commentId, taskId: task.id }).unwrap();
+      await deleteComment({ id: commentToDelete, taskId: task.id }).unwrap();
       toast.success('Comment deleted');
+      setCommentToDelete(null);
     } catch {
       toast.error('Failed to delete comment');
     }
   };
 
-  const handleDeleteTask = async () => {
+  const handleConfirmDeleteTask = async () => {
     if (!task || !canDelete) return;
-    if (confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
-      try {
-        await deleteTask(task.id).unwrap();
-        toast.success('Task deleted');
-        if (onClose) onClose();
-        if (mode === 'fullpage') {
-          router.push(`/${effectiveWorkspaceSlug}/${effectiveProjectSlug}/tasks`);
-        }
-      } catch {
-        toast.error('Failed to delete task');
+    try {
+      await deleteTask(task.id).unwrap();
+      toast.success('Task deleted');
+      setIsDeleteTaskModalOpen(false);
+      if (onClose) onClose();
+      if (mode === 'fullpage') {
+        router.push(`/${effectiveWorkspaceSlug}/${effectiveProjectSlug}/tasks`);
       }
+    } catch {
+      toast.error('Failed to delete task');
     }
   };
 
@@ -700,7 +710,7 @@ export function TaskDetailWorkspace({
           {canDelete && (
             <button
               type="button"
-              onClick={handleDeleteTask}
+              onClick={() => setIsDeleteTaskModalOpen(true)}
               disabled={isDeleting}
               className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40"
               title="Delete task"
@@ -1009,7 +1019,7 @@ export function TaskDetailWorkspace({
                             {(isOwnComment || canDelete) && (
                               <button
                                 type="button"
-                                onClick={() => handleDeleteComment(c.id)}
+                                onClick={() => setCommentToDelete(c.id)}
                                 className="text-zinc-600 hover:text-rose-400 transition-colors p-1"
                                 title="Delete comment"
                               >
@@ -1140,22 +1150,28 @@ export function TaskDetailWorkspace({
                 <Layers className="h-3 w-3 text-zinc-500" />
                 <span>Status</span>
               </label>
-              <select
-                value={task.statusId || ''}
+              <Select
+                value={task.statusId || (projectStatuses[0]?.id ?? 'default')}
                 disabled={!canEdit}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
+                onValueChange={(val) => handleStatusChange(val)}
               >
-                {projectStatuses.length > 0 ? (
-                  projectStatuses.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.category})
-                    </option>
-                  ))
-                ) : (
-                  <option value={task.statusId}>{task.status?.name || 'Default'}</option>
-                )}
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  {projectStatuses.length > 0 ? (
+                    projectStatuses.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-xs">
+                        {s.name} ({s.category})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value={task.statusId || 'default'} className="text-xs">
+                      {task.status?.name || 'Default'}
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Priority Picker */}
@@ -1164,18 +1180,22 @@ export function TaskDetailWorkspace({
                 <AlertCircle className="h-3 w-3 text-zinc-500" />
                 <span>Priority</span>
               </label>
-              <select
+              <Select
                 value={task.priority || 'MEDIUM'}
                 disabled={!canEdit}
-                onChange={(e) => handlePriorityChange(e.target.value as TaskPriority)}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
+                onValueChange={(val) => handlePriorityChange(val as TaskPriority)}
               >
-                {TASK_PRIORITIES.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  {TASK_PRIORITIES.map((p) => (
+                    <SelectItem key={p.value} value={p.value} className="text-xs">
+                      {p.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Task Type Picker */}
@@ -1184,18 +1204,22 @@ export function TaskDetailWorkspace({
                 <CheckSquare className="h-3 w-3 text-zinc-500" />
                 <span>Task Type</span>
               </label>
-              <select
+              <Select
                 value={currentType}
                 disabled={!canEdit}
-                onChange={(e) => handleTaskTypeChange(e.target.value as TaskType)}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
+                onValueChange={(val) => handleTaskTypeChange(val as TaskType)}
               >
-                {(Object.keys(TASK_TYPE_CONFIG) as TaskType[]).map((typeKey) => (
-                  <option key={typeKey} value={typeKey}>
-                    {TASK_TYPE_CONFIG[typeKey].label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                  <SelectValue placeholder="Select task type" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  {(Object.keys(TASK_TYPE_CONFIG) as TaskType[]).map((typeKey) => (
+                    <SelectItem key={typeKey} value={typeKey} className="text-xs">
+                      {TASK_TYPE_CONFIG[typeKey].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Sprint (Agile) */}
@@ -1204,19 +1228,25 @@ export function TaskDetailWorkspace({
                 <Timer className="h-3 w-3 text-zinc-500" />
                 <span>Sprint</span>
               </label>
-              <select
+              <Select
                 value={task.sprintId || 'none'}
                 disabled={!canEdit}
-                onChange={(e) => handleSprintChange(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
+                onValueChange={(val) => handleSprintChange(val)}
               >
-                <option value="none">Backlog (No Sprint)</option>
-                {sprints.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.status})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                  <SelectValue placeholder="Select sprint" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectItem value="none" className="text-xs">
+                    Backlog (No Sprint)
+                  </SelectItem>
+                  {sprints.map((s) => (
+                    <SelectItem key={s.id} value={s.id} className="text-xs">
+                      {s.name} ({s.status})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Story Points (Fibonacci Estimation) */}
@@ -1306,25 +1336,31 @@ export function TaskDetailWorkspace({
                 <User className="h-3 w-3 text-zinc-500" />
                 <span>Assignee</span>
               </label>
-              <select
+              <Select
                 value={currentAssignee?.id || 'unassigned'}
                 disabled={!canEdit}
-                onChange={(e) => handleAssigneeChange(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer disabled:cursor-not-allowed"
+                onValueChange={(val) => handleAssigneeChange(val)}
               >
-                <option value="unassigned">Unassigned</option>
-                {workspaceMembers.map((m) => {
-                  const name =
-                    m.user?.firstName && m.user?.lastName
-                      ? `${m.user.firstName} ${m.user.lastName}`
-                      : m.user?.username || m.user?.email || 'User';
-                  return (
-                    <option key={m.userId} value={m.userId}>
-                      {name}
-                    </option>
-                  );
-                })}
-              </select>
+                <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectItem value="unassigned" className="text-xs">
+                    Unassigned
+                  </SelectItem>
+                  {workspaceMembers.map((m) => {
+                    const name =
+                      m.user?.firstName && m.user?.lastName
+                        ? `${m.user.firstName} ${m.user.lastName}`
+                        : m.user?.username || m.user?.email || 'User';
+                    return (
+                      <SelectItem key={m.userId} value={m.userId} className="text-xs">
+                        {name}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Reporter */}
@@ -1334,23 +1370,27 @@ export function TaskDetailWorkspace({
                 <span>Reporter</span>
               </label>
               {canDelete ? (
-                <select
-                  value={currentReporter?.id || ''}
-                  onChange={(e) => handleReporterChange(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 rounded px-2.5 py-1.5 text-xs outline-none focus:border-zinc-700 cursor-pointer"
+                <Select
+                  value={currentReporter?.id || workspaceMembers[0]?.userId || 'none'}
+                  onValueChange={(val) => handleReporterChange(val)}
                 >
-                  {workspaceMembers.map((m) => {
-                    const name =
-                      m.user?.firstName && m.user?.lastName
-                        ? `${m.user.firstName} ${m.user.lastName}`
-                        : m.user?.username || m.user?.email || 'User';
-                    return (
-                      <option key={m.userId} value={m.userId}>
-                        {name}
-                      </option>
-                    );
-                  })}
-                </select>
+                  <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-zinc-200 h-8 text-xs">
+                    <SelectValue placeholder="Select reporter" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                    {workspaceMembers.map((m) => {
+                      const name =
+                        m.user?.firstName && m.user?.lastName
+                          ? `${m.user.firstName} ${m.user.lastName}`
+                          : m.user?.username || m.user?.email || 'User';
+                      return (
+                        <SelectItem key={m.userId} value={m.userId} className="text-xs">
+                          {name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               ) : (
                 <div className="flex items-center gap-2 p-2 rounded bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300">
                   <Avatar className="h-4 w-4 rounded-sm border border-zinc-700">
@@ -1408,6 +1448,37 @@ export function TaskDetailWorkspace({
           taskTitle={task.title}
         />
       )}
+
+      {/* Delete Task Confirmation Modal */}
+      <ConfirmationModal
+        open={isDeleteTaskModalOpen}
+        onOpenChange={setIsDeleteTaskModalOpen}
+        title="Delete Task"
+        description={
+          <span>
+            Are you sure you want to permanently delete task{' '}
+            <strong className="text-zinc-200">
+              {task?.slug ? `[${task.slug}] ` : ''}&ldquo;{task?.title}&rdquo;
+            </strong>
+            ? This action cannot be undone and will delete all attachments, subtasks, and comments.
+          </span>
+        }
+        confirmLabel="Delete Task"
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDeleteTask}
+      />
+
+      {/* Delete Comment Confirmation Modal */}
+      <ConfirmationModal
+        open={!!commentToDelete}
+        onOpenChange={(open) => !open && setCommentToDelete(null)}
+        title="Delete Comment"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmLabel="Delete Comment"
+        variant="destructive"
+        onConfirm={handleConfirmDeleteComment}
+      />
     </div>
   );
 }

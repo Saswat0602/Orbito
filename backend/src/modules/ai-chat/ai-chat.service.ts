@@ -90,6 +90,8 @@ export class AiChatService {
       )
         return 'google';
       if (hostname === 'api.cohere.com' || hostname.endsWith('.api.cohere.com')) return 'cohere';
+      if (hostname === 'api.groq.com' || hostname.endsWith('.groq.com')) return 'groq';
+      if (hostname.includes('bedrock') || hostname.includes('bedrock-runtime')) return 'bedrock';
     } catch (e) {
       console.log(e);
       // Invalid URL, fall back to previous logic or return custom (could alternatively throw error)
@@ -137,6 +139,14 @@ export class AiChatService {
           body.top_p = 0.9;
           body.frequency_penalty = 0;
           body.presence_penalty = 0;
+        }
+        break;
+
+      case 'groq':
+      case 'bedrock':
+        url = `${apiUrl}/chat/completions`;
+        if (samplingExtras) {
+          body.top_p = 0.9;
         }
         break;
 
@@ -362,8 +372,8 @@ export class AiChatService {
     return this.parseProviderResponse(provider, responseData).trim();
   }
 
-  private generateSystemPrompt(): string {
-    return `You are Orbito AI assistant for browser automation.Your job is to help users automate tasks on web pages.
+  private generateSystemPrompt(options?: { tone?: string; customPrompt?: string }): string {
+    let prompt = `You are Orbito AI assistant for browser automation.Your job is to help users automate tasks on web pages.
 
 You will receive:
 1. The current page URL
@@ -525,6 +535,27 @@ ADMIN PANEL RULES (SUPER_ADMIN ONLY):
 - Users: manage user roles, status, password resets
 - Organizations: manage all orgs, suspend/unsuspend, transfer ownership
 - Config: system-wide settings (SMTP, AI defaults, security)`;
+
+    if (options?.tone) {
+      prompt += `\n\nAI PERSONALITY & TONE GUIDELINE:\nAdopt a ${options.tone} tone across all responses, recommendations, and conversational explanations.`;
+    }
+    if (options?.customPrompt) {
+      prompt += `\n\nADDITIONAL SYSTEM INSTRUCTIONS:\n${options.customPrompt}`;
+    }
+    return prompt;
+  }
+
+  async getPublicAiConfig(userId: string): Promise<{ enabled: boolean; greetingMessage: string; tone: string }> {
+    const [enabled, greeting, tone] = await Promise.all([
+      this.settingsService.get('ai_enabled', userId),
+      this.settingsService.get('ai_greeting_message', userId),
+      this.settingsService.get('ai_tone', userId),
+    ]);
+    return {
+      enabled: enabled === 'true',
+      greetingMessage: greeting || 'How can I help you today?',
+      tone: tone || 'Professional',
+    };
   }
 
   async chat(chatRequest: ChatRequestDto, userId: string): Promise<ChatResponseDto> {
@@ -597,8 +628,15 @@ ADMIN PANEL RULES (SUPER_ADMIN ONLY):
       // Build messages array with system prompt and conversation history
       const messages: ChatMessageDto[] = [];
 
-      // Generate system prompt
-      const systemPrompt = this.generateSystemPrompt();
+      // Generate system prompt with configured personality tone & custom instructions
+      const [aiTone, customSystemPrompt] = await Promise.all([
+        this.settingsService.get('ai_tone', userId),
+        this.settingsService.get('ai_system_prompt', userId),
+      ]);
+      const systemPrompt = this.generateSystemPrompt({
+        tone: aiTone || undefined,
+        customPrompt: customSystemPrompt || undefined,
+      });
       messages.push({
         role: 'system',
         content: systemPrompt,

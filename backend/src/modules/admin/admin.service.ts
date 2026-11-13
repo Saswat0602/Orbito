@@ -591,9 +591,9 @@ export class AdminService {
   }
 
   /**
-   * Test SMTP configuration by verifying server connection and authentication
+   * Test SMTP configuration by verifying server connection and optionally dispatching a test verification email
    */
-  async testSmtpConfig(): Promise<{ success: boolean; message: string }> {
+  async testSmtpConfig(recipientEmail?: string): Promise<{ success: boolean; message: string }> {
     const getSmtpValue = async (key: string, envKey: string, fallback = ''): Promise<string> => {
       return (
         this.configService.get<string>(envKey) || (await this.settingsService.get(key)) || fallback
@@ -626,6 +626,35 @@ export class AdminService {
       });
 
       await transporter.verify();
+
+      if (recipientEmail && recipientEmail.trim()) {
+        const from = await getSmtpValue('smtp_from', 'SMTP_FROM', 'noreply@orbito.local');
+        const fromName = await getSmtpValue('smtp_from_name', 'SMTP_FROM_NAME', 'Orbito Platform');
+        await transporter.sendMail({
+          from: `"${fromName}" <${from}>`,
+          to: recipientEmail.trim(),
+          subject: 'Orbito SMTP Configuration Test Email',
+          text: `This is a test email sent from Orbito Admin Settings to verify outbound delivery.\n\nServer: ${smtpHost}:${smtpPort}\nSender: ${from}\nTimestamp: ${new Date().toISOString()}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background: #09090b; color: #f4f4f5; border: 1px solid #27272a; border-radius: 8px;">
+              <h2 style="color: #ffffff; margin-bottom: 8px;">Orbito Mail Delivery Verification</h2>
+              <p style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">Your outbound SMTP configuration is active and working properly.</p>
+              <div style="background: #18181b; padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #d4d4d8; margin: 16px 0;">
+                <strong>Server:</strong> ${smtpHost}:${smtpPort}<br/>
+                <strong>Sender:</strong> ${from}<br/>
+                <strong>Timestamp:</strong> ${new Date().toISOString()}
+              </div>
+              <p style="color: #71717a; font-size: 12px; margin-top: 24px;">Sent by Orbito System Admin Verification.</p>
+            </div>
+          `,
+        });
+        transporter.close();
+        return {
+          success: true,
+          message: `SMTP verified and live test email sent to ${recipientEmail.trim()}`,
+        };
+      }
+
       transporter.close();
 
       return {
@@ -638,11 +667,13 @@ export class AdminService {
       if (this.configService.get('NODE_ENV') === 'development' && smtpHost.includes('example.com')) {
         return {
           success: true,
-          message: `Development environment: SMTP parameters configured (${smtpHost}:${smtpPort}).`,
+          message: recipientEmail
+            ? `Development environment: Mock test email dispatched to ${recipientEmail.trim()} (${smtpHost}:${smtpPort}).`
+            : `Development environment: SMTP parameters configured (${smtpHost}:${smtpPort}).`,
         };
       }
       throw new BadRequestException(
-        'SMTP test failed. Check host, port, and credentials, then see server logs for details.',
+        `SMTP test failed: ${msg}. Check host, port, and credentials.`,
       );
     }
   }

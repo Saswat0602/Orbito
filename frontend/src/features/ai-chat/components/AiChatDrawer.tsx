@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { setIsAiChatOpen } from '@/lib/store/slices/uiSlice';
 import {
+  useGetAiConfigQuery,
   useGetConversationsQuery,
   useCreateConversationMutation,
   useRenameConversationMutation,
@@ -100,6 +101,7 @@ export function AiChatDrawer() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // RTK Query Hooks
+  const { data: aiConfig } = useGetAiConfigQuery(undefined, { skip: !isOpen });
   const { data: conversations = [], refetch: refetchConversations } = useGetConversationsQuery(undefined, {
     skip: !isOpen,
   });
@@ -479,10 +481,12 @@ export function AiChatDrawer() {
                 <Sparkles className="w-6 h-6" />
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-sm font-semibold text-zinc-200">How can I help you today?</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">
+                  {aiConfig?.greetingMessage || 'How can I help you today?'}
+                </h3>
                 <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
-                  I can summarize sprints, analyze workloads, identify risk bottlenecks, or draft task
-                  descriptions.
+                  {aiConfig?.tone ? `Operating in ${aiConfig.tone} mode. ` : ''}
+                  I can summarize sprints, analyze workloads, identify risk bottlenecks, or draft task descriptions.
                 </p>
               </div>
 

@@ -213,10 +213,11 @@ export const adminApi = apiSlice.injectEndpoints({
       invalidatesTags: ['Admin'],
     }),
 
-    testAdminSmtp: builder.mutation<{ success: boolean; message: string }, void>({
-      query: () => ({
+    testAdminSmtp: builder.mutation<{ success: boolean; message: string }, { email?: string } | void>({
+      query: (body) => ({
         url: ENDPOINTS.admin.testSmtp,
         method: 'POST',
+        body: body || {},
       }),
     }),
 

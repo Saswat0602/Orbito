@@ -23,6 +23,13 @@ import { User } from '@prisma/client';
 export class AiChatController {
   constructor(private readonly aiChatService: AiChatService) {}
 
+  @Get('config')
+  @ApiOperation({ summary: 'Get active AI public configuration (enabled status, greeting, tone)' })
+  @ApiResponse({ status: 200 })
+  async getAiConfig(@CurrentUser() user: User) {
+    return this.aiChatService.getPublicAiConfig(user.id);
+  }
+
   @Get('conversations')
   @ApiOperation({ summary: 'Get all AI conversations' })
   @ApiResponse({ status: 200 })

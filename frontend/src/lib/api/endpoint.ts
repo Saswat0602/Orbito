@@ -226,6 +226,7 @@ export const ENDPOINTS = {
 
   // Conversational AI & DOM Automation
   aiChat: {
+    config: '/ai-chat/config',
     chat: '/ai-chat/chat',
     conversations: '/ai-chat/conversations',
     conversationById: (id: string) => `/ai-chat/conversations/${id}`,

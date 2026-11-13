@@ -206,8 +206,15 @@ export class AdminController {
   }
 
   @Post('config/test-smtp')
-  @ApiOperation({ summary: 'Test SMTP connection and authentication' })
-  async testSmtp() {
-    return this.adminService.testSmtpConfig();
+  @ApiOperation({ summary: 'Test SMTP connection and optionally send a test email' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { email: { type: 'string', format: 'email' } },
+    },
+    required: false,
+  })
+  async testSmtp(@Body('email') recipientEmail?: string) {
+    return this.adminService.testSmtpConfig(recipientEmail);
   }
 }

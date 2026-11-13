@@ -34,3 +34,4 @@ export * from "./textarea";
 export * from "./tooltip";
 export * from "./WorkspaceCardSkeleton";
 export * from "./GoogleButton";
+export * from "./confirmation-modal";

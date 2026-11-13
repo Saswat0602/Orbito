@@ -4,26 +4,11 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import {
   Sliders,
-  ShieldCheck,
   Mail,
   KeyRound,
-  CheckCircle2,
-  AlertTriangle,
-  Send,
-  Lock,
   Globe,
   Sparkles,
-  Bot,
-  Loader2,
-  Cpu,
   HardDrive,
-  Eye,
-  EyeOff,
-  Copy,
-  Check,
-  Server,
-  Save,
-  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,10 +22,13 @@ import {
 import { useGetRegistrationStatusQuery } from '@/lib/store/api/authApi';
 import { useTestAiConnectionMutation } from '@/lib/store/api/aiChatApi';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
+import { GeneralSettingsTab } from './components/GeneralSettingsTab';
+import { SecuritySsoTab } from './components/SecuritySsoTab';
+import { AiCopilotTab } from './components/AiCopilotTab';
+import { MailSmtpTab } from './components/MailSmtpTab';
+import { StorageSettingsTab } from './components/StorageSettingsTab';
 
 export default function AdminSettingsPage() {
   const { data: configData, isLoading: isConfigLoading, refetch: refetchConfig } = useGetAdminConfigQuery();
@@ -68,7 +56,6 @@ export default function AdminSettingsPage() {
   const [showSsoSecret, setShowSsoSecret] = useState(false);
   const [ssoDefaultRole, setSsoDefaultRole] = useState('MEMBER');
   const [sessionTimeout, setSessionTimeout] = useState('60');
-  const [enforceMfa, setEnforceMfa] = useState(false);
   const [copiedCallback, setCopiedCallback] = useState(false);
 
   // 3. AI Copilot State
@@ -78,6 +65,13 @@ export default function AdminSettingsPage() {
   const [aiModel, setAiModel] = useState('anthropic/claude-3.5-sonnet');
   const [aiMaxTokens, setAiMaxTokens] = useState('4096');
   const [aiTemperature, setAiTemperature] = useState('0.2');
+  const [aiTone, setAiTone] = useState('Professional');
+  const [aiGreetingMessage, setAiGreetingMessage] = useState('How can I help you today?');
+  const [aiSystemPrompt, setAiSystemPrompt] = useState('');
+  const [featTaskBreakdown, setFeatTaskBreakdown] = useState(true);
+  const [featDescriptionGen, setFeatDescriptionGen] = useState(true);
+  const [featCodeReview, setFeatCodeReview] = useState(true);
+  const [featSprintSummary, setFeatSprintSummary] = useState(true);
 
   // 4. Mail / SMTP State
   const [smtpHost, setSmtpHost] = useState('');
@@ -87,6 +81,13 @@ export default function AdminSettingsPage() {
   const [showSmtpPass, setShowSmtpPass] = useState(false);
   const [smtpFrom, setSmtpFrom] = useState('noreply@orbito.io');
   const [smtpFromName, setSmtpFromName] = useState('Orbito Platform');
+  const [testRecipientEmail, setTestRecipientEmail] = useState('');
+  const [inboundEmailEnabled, setInboundEmailEnabled] = useState(false);
+  const [inboundEmailDomain, setInboundEmailDomain] = useState('tasks.orbito.io');
+  const [emailNotifyInvitations, setEmailNotifyInvitations] = useState(true);
+  const [emailNotifyAssignments, setEmailNotifyAssignments] = useState(true);
+  const [emailNotifyMentions, setEmailNotifyMentions] = useState(true);
+  const [emailNotifyOverdue, setEmailNotifyOverdue] = useState(true);
 
   // 5. Storage State
   const [storageProvider, setStorageProvider] = useState<'local' | 's3'>('local');
@@ -118,13 +119,19 @@ export default function AdminSettingsPage() {
       setSsoClientSecret(getVal('sso_client_secret', ''));
       setSsoDefaultRole(getVal('sso_default_role', 'MEMBER'));
       setSessionTimeout(getVal('session_ttl_minutes', '60'));
-      setEnforceMfa(getVal('enforce_mfa') === 'true');
 
       setAiApiUrl(getVal('ai_api_url', 'https://openrouter.ai/api/v1'));
       setAiApiKey(getVal('ai_api_key', ''));
       setAiModel(getVal('ai_model', 'anthropic/claude-3.5-sonnet'));
       setAiMaxTokens(getVal('ai_max_tokens', '4096'));
       setAiTemperature(getVal('ai_temperature', '0.2'));
+      setAiTone(getVal('ai_tone', 'Professional'));
+      setAiGreetingMessage(getVal('ai_greeting_message', 'How can I help you today?'));
+      setAiSystemPrompt(getVal('ai_system_prompt', ''));
+      setFeatTaskBreakdown(getVal('ai_feat_task_breakdown', 'true') === 'true');
+      setFeatDescriptionGen(getVal('ai_feat_description_gen', 'true') === 'true');
+      setFeatCodeReview(getVal('ai_feat_code_review', 'true') === 'true');
+      setFeatSprintSummary(getVal('ai_feat_sprint_summary', 'true') === 'true');
 
       setSmtpHost(getVal('smtp_host', ''));
       setSmtpPort(getVal('smtp_port', '587'));
@@ -132,6 +139,12 @@ export default function AdminSettingsPage() {
       setSmtpPass(getVal('smtp_pass', ''));
       setSmtpFrom(getVal('smtp_from', 'noreply@orbito.io'));
       setSmtpFromName(getVal('smtp_from_name', 'Orbito Platform'));
+      setInboundEmailEnabled(getVal('inbound_email_enabled') === 'true');
+      setInboundEmailDomain(getVal('inbound_email_domain', 'tasks.orbito.io'));
+      setEmailNotifyInvitations(getVal('email_notify_invitations', 'true') === 'true');
+      setEmailNotifyAssignments(getVal('email_notify_assignments', 'true') === 'true');
+      setEmailNotifyMentions(getVal('email_notify_mentions', 'true') === 'true');
+      setEmailNotifyOverdue(getVal('email_notify_overdue', 'true') === 'true');
 
       setStorageProvider(getVal('storage_provider', 'local') === 's3' ? 's3' : 'local');
       setS3Bucket(getVal('s3_bucket', ''));
@@ -266,7 +279,6 @@ export default function AdminSettingsPage() {
           { key: 'sso_client_secret', value: ssoClientSecret.trim(), category: 'security', description: 'OIDC Client Secret', isEncrypted: true },
           { key: 'sso_default_role', value: ssoDefaultRole, category: 'security', description: 'Default role on SSO onboarding' },
           { key: 'session_ttl_minutes', value: sessionTimeout, category: 'security', description: 'Inactivity session timeout' },
-          { key: 'enforce_mfa', value: enforceMfa.toString(), category: 'security', description: 'Enforce MFA policy' },
         ],
       }).unwrap();
       toast.success('Enterprise SSO & Security parameters saved');
@@ -284,9 +296,16 @@ export default function AdminSettingsPage() {
           { key: 'ai_model', value: aiModel.trim(), category: 'ai', description: 'AI Model Identifier' },
           { key: 'ai_max_tokens', value: aiMaxTokens.trim(), category: 'ai', description: 'Maximum AI token generation' },
           { key: 'ai_temperature', value: aiTemperature.trim(), category: 'ai', description: 'LLM reasoning temperature' },
+          { key: 'ai_tone', value: aiTone, category: 'ai', description: 'AI assistant personality tone' },
+          { key: 'ai_greeting_message', value: aiGreetingMessage.trim(), category: 'ai', description: 'Copilot welcome message' },
+          { key: 'ai_system_prompt', value: aiSystemPrompt.trim(), category: 'ai', description: 'Custom organization AI instructions' },
+          { key: 'ai_feat_task_breakdown', value: featTaskBreakdown.toString(), category: 'ai', description: 'Enable task breakdown skill' },
+          { key: 'ai_feat_description_gen', value: featDescriptionGen.toString(), category: 'ai', description: 'Enable description generator skill' },
+          { key: 'ai_feat_code_review', value: featCodeReview.toString(), category: 'ai', description: 'Enable code review skill' },
+          { key: 'ai_feat_sprint_summary', value: featSprintSummary.toString(), category: 'ai', description: 'Enable sprint summary skill' },
         ],
       }).unwrap();
-      toast.success('AI Copilot configuration saved successfully');
+      toast.success('AI Copilot & Multi-Provider LLM configuration saved successfully');
     } catch {
       toast.error('Failed to save AI settings');
     }
@@ -327,6 +346,12 @@ export default function AdminSettingsPage() {
           { key: 'smtp_pass', value: smtpPass.trim(), category: 'email', description: 'SMTP password', isEncrypted: true },
           { key: 'smtp_from', value: smtpFrom.trim(), category: 'email', description: 'Default outbound sender email' },
           { key: 'smtp_from_name', value: smtpFromName.trim(), category: 'email', description: 'Display name for outbound emails' },
+          { key: 'inbound_email_enabled', value: inboundEmailEnabled.toString(), category: 'email', description: 'Inbound email task creation' },
+          { key: 'inbound_email_domain', value: inboundEmailDomain.trim(), category: 'email', description: 'Inbound email domain' },
+          { key: 'email_notify_invitations', value: emailNotifyInvitations.toString(), category: 'email', description: 'Invitation emails' },
+          { key: 'email_notify_assignments', value: emailNotifyAssignments.toString(), category: 'email', description: 'Assignment emails' },
+          { key: 'email_notify_mentions', value: emailNotifyMentions.toString(), category: 'email', description: 'Mention emails' },
+          { key: 'email_notify_overdue', value: emailNotifyOverdue.toString(), category: 'email', description: 'Overdue task reminder emails' },
         ],
       }).unwrap();
       toast.success('Mail delivery topology saved successfully');
@@ -345,6 +370,23 @@ export default function AdminSettingsPage() {
           ? (err as { data: { message?: string } }).data?.message
           : 'SMTP connection failed';
       toast.error(msg || 'SMTP test failed. Verify host, port, and credentials.');
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testRecipientEmail || !testRecipientEmail.trim()) {
+      toast.error('Please enter a recipient email address to send a live test message');
+      return;
+    }
+    try {
+      const res = await testSmtp({ email: testRecipientEmail.trim() }).unwrap();
+      toast.success(res.message || `Test email successfully dispatched to ${testRecipientEmail.trim()}`);
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'data' in err
+          ? (err as { data: { message?: string } }).data?.message
+          : 'Failed to send test email';
+      toast.error(msg || 'Email delivery failed. Verify outbound SMTP credentials.');
     }
   };
 
@@ -443,741 +485,150 @@ export default function AdminSettingsPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* ========================================================================= */}
-          {/* TAB 1: GENERAL & ACCESS                                                  */}
-          {/* ========================================================================= */}
-          <TabsContent value="general" className="space-y-6 outline-none">
-            <div className="border border-zinc-800/80 rounded-lg bg-zinc-900/30 divide-y divide-zinc-800/80">
-              {/* Row 1: Public Registration Gate */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-200">Public User Registration</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono ${isPublicRegEnabled ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
-                      {isPublicRegEnabled ? 'Open (/register)' : 'Restricted (Invite Only)'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Allow external visitors to self-register their own organizations. When restricted, onboarding requires an explicit workspace or tenant invite token.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Switch
-                    checked={isPublicRegEnabled}
-                    onCheckedChange={handleToggleRegistration}
-                    disabled={isSaving}
-                    aria-label="Toggle Public Registration"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Maintenance Mode */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-200">Maintenance Mode Gate</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono ${isMaintenanceMode ? 'bg-amber-950/80 text-amber-400 border border-amber-800/60' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
-                      {isMaintenanceMode ? 'Maintenance Active' : 'Operational'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Temporarily pause public and standard member requests during infrastructure maintenance. Platform Super Admins retain full access.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Switch
-                    checked={isMaintenanceMode}
-                    onCheckedChange={handleToggleMaintenance}
-                    disabled={isSaving}
-                    aria-label="Toggle Maintenance Mode"
-                  />
-                </div>
-              </div>
-
-              {/* Row 3: Platform Instance Name */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <span className="text-sm font-medium text-zinc-200">Platform Instance Name</span>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    The name displayed on browser tabs, notification emails, and top navigation shells.
-                  </p>
-                </div>
-                <div className="w-full sm:w-72 shrink-0">
-                  <Input
-                    value={platformName}
-                    onChange={(e) => setPlatformName(e.target.value)}
-                    placeholder="Orbito Enterprise"
-                    className="h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200"
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Support Contact Email */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <span className="text-sm font-medium text-zinc-200">System Support Email</span>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Primary administrative contact displayed to users encountering permission or billing gates.
-                  </p>
-                </div>
-                <div className="w-full sm:w-72 shrink-0">
-                  <Input
-                    value={supportEmail}
-                    onChange={(e) => setSupportEmail(e.target.value)}
-                    placeholder="support@orbito.io"
-                    className="h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200"
-                  />
-                </div>
-              </div>
-
-              {/* Row 5: Reference Timezone */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <span className="text-sm font-medium text-zinc-200">Default Reference Timezone</span>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Default time reference for scheduled automated jobs, sprint boundaries, and daily activity digests.
-                  </p>
-                </div>
-                <div className="w-full sm:w-72 shrink-0">
-                  <select
-                    value={defaultTimezone}
-                    onChange={(e) => setDefaultTimezone(e.target.value)}
-                    className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
-                  >
-                    <option value="UTC">UTC (Universal Coordinated)</option>
-                    <option value="America/New_York">Eastern Time (US / New York)</option>
-                    <option value="America/Los_Angeles">Pacific Time (US / Los Angeles)</option>
-                    <option value="Europe/London">London (GMT / BST)</option>
-                    <option value="Asia/Tokyo">Tokyo (JST)</option>
-                    <option value="Asia/Kolkata">India Standard Time (IST)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Save Button for General Tab */}
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSaveGeneral}
-                disabled={isSaving}
-                className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold cursor-pointer transition-colors shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5 text-zinc-950" />
-                Save General Settings
-              </Button>
-            </div>
+          {/* TAB 1: GENERAL & ACCESS */}
+          <TabsContent value="general" className="outline-none">
+            <GeneralSettingsTab
+              platformName={platformName}
+              setPlatformName={setPlatformName}
+              supportEmail={supportEmail}
+              setSupportEmail={setSupportEmail}
+              defaultTimezone={defaultTimezone}
+              setDefaultTimezone={setDefaultTimezone}
+              isMaintenanceMode={isMaintenanceMode}
+              onToggleMaintenance={handleToggleMaintenance}
+              isPublicRegEnabled={isPublicRegEnabled}
+              onToggleRegistration={handleToggleRegistration}
+              onSave={handleSaveGeneral}
+              isSaving={isSaving}
+            />
           </TabsContent>
 
-          {/* ========================================================================= */}
-          {/* TAB 2: SECURITY & SSO                                                    */}
-          {/* ========================================================================= */}
-          <TabsContent value="sso" className="space-y-6 outline-none">
-            <div className="border border-zinc-800/80 rounded-lg bg-zinc-900/30 divide-y divide-zinc-800/80">
-              {/* Row 1: OIDC Master Switch */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-200">OpenID Connect (OIDC) SSO</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono ${isSsoEnabled ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
-                      {isSsoEnabled ? 'SSO Active' : 'Disabled'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Allow enterprise employees to log in using centralized Identity Providers (Google Workspace, Okta, Microsoft Azure AD, Keycloak).
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Switch
-                    checked={isSsoEnabled}
-                    onCheckedChange={handleToggleSso}
-                    disabled={isSaving}
-                    aria-label="Toggle SSO"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Provider Presets */}
-              <div className="p-4 space-y-3">
-                <span className="text-xs font-medium text-zinc-300">Identity Provider Preset</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { name: 'Google Workspace', issuer: 'https://accounts.google.com' },
-                    { name: 'Okta', issuer: 'https://your-domain.okta.com' },
-                    { name: 'Microsoft Entra ID', issuer: 'https://login.microsoftonline.com/{tenant}/v2.0' },
-                    { name: 'Keycloak', issuer: 'https://keycloak.yourdomain.com/realms/orbito' },
-                  ].map((p) => (
-                    <button
-                      key={p.name}
-                      type="button"
-                      onClick={() => {
-                        setSsoProvider(p.name);
-                        setSsoIssuerUrl(p.issuer);
-                      }}
-                      className={`px-2.5 py-1 text-xs rounded-md border transition-colors cursor-pointer ${ssoProvider === p.name ? 'bg-zinc-800 border-zinc-600 text-white font-medium' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'}`}
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Row 3: OIDC Form Fields */}
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[11px] font-medium text-zinc-400">OIDC Issuer Discovery URL</label>
-                    <Input
-                      value={ssoIssuerUrl}
-                      onChange={(e) => setSsoIssuerUrl(e.target.value)}
-                      placeholder="https://accounts.google.com"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Client Identifier (Client ID)</label>
-                    <Input
-                      value={ssoClientId}
-                      onChange={(e) => setSsoClientId(e.target.value)}
-                      placeholder="client-id-xyz.apps.googleusercontent.com"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Client Secret</label>
-                    <div className="relative">
-                      <Input
-                        type={showSsoSecret ? 'text' : 'password'}
-                        value={ssoClientSecret}
-                        onChange={(e) => setSsoClientSecret(e.target.value)}
-                        placeholder="••••••••••••••••••••••••"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200 pr-8"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSsoSecret(!showSsoSecret)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-                      >
-                        {showSsoSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 4: Callback URL Display */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5">
-                  <span className="text-sm font-medium text-zinc-200">OIDC Redirect Callback URI</span>
-                  <p className="text-xs text-zinc-400">
-                    Register this exact callback endpoint in your Identity Provider OAuth console.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="px-2.5 py-1 rounded bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-300">
-                    /api/auth/oidc/callback
-                  </code>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={copyCallbackUrl}
-                    className="h-7 px-2 border-zinc-800 bg-zinc-950 hover:bg-zinc-850 text-zinc-300 cursor-pointer"
-                  >
-                    {copiedCallback ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Row 5: Default SSO Role & Session TTL */}
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-300">Default Role for New SSO Users</label>
-                  <select
-                    value={ssoDefaultRole}
-                    onChange={(e) => setSsoDefaultRole(e.target.value)}
-                    className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
-                  >
-                    <option value="MEMBER">MEMBER (Standard Workspace Contributor)</option>
-                    <option value="VIEWER">VIEWER (Read-Only Access)</option>
-                    <option value="MANAGER">MANAGER (Workspace Manager)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-300">Session Inactivity Timeout</label>
-                  <select
-                    value={sessionTimeout}
-                    onChange={(e) => setSessionTimeout(e.target.value)}
-                    className="w-full h-8 px-2.5 rounded-md bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 outline-none focus:border-zinc-600"
-                  >
-                    <option value="15">15 Minutes (High Security)</option>
-                    <option value="60">1 Hour (Standard)</option>
-                    <option value="240">4 Hours</option>
-                    <option value="1440">24 Hours</option>
-                    <option value="10080">7 Days (Extended Remember Me)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Save Button for SSO Tab */}
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSaveSsoConfig}
-                disabled={isSaving}
-                className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold cursor-pointer transition-colors shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5 text-zinc-950" />
-                Save SSO & Security Settings
-              </Button>
-            </div>
+          {/* TAB 2: SECURITY & SSO */}
+          <TabsContent value="sso" className="outline-none">
+            <SecuritySsoTab
+              isSsoEnabled={isSsoEnabled}
+              onToggleSso={handleToggleSso}
+              ssoProvider={ssoProvider}
+              setSsoProvider={setSsoProvider}
+              ssoIssuerUrl={ssoIssuerUrl}
+              setSsoIssuerUrl={setSsoIssuerUrl}
+              ssoClientId={ssoClientId}
+              setSsoClientId={setSsoClientId}
+              ssoClientSecret={ssoClientSecret}
+              setSsoClientSecret={setSsoClientSecret}
+              showSsoSecret={showSsoSecret}
+              setShowSsoSecret={setShowSsoSecret}
+              ssoDefaultRole={ssoDefaultRole}
+              setSsoDefaultRole={setSsoDefaultRole}
+              sessionTimeout={sessionTimeout}
+              setSessionTimeout={setSessionTimeout}
+              copiedCallback={copiedCallback}
+              onCopyCallback={copyCallbackUrl}
+              onSave={handleSaveSsoConfig}
+              isSaving={isSaving}
+            />
           </TabsContent>
 
-          {/* ========================================================================= */}
-          {/* TAB 3: AI COPILOT & LLM                                                  */}
-          {/* ========================================================================= */}
-          <TabsContent value="ai" className="space-y-6 outline-none">
-            <div className="border border-zinc-800/80 rounded-lg bg-zinc-900/30 divide-y divide-zinc-800/80">
-              {/* Row 1: AI Master Switch */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-200">Orbito AI Copilot & Generative Reasoning</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono ${isAiEnabled ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
-                      {isAiEnabled ? 'AI Active' : 'Disabled'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    Enable autonomous task execution, sprint estimation, description drafting, and conversational queries across the platform.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Switch
-                    checked={isAiEnabled}
-                    onCheckedChange={handleToggleAi}
-                    disabled={isSaving}
-                    aria-label="Toggle AI Copilot"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Provider Quick Presets */}
-              <div className="p-4 space-y-3">
-                <span className="text-xs font-medium text-zinc-300">Quick Model & Provider Presets</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAiApiUrl('https://openrouter.ai/api/v1');
-                      setAiModel('anthropic/claude-3.5-sonnet');
-                    }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors cursor-pointer"
-                  >
-                    OpenRouter (Claude 3.5 Sonnet)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAiApiUrl('https://api.openai.com/v1');
-                      setAiModel('gpt-4o-mini');
-                    }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors cursor-pointer"
-                  >
-                    OpenAI (GPT-4o Mini)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAiApiUrl('https://api.groq.com/openai/v1');
-                      setAiModel('llama-3.3-70b-versatile');
-                    }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors cursor-pointer"
-                  >
-                    Groq (Llama 3.3 70B)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAiApiUrl('http://localhost:11434');
-                      setAiModel('llama3.2');
-                    }}
-                    className="px-2.5 py-1 text-xs rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors cursor-pointer"
-                  >
-                    Ollama Local (llama3.2)
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 3: AI Configuration Inputs */}
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[11px] font-medium text-zinc-400">Provider API Base URL</label>
-                    <Input
-                      value={aiApiUrl}
-                      onChange={(e) => setAiApiUrl(e.target.value)}
-                      placeholder="https://openrouter.ai/api/v1"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Model Identifier</label>
-                    <Input
-                      value={aiModel}
-                      onChange={(e) => setAiModel(e.target.value)}
-                      placeholder="anthropic/claude-3.5-sonnet"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">
-                      Provider API Key <span className="text-zinc-500">(Optional for Local Ollama)</span>
-                    </label>
-                    <div className="relative">
-                      <Input
-                        type={showAiKey ? 'text' : 'password'}
-                        value={aiApiKey}
-                        onChange={(e) => setAiApiKey(e.target.value)}
-                        placeholder="sk-or-... or sk-..."
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200 pr-8"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowAiKey(!showAiKey)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-                      >
-                        {showAiKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Max Generation Tokens</label>
-                    <Input
-                      value={aiMaxTokens}
-                      onChange={(e) => setAiMaxTokens(e.target.value)}
-                      placeholder="4096"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Reasoning Temperature (0.0 - 1.0)</label>
-                    <Input
-                      value={aiTemperature}
-                      onChange={(e) => setAiTemperature(e.target.value)}
-                      placeholder="0.2"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Bar for AI Tab */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleTestAiConnection}
-                disabled={isTestingAi}
-                className="h-8 text-xs border-zinc-800 bg-zinc-950/60 hover:bg-zinc-850 text-zinc-300 cursor-pointer"
-              >
-                {isTestingAi ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin text-zinc-300" />
-                    Testing Endpoint...
-                  </>
-                ) : (
-                  <>
-                    <Cpu className="h-3.5 w-3.5 mr-1.5 text-zinc-400" />
-                    Test AI Connection
-                  </>
-                )}
-              </Button>
-
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSaveAiConfig}
-                disabled={isSaving}
-                className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold cursor-pointer transition-colors shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5 text-zinc-950" />
-                Save AI Configuration
-              </Button>
-            </div>
+          {/* TAB 3: AI COPILOT & LLM */}
+          <TabsContent value="ai" className="outline-none">
+            <AiCopilotTab
+              isAiEnabled={isAiEnabled}
+              onToggleAi={handleToggleAi}
+              aiApiUrl={aiApiUrl}
+              setAiApiUrl={setAiApiUrl}
+              aiApiKey={aiApiKey}
+              setAiApiKey={setAiApiKey}
+              showAiKey={showAiKey}
+              setShowAiKey={setShowAiKey}
+              aiModel={aiModel}
+              setAiModel={setAiModel}
+              aiMaxTokens={aiMaxTokens}
+              setAiMaxTokens={setAiMaxTokens}
+              aiTemperature={aiTemperature}
+              setAiTemperature={setAiTemperature}
+              aiTone={aiTone}
+              setAiTone={setAiTone}
+              aiGreetingMessage={aiGreetingMessage}
+              setAiGreetingMessage={setAiGreetingMessage}
+              aiSystemPrompt={aiSystemPrompt}
+              setAiSystemPrompt={setAiSystemPrompt}
+              featTaskBreakdown={featTaskBreakdown}
+              setFeatTaskBreakdown={setFeatTaskBreakdown}
+              featDescriptionGen={featDescriptionGen}
+              setFeatDescriptionGen={setFeatDescriptionGen}
+              featCodeReview={featCodeReview}
+              setFeatCodeReview={setFeatCodeReview}
+              featSprintSummary={featSprintSummary}
+              setFeatSprintSummary={setFeatSprintSummary}
+              onTestConnection={handleTestAiConnection}
+              isTesting={isTestingAi}
+              onSave={handleSaveAiConfig}
+              isSaving={isSaving}
+            />
           </TabsContent>
 
-          {/* ========================================================================= */}
-          {/* TAB 4: MAIL & SMTP                                                       */}
-          {/* ========================================================================= */}
-          <TabsContent value="email" className="space-y-6 outline-none">
-            <div className="border border-zinc-800/80 rounded-lg bg-zinc-900/30 divide-y divide-zinc-800/80">
-              {/* Row 1: Header / Status */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-200">Outbound Mail Pipeline</span>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
-                      Source: {configData?.smtpSources?.hostSource || 'Environment (.env)'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    Transactional email delivery for workspace invitations, password recovery, and assignment pings.
-                  </p>
-                </div>
-              </div>
-
-              {/* Row 2: Host & Port */}
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[11px] font-medium text-zinc-400">SMTP Host / Server</label>
-                    <Input
-                      value={smtpHost}
-                      onChange={(e) => setSmtpHost(e.target.value)}
-                      placeholder="smtp.sendgrid.net or smtp.mailgun.org"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">SMTP Port</label>
-                    <Input
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
-                      placeholder="587"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">SMTP Username</label>
-                    <Input
-                      value={smtpUser}
-                      onChange={(e) => setSmtpUser(e.target.value)}
-                      placeholder="apikey or user@orbito.io"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[11px] font-medium text-zinc-400">SMTP Password / API Key</label>
-                    <div className="relative">
-                      <Input
-                        type={showSmtpPass ? 'text' : 'password'}
-                        value={smtpPass}
-                        onChange={(e) => setSmtpPass(e.target.value)}
-                        placeholder="••••••••••••••••••••••••"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200 pr-8"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSmtpPass(!showSmtpPass)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-                      >
-                        {showSmtpPass ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-medium text-zinc-400">Outbound From Address</label>
-                    <Input
-                      value={smtpFrom}
-                      onChange={(e) => setSmtpFrom(e.target.value)}
-                      placeholder="noreply@orbito.io"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[11px] font-medium text-zinc-400">Outbound Sender Name</label>
-                    <Input
-                      value={smtpFromName}
-                      onChange={(e) => setSmtpFromName(e.target.value)}
-                      placeholder="Orbito Platform"
-                      className="h-8 bg-zinc-950 border-zinc-800 text-xs text-zinc-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Bar for SMTP */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleTestSmtp}
-                disabled={isTestingSmtp}
-                className="h-8 text-xs border-zinc-800 bg-zinc-950/60 hover:bg-zinc-850 text-zinc-300 cursor-pointer"
-              >
-                <Send className="h-3.5 w-3.5 mr-1.5 text-zinc-400" />
-                {isTestingSmtp ? 'Testing Handshake...' : 'Test SMTP Connection'}
-              </Button>
-
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSaveSmtpConfig}
-                disabled={isSaving}
-                className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold cursor-pointer transition-colors shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5 text-zinc-950" />
-                Save Mail Configuration
-              </Button>
-            </div>
+          {/* TAB 4: MAIL & SMTP */}
+          <TabsContent value="email" className="outline-none">
+            <MailSmtpTab
+              smtpHost={smtpHost}
+              setSmtpHost={setSmtpHost}
+              smtpPort={smtpPort}
+              setSmtpPort={setSmtpPort}
+              smtpUser={smtpUser}
+              setSmtpUser={setSmtpUser}
+              smtpPass={smtpPass}
+              setSmtpPass={setSmtpPass}
+              showSmtpPass={showSmtpPass}
+              setShowSmtpPass={setShowSmtpPass}
+              smtpFrom={smtpFrom}
+              setSmtpFrom={setSmtpFrom}
+              smtpFromName={smtpFromName}
+              setSmtpFromName={setSmtpFromName}
+              hostSource={configData?.smtpSources?.hostSource}
+              testRecipientEmail={testRecipientEmail}
+              setTestRecipientEmail={setTestRecipientEmail}
+              inboundEmailEnabled={inboundEmailEnabled}
+              setInboundEmailEnabled={setInboundEmailEnabled}
+              inboundEmailDomain={inboundEmailDomain}
+              setInboundEmailDomain={setInboundEmailDomain}
+              emailNotifyInvitations={emailNotifyInvitations}
+              setEmailNotifyInvitations={setEmailNotifyInvitations}
+              emailNotifyAssignments={emailNotifyAssignments}
+              setEmailNotifyAssignments={setEmailNotifyAssignments}
+              emailNotifyMentions={emailNotifyMentions}
+              setEmailNotifyMentions={setEmailNotifyMentions}
+              emailNotifyOverdue={emailNotifyOverdue}
+              setEmailNotifyOverdue={setEmailNotifyOverdue}
+              onTestSmtp={handleTestSmtp}
+              onSendTestEmail={handleSendTestEmail}
+              isTestingSmtp={isTestingSmtp}
+              onSave={handleSaveSmtpConfig}
+              isSaving={isSaving}
+            />
           </TabsContent>
 
-          {/* ========================================================================= */}
-          {/* TAB 5: STORAGE & CLOUD MEDIA                                             */}
-          {/* ========================================================================= */}
-          <TabsContent value="storage" className="space-y-6 outline-none">
-            <div className="border border-zinc-800/80 rounded-lg bg-zinc-900/30 divide-y divide-zinc-800/80">
-              {/* Row 1: Storage Mode Selector */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <span className="text-sm font-medium text-zinc-200">Asset Storage Engine</span>
-                  <p className="text-xs text-zinc-400">
-                    Where task attachments, rich-editor images, and user avatars are persisted.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setStorageProvider('local')}
-                    className={`px-3 py-1.5 text-xs rounded-md border transition-colors cursor-pointer ${storageProvider === 'local' ? 'bg-zinc-800 border-zinc-600 text-white font-medium' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`}
-                  >
-                    Local Filesystem (/uploads)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStorageProvider('s3')}
-                    className={`px-3 py-1.5 text-xs rounded-md border transition-colors cursor-pointer ${storageProvider === 's3' ? 'bg-zinc-800 border-zinc-600 text-white font-medium' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`}
-                  >
-                    Amazon S3 / S3-Compatible
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 2: S3 Parameters (shown if S3 is active) */}
-              {storageProvider === 's3' && (
-                <div className="p-4 space-y-3">
-                  <span className="text-xs font-medium text-zinc-300">S3 Cloud Credentials & Bucket</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-zinc-400">S3 Bucket Name</label>
-                      <Input
-                        value={s3Bucket}
-                        onChange={(e) => setS3Bucket(e.target.value)}
-                        placeholder="orbito-production-assets"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-zinc-400">AWS Region</label>
-                      <Input
-                        value={s3Region}
-                        onChange={(e) => setS3Region(e.target.value)}
-                        placeholder="us-east-1"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-[11px] font-medium text-zinc-400">
-                        Custom S3 Endpoint <span className="text-zinc-500">(Optional for MinIO, Cloudflare R2, Wasabi)</span>
-                      </label>
-                      <Input
-                        value={s3Endpoint}
-                        onChange={(e) => setS3Endpoint(e.target.value)}
-                        placeholder="https://<account-id>.r2.cloudflarestorage.com"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-zinc-400">Access Key ID</label>
-                      <Input
-                        value={s3AccessKey}
-                        onChange={(e) => setS3AccessKey(e.target.value)}
-                        placeholder="AKIAIOSFODNN7EXAMPLE"
-                        className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-zinc-400">Secret Access Key</label>
-                      <div className="relative">
-                        <Input
-                          type={showS3Secret ? 'text' : 'password'}
-                          value={s3SecretKey}
-                          onChange={(e) => setS3SecretKey(e.target.value)}
-                          placeholder="••••••••••••••••••••••••"
-                          className="h-8 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200 pr-8"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowS3Secret(!showS3Secret)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-                        >
-                          {showS3Secret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Row 3: Max File Size Limit */}
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-0.5 max-w-lg">
-                  <span className="text-sm font-medium text-zinc-200">Max Upload File Size</span>
-                  <p className="text-xs text-zinc-400">
-                    Maximum allowed upload size per file across task attachments and editor images.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={maxUploadMb}
-                    onChange={(e) => setMaxUploadMb(e.target.value)}
-                    className="h-8 w-24 bg-zinc-950 border-zinc-800 text-xs font-mono text-zinc-200"
-                  />
-                  <span className="text-xs text-zinc-400 font-mono">MB</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Save Button for Storage Tab */}
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSaveStorageConfig}
-                disabled={isSaving}
-                className="h-8 text-xs bg-zinc-100 hover:bg-white text-zinc-950 font-semibold cursor-pointer transition-colors shadow-xs"
-              >
-                <Save className="h-3.5 w-3.5 mr-1.5 text-zinc-950" />
-                Save Storage Settings
-              </Button>
-            </div>
+          {/* TAB 5: STORAGE & CLOUD MEDIA */}
+          <TabsContent value="storage" className="outline-none">
+            <StorageSettingsTab
+              storageProvider={storageProvider}
+              setStorageProvider={setStorageProvider}
+              s3Bucket={s3Bucket}
+              setS3Bucket={setS3Bucket}
+              s3Region={s3Region}
+              setS3Region={setS3Region}
+              s3Endpoint={s3Endpoint}
+              setS3Endpoint={setS3Endpoint}
+              s3AccessKey={s3AccessKey}
+              setS3AccessKey={setS3AccessKey}
+              s3SecretKey={s3SecretKey}
+              setS3SecretKey={setS3SecretKey}
+              showS3Secret={showS3Secret}
+              setShowS3Secret={setShowS3Secret}
+              maxUploadMb={maxUploadMb}
+              setMaxUploadMb={setMaxUploadMb}
+              onSave={handleSaveStorageConfig}
+              isSaving={isSaving}
+            />
           </TabsContent>
         </Tabs>
       </div>

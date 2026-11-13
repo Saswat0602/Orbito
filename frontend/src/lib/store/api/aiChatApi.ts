@@ -13,6 +13,11 @@ import type {
 
 export const aiChatApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    getAiConfig: builder.query<{ enabled: boolean; greetingMessage: string; tone: string }, void>({
+      query: () => ENDPOINTS.aiChat.config,
+      providesTags: [{ type: 'AiChat', id: 'CONFIG' }],
+    }),
+
     getConversations: builder.query<AiConversation[], void>({
       query: () => ENDPOINTS.aiChat.conversations,
       transformResponse: (response: unknown): AiConversation[] => {
@@ -114,6 +119,7 @@ export const aiChatApi = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetAiConfigQuery,
   useGetConversationsQuery,
   useCreateConversationMutation,
   useRenameConversationMutation,

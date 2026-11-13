@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 
 type NotificationCategory =
   | 'ALL'
@@ -64,6 +65,7 @@ export function NotificationCenter() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [isClearReadModalOpen, setIsClearReadModalOpen] = useState(false);
   const pageSize = 15;
 
   // Debounce search
@@ -169,19 +171,27 @@ export function NotificationCenter() {
     }
   };
 
-  const handleDeleteRead = async () => {
-    const readIds = notifications.filter((n) => n.isRead).map((n) => n.id);
-    if (readIds.length === 0) {
+  const readNotificationIds = useMemo(
+    () => notifications.filter((n) => n.isRead).map((n) => n.id),
+    [notifications]
+  );
+
+  const handleDeleteRead = () => {
+    if (readNotificationIds.length === 0) {
       toast.info('No read notifications to clear');
       return;
     }
-    if (confirm(`Delete ${readIds.length} read notification(s)?`)) {
-      try {
-        await deleteMultiple(readIds).unwrap();
-        toast.success(`Cleared ${readIds.length} read notification(s)`);
-      } catch {
-        toast.error('Failed to clear read notifications');
-      }
+    setIsClearReadModalOpen(true);
+  };
+
+  const handleConfirmDeleteRead = async () => {
+    if (readNotificationIds.length === 0) return;
+    try {
+      await deleteMultiple(readNotificationIds).unwrap();
+      toast.success(`Cleared ${readNotificationIds.length} read notification(s)`);
+      setIsClearReadModalOpen(false);
+    } catch {
+      toast.error('Failed to clear read notifications');
     }
   };
 
@@ -543,6 +553,19 @@ export function NotificationCenter() {
           </div>
         </div>
       )}
+
+      {/* Clear Read Confirmation Modal */}
+      <ConfirmationModal
+        open={isClearReadModalOpen}
+        onOpenChange={setIsClearReadModalOpen}
+        title="Clear Read Notifications"
+        description={`Are you sure you want to delete ${readNotificationIds.length} read notification${
+          readNotificationIds.length === 1 ? '' : 's'
+        }? This action cannot be undone.`}
+        confirmLabel="Clear Notifications"
+        variant="destructive"
+        onConfirm={handleConfirmDeleteRead}
+      />
     </div>
   );
 }
