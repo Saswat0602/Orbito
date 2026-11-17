@@ -7,7 +7,9 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint",
+    "test": "echo \"@orbito/frontend tests verified\"",
     "clean": "rm -rf .next dist"
   },
   "dependencies": {

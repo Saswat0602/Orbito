@@ -12,6 +12,7 @@
     "start:prod": "npm run prisma:generate && node dist/main",
     "clean": "rm -rf dist",
     "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

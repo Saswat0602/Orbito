@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface RequestContext {
+  correlationId?: string;
   userId?: string;
   user?: {
     id: string;
@@ -27,6 +28,11 @@ export class RequestContextService {
   static getCurrentUserId(): string | undefined {
     const context = this.getCurrentContext();
     return context?.userId || context?.user?.id;
+  }
+
+  static getCorrelationId(): string | undefined {
+    const context = this.getCurrentContext();
+    return context?.correlationId;
   }
 
   static getCurrentUser(): RequestContext['user'] | undefined {

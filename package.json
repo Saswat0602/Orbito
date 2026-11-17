@@ -26,6 +26,7 @@
     "lint": "turbo run lint",
     "lint:frontend": "turbo run lint --filter=@orbito/frontend",
     "lint:backend": "turbo run lint --filter=@orbito/backend",
+    "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:backend": "turbo run test --filter=@orbito/backend",
     "clean": "turbo run clean && rm -rf node_modules dist out .next .turbo",

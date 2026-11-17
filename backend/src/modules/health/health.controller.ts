@@ -15,4 +15,19 @@ export class HealthController {
       health.status === 'healthy' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
     return res.status(statusCode).json(health);
   }
+
+  @Public()
+  @Get('liveness')
+  getLiveness(@Res() res: Response): Response {
+    return res.status(HttpStatus.OK).json({ status: 'live', timestamp: new Date().toISOString() });
+  }
+
+  @Public()
+  @Get('readiness')
+  async getReadiness(@Res() res: Response): Promise<Response> {
+    const health: HealthStatus = await this.healthService.checkHealth();
+    const statusCode =
+      health.status === 'healthy' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+    return res.status(statusCode).json(health);
+  }
 }

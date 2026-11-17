@@ -135,6 +135,7 @@ describe('RolesGuard PUBLIC project bypass', () => {
     const prisma = {
       project: {
         findUnique: jest.fn(async () => ({ id: projectId, visibility: 'PUBLIC' })),
+        findFirst: jest.fn(async () => ({ id: projectId, visibility: 'PUBLIC' })),
       },
       // No membership for the acting user.
       projectMember: { findUnique: jest.fn(async () => null) },
