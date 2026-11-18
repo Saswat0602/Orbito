@@ -108,7 +108,7 @@
 
 4. **Run Backend with PM2:**
    ```bash
-   pm2 start backend/dist/src/main.js --name "orbito-backend" -i max
+   pm2 start backend/dist/main.js --name "orbito-backend" -i max
    ```
 
 5. **Run Frontend with PM2:**

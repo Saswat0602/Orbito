@@ -43,8 +43,10 @@
 
 | Variable | Required | Default | Description |
 | :--- | :---: | :--- | :--- |
-| `NEXT_PUBLIC_API_URL` | **Yes** | `http://localhost:3000/api` | Base HTTP endpoint for NestJS backend |
-| `NEXT_PUBLIC_WS_URL` | **Yes** | `http://localhost:3000` | WebSocket endpoint for real-time collaboration |
+| `NEXT_PUBLIC_API_BASE_URL` (or `NEXT_PUBLIC_API_URL`) | **Yes** | `http://localhost:3000/api` | Base HTTP endpoint for NestJS backend REST API |
+| `NEXT_PUBLIC_SOCKET_URL` (or `NEXT_PUBLIC_WS_URL`) | **Yes** | `http://localhost:3000` | WebSocket endpoint for real-time collaboration |
+| `NEXT_PUBLIC_APP_URL` | No | `http://localhost:3001` | Canonical origin for dynamic SEO `robots.txt` & `sitemap.xml` |
+| `PORT` | No | `3001` | Frontend Node server port |
 | `NODE_ENV` | **Yes** | `production` | Node build and runtime environment |
 
 ---

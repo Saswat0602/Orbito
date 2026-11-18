@@ -74,8 +74,15 @@ export class AuthController {
   }
 
   private clearAuthCookies(res: Response): void {
-    res.clearCookie('refresh_token', { path: '/' });
-    res.clearCookie('access_token', { path: '/' });
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    const clearOpts = {
+      path: '/',
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax' as const,
+    };
+    res.clearCookie('refresh_token', clearOpts);
+    res.clearCookie('access_token', clearOpts);
   }
 
   private setRefreshTokenCookie(res: Response, refreshToken: string): void {
@@ -478,11 +485,17 @@ export class AuthController {
       );
 
       // Clear OIDC temporary state cookies
-      res.clearCookie('oidc_state');
-      res.clearCookie('oidc_nonce');
+      const isProd = process.env.NODE_ENV === 'production';
+      const clearOidcOpts = {
+        path: '/',
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax' as const,
+      };
+      res.clearCookie('oidc_state', clearOidcOpts);
+      res.clearCookie('oidc_nonce', clearOidcOpts);
 
       // Store tokens in short-lived httpOnly cookie for secure exchange
-      const isProd = process.env.NODE_ENV === 'production';
       const encryptedSso = encryptCookieValue(
         JSON.stringify(authResult),
         this.getEncryptionSecret(),
@@ -496,8 +509,15 @@ export class AuthController {
 
       return res.redirect(`${frontendUrl}/login?sso=callback`);
     } catch (error: unknown) {
-      res.clearCookie('oidc_state');
-      res.clearCookie('oidc_nonce');
+      const isProd = process.env.NODE_ENV === 'production';
+      const clearOidcOpts = {
+        path: '/',
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax' as const,
+      };
+      res.clearCookie('oidc_state', clearOidcOpts);
+      res.clearCookie('oidc_nonce', clearOidcOpts);
       const message = error instanceof Error ? error.message : 'SSO authentication failed';
       return res.redirect(`${frontendUrl}/login?error=sso_failed&message=${encodeURIComponent(message)}`);
     }

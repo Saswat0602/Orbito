@@ -58,13 +58,14 @@ export const baseQueryWithReauth: BaseQueryFn<
           if (refreshResult.data) {
             const data = refreshResult.data as { access_token?: string; refresh_token?: string };
             if (typeof window !== 'undefined') {
+              const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
               if (data?.access_token) {
                 localStorage.setItem('access_token', data.access_token);
-                document.cookie = `access_token=${data.access_token}; Path=/; SameSite=Lax; Max-Age=3600`;
+                document.cookie = `access_token=${data.access_token}; Path=/; SameSite=Lax; Max-Age=3600${secureFlag}`;
               }
               if (data?.refresh_token) {
                 localStorage.setItem('refresh_token', data.refresh_token);
-                document.cookie = `refresh_token=${data.refresh_token}; Path=/; SameSite=Lax; Max-Age=604800`;
+                document.cookie = `refresh_token=${data.refresh_token}; Path=/; SameSite=Lax; Max-Age=604800${secureFlag}`;
               }
             }
             // Retry the original query now that cookies are refreshed

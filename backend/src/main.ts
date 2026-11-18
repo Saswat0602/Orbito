@@ -9,6 +9,7 @@ import {
   findPublicDir,
 } from './middleware/static-routing.middleware';
 import { RequestContextInterceptor } from './common/request-context.interceptor';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
@@ -60,19 +61,25 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Enable CORS
+  const rawCors = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN;
+  const configuredCors = rawCors
+    ? rawCors.split(',').map((origin) => origin.trim()).filter(Boolean)
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://0.0.0.0:3000',
+        'http://0.0.0.0:3001',
+        'http://127.0.0.1:3000',
+      ];
+
   app.enableCors({
-    origin: process.env.CORS_ORIGINS
-      ? process.env.CORS_ORIGINS.split(',')
-      : [
-          'http://localhost:3000',
-          'http://localhost:3001',
-          'http://0.0.0.0:3000',
-          'http://0.0.0.0:3001',
-          'http://127.0.0.1:3000',
-        ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: configuredCors,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
     credentials: true,
   });
+
+  // Apply Global Exception Filter for normalized errors and correlation IDs
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Enable ValidationPipe globally
   app.useGlobalPipes(

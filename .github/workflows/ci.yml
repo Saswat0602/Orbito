@@ -36,6 +36,15 @@ jobs:
       - name: Monorepo Linting
         run: npm run lint
 
+      - name: Monorepo Typecheck
+        run: npm run typecheck
+
+      - name: Run Backend Unit & Integration Tests
+        run: npm run test:backend
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+          JWT_SECRET: "test-jwt-secret-ci"
+
       - name: Build Shared Types & Packages
         run: npm run build:types
 
@@ -49,6 +58,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000/api"
           NEXT_PUBLIC_SOCKET_URL: "http://localhost:3000"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3001"
 
   docker-build:
     name: Docker Images Build Verification
