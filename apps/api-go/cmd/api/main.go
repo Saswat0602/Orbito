@@ -21,6 +21,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
+	"github.com/orbito/api-go/internal/modules/organizations"
 	"github.com/orbito/api-go/internal/modules/settings"
 	"github.com/orbito/api-go/internal/modules/users"
 	"github.com/orbito/api-go/internal/platform/crypto"
@@ -138,6 +139,15 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	usersSvc := users.NewService(usersRepo)
 	usersHandler := users.NewHandler(usersSvc)
 	r.Mount("/api/users", users.Routes(usersHandler, authMw))
+
+	rbacResolver := middleware.NewDBResolver(db)
+	var orgsRepo organizations.Repository
+	if db != nil {
+		orgsRepo = organizations.NewRepository(db)
+	}
+	orgsSvc := organizations.NewService(orgsRepo)
+	orgsHandler := organizations.NewHandler(orgsSvc)
+	r.Mount("/api/organizations", organizations.Routes(orgsHandler, authMw, rbacResolver))
 
 	var adminRepo admin.Repository
 	if db != nil {

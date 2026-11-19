@@ -469,14 +469,14 @@
 **Description:** Implement Organizations module in internal/modules/organizations providing multi-tenant organization creation, slug resolution, update, deletion, transfer ownership to another member, and user default organization association.
 
 **Acceptance criteria:**
-- [ ] `POST /api/organizations` creates organization, assigns creator as OWNER in organization_members, and generates default workflow
-- [ ] `PATCH /api/organizations/:id/transfer-ownership` reassigns OWNER role atomically within a transaction
-- [ ] Enforces unique organization slugs with slug generation fallback
+- [x] `POST /api/organizations` creates organization, assigns creator as OWNER in organization_members, and generates default workflow
+- [x] `PATCH /api/organizations/:id/transfer-ownership` reassigns OWNER role atomically within a transaction
+- [x] Enforces unique organization slugs with slug generation fallback
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/organizations/...`
-- [ ] Build succeeds: `go build ./internal/modules/organizations/...`
-- [ ] Manual check: Create an organization and verify creator has OWNER entry in organization_members table
+- [x] Tests pass: `go test -v ./internal/modules/organizations/...`
+- [x] Build succeeds: `go build ./internal/modules/organizations/...`
+- [x] Manual check: Create an organization and verify creator has OWNER entry in organization_members table
 
 **Dependencies:** Task 17
 
