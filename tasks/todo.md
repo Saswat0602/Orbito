@@ -496,14 +496,14 @@
 **Description:** Implement organization membership management in internal/modules/organization_members: listing members, updating member roles (with hierarchy check preventing modifying users of equal/higher rank), and removing members.
 
 **Acceptance criteria:**
-- [ ] `GET /api/organization-members/organization/:id` returns members with user details and roles
-- [ ] `PATCH /api/organization-members/:id` updates member role with OWNER/MANAGER permission check
-- [ ] Prevents removing the sole OWNER of an organization
+- [x] `GET /api/organization-members/organization/:id` returns members with user details and roles
+- [x] `PATCH /api/organization-members/:id` updates member role with OWNER/MANAGER permission check
+- [x] Prevents removing the sole OWNER of an organization
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/organization_members/...`
-- [ ] Build succeeds: `go build ./internal/modules/organization_members/...`
-- [ ] Manual check: Update organization member role and verify updated role in response
+- [x] Tests pass: `go test -v ./internal/modules/organization_members/...`
+- [x] Build succeeds: `go build ./internal/modules/organization_members/...`
+- [x] Manual check: Update organization member role and verify updated role in response
 
 **Dependencies:** Task 18
 

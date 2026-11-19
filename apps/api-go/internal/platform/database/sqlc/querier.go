@@ -41,9 +41,11 @@ type Querier interface {
 	ArchiveOrganization(ctx context.Context, arg ArchiveOrganizationParams) error
 	CheckOrganizationSlugExists(ctx context.Context, arg CheckOrganizationSlugExistsParams) (bool, error)
 	CheckUsersShareOrganization(ctx context.Context, arg CheckUsersShareOrganizationParams) (bool, error)
+	ClearUserDefaultOrgIfMatches(ctx context.Context, arg ClearUserDefaultOrgIfMatchesParams) error
 	ClearUserDefaultOrganization(ctx context.Context, defaultOrganizationID pgtype.UUID) error
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
 	CountOrganizationMembers(ctx context.Context, organizationID uuid.UUID) (int64, error)
+	CountOrganizationMembersBySlug(ctx context.Context, arg CountOrganizationMembersBySlugParams) (int64, error)
 	CountOrganizationProjects(ctx context.Context, organizationID uuid.UUID) (int64, error)
 	CountOrganizationTasks(ctx context.Context, organizationID uuid.UUID) (int64, error)
 	CountOrganizationTasksCompleted(ctx context.Context, organizationID uuid.UUID) (int64, error)
@@ -61,6 +63,7 @@ type Querier interface {
 	CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) (Workflow, error)
 	DeleteGlobalSetting(ctx context.Context, key string) error
 	DeleteOrganization(ctx context.Context, id uuid.UUID) error
+	DeleteOrganizationMemberByID(ctx context.Context, id uuid.UUID) error
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
@@ -71,6 +74,8 @@ type Querier interface {
 	GetOrganizationDetailsByID(ctx context.Context, id uuid.UUID) (GetOrganizationDetailsByIDRow, error)
 	GetOrganizationIDBySlug(ctx context.Context, slug string) (uuid.UUID, error)
 	GetOrganizationMember(ctx context.Context, arg GetOrganizationMemberParams) (OrganizationMember, error)
+	GetOrganizationMemberByID(ctx context.Context, id uuid.UUID) (GetOrganizationMemberByIDRow, error)
+	GetOrganizationMemberByUserAndOrg(ctx context.Context, arg GetOrganizationMemberByUserAndOrgParams) (GetOrganizationMemberByUserAndOrgRow, error)
 	GetOrganizationMemberRole(ctx context.Context, arg GetOrganizationMemberRoleParams) (Role, error)
 	GetProjectMemberRole(ctx context.Context, arg GetProjectMemberRoleParams) (Role, error)
 	GetProjectScopeInfo(ctx context.Context, id uuid.UUID) (GetProjectScopeInfoRow, error)
@@ -85,16 +90,20 @@ type Querier interface {
 	GetWorkspaceIDBySlug(ctx context.Context, slug string) (uuid.UUID, error)
 	GetWorkspaceMemberRole(ctx context.Context, arg GetWorkspaceMemberRoleParams) (Role, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
+	ListOrganizationMembers(ctx context.Context, arg ListOrganizationMembersParams) ([]ListOrganizationMembersRow, error)
+	ListOrganizationMembersBySlug(ctx context.Context, arg ListOrganizationMembersBySlugParams) ([]ListOrganizationMembersBySlugRow, error)
 	ListOrganizationsForUser(ctx context.Context, userID uuid.UUID) ([]ListOrganizationsForUserRow, error)
 	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	PingDatabase(ctx context.Context) (int32, error)
+	SetUserDefaultOrgForUser(ctx context.Context, arg SetUserDefaultOrgForUserParams) error
 	SetUserDefaultOrganization(ctx context.Context, arg SetUserDefaultOrganizationParams) error
 	SetUserResetToken(ctx context.Context, arg SetUserResetTokenParams) error
 	TransferOrganizationOwner(ctx context.Context, arg TransferOrganizationOwnerParams) error
 	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateOrganizationMemberRole(ctx context.Context, arg UpdateOrganizationMemberRoleParams) error
+	UpdateOrganizationMemberRoleByID(ctx context.Context, arg UpdateOrganizationMemberRoleByIDParams) (OrganizationMember, error)
 	UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error)
