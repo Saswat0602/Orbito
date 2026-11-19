@@ -616,26 +616,26 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 
 const updateUserProfile = `-- name: UpdateUserProfile :one
 UPDATE users
-SET first_name = COALESCE(NULLIF($2, ''), first_name),
-    last_name = COALESCE(NULLIF($3, ''), last_name),
-    username = COALESCE(NULLIF($4, ''), username),
-    avatar = COALESCE(NULLIF($5, ''), avatar),
-    bio = COALESCE(NULLIF($6, ''), bio),
-    timezone = COALESCE(NULLIF($7, ''), timezone),
+SET first_name = COALESCE(NULLIF($1::text, ''), first_name),
+    last_name = COALESCE(NULLIF($2::text, ''), last_name),
+    username = COALESCE(NULLIF($3::text, ''), username),
+    avatar = COALESCE(NULLIF($4::text, ''), avatar),
+    bio = COALESCE(NULLIF($5::text, ''), bio),
+    timezone = COALESCE(NULLIF($6::text, ''), timezone),
     updated_at = NOW()
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = $7 AND deleted_at IS NULL
 RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
           last_login_at, created_at, updated_at, deleted_at
 `
 
 type UpdateUserProfileParams struct {
-	ID      uuid.UUID   `json:"id"`
-	Column2 interface{} `json:"column_2"`
-	Column3 interface{} `json:"column_3"`
-	Column4 interface{} `json:"column_4"`
-	Column5 interface{} `json:"column_5"`
-	Column6 interface{} `json:"column_6"`
-	Column7 interface{} `json:"column_7"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Username  string    `json:"username"`
+	Avatar    string    `json:"avatar"`
+	Bio       string    `json:"bio"`
+	Timezone  string    `json:"timezone"`
+	ID        uuid.UUID `json:"id"`
 }
 
 type UpdateUserProfileRow struct {
@@ -658,13 +658,13 @@ type UpdateUserProfileRow struct {
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error) {
 	row := q.db.QueryRow(ctx, updateUserProfile,
+		arg.FirstName,
+		arg.LastName,
+		arg.Username,
+		arg.Avatar,
+		arg.Bio,
+		arg.Timezone,
 		arg.ID,
-		arg.Column2,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-		arg.Column7,
 	)
 	var i UpdateUserProfileRow
 	err := row.Scan(

@@ -21,6 +21,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/settings"
+	"github.com/orbito/api-go/internal/modules/users"
 	"github.com/orbito/api-go/internal/platform/crypto"
 	"github.com/orbito/api-go/internal/platform/database"
 	"github.com/orbito/api-go/internal/platform/logger"
@@ -128,6 +129,14 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	r.Mount("/api/auth", auth.Routes(authHandler, authMw))
 	r.Mount("/api/settings", settings.Routes(settingsHandler, authMw))
 	r.Mount("/api/email", email.Routes(emailHandler, authMw))
+
+	var usersRepo users.Repository
+	if db != nil {
+		usersRepo = users.NewRepository(db)
+	}
+	usersSvc := users.NewService(usersRepo)
+	usersHandler := users.NewHandler(usersSvc)
+	r.Mount("/api/users", users.Routes(usersHandler, authMw))
 
 	return r
 }

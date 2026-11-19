@@ -381,14 +381,14 @@
 **Description:** Implement the Users module in internal/modules/users providing user directory listing, get by id, update profile, update status, change password (with old password verification), and avatar upload integration.
 
 **Acceptance criteria:**
-- [ ] `GET /api/users` and `GET /api/users/:id` return user records omitting password hash
-- [ ] `PATCH /api/users/:id/change-password` verifies current password before updating to new bcrypt hash
-- [ ] `PATCH /api/users/:id/status` updates ACTIVE/INACTIVE user state with admin check
+- [x] `GET /api/users` and `GET /api/users/:id` return user records omitting password hash
+- [x] `PATCH /api/users/:id/change-password` verifies current password before updating to new bcrypt hash
+- [x] `PATCH /api/users/:id/status` updates ACTIVE/INACTIVE user state with admin check
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/users/...`
-- [ ] Build succeeds: `go build ./internal/modules/users/...`
-- [ ] Manual check: Update user bio and verify updated_at timestamp updates in database
+- [x] Tests pass: `go test -v ./internal/modules/users/...`
+- [x] Build succeeds: `go build ./internal/modules/users/...`
+- [x] Manual check: Update user bio and verify updated_at timestamp updates in database
 
 **Dependencies:** Task 11
 

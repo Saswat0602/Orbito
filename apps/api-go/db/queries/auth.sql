@@ -91,14 +91,14 @@ RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, lan
 
 -- name: UpdateUserProfile :one
 UPDATE users
-SET first_name = COALESCE(NULLIF($2, ''), first_name),
-    last_name = COALESCE(NULLIF($3, ''), last_name),
-    username = COALESCE(NULLIF($4, ''), username),
-    avatar = COALESCE(NULLIF($5, ''), avatar),
-    bio = COALESCE(NULLIF($6, ''), bio),
-    timezone = COALESCE(NULLIF($7, ''), timezone),
+SET first_name = COALESCE(NULLIF(@first_name::text, ''), first_name),
+    last_name = COALESCE(NULLIF(@last_name::text, ''), last_name),
+    username = COALESCE(NULLIF(@username::text, ''), username),
+    avatar = COALESCE(NULLIF(@avatar::text, ''), avatar),
+    bio = COALESCE(NULLIF(@bio::text, ''), bio),
+    timezone = COALESCE(NULLIF(@timezone::text, ''), timezone),
     updated_at = NOW()
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = @id AND deleted_at IS NULL
 RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
           last_login_at, created_at, updated_at, deleted_at;
 
