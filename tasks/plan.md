@@ -19,7 +19,7 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Task 2: Typed Configuration & Environment Validation (`internal/config`)
 - [x] Task 3: Platform Logger (`slog`), Request ID & Ingress Middleware
 - [x] Task 4: Platform Database (`pgx/v5`) & sqlc Setup (`db/sqlc.yaml`, migration DDL)
-- [ ] Task 5: Platform Crypto (AES-256-GCM cookie crypto, scrypt field encryption, bcrypt) & Unit Test Parity
+- [x] Task 5: Platform Crypto (AES-256-GCM cookie crypto, scrypt field encryption, bcrypt) & Unit Test Parity
 - [ ] Task 6: Shared HTTP & Error Framework (`httpx`, `apperror` mapper, 5-field pagination)
 
 ### Checkpoint: Foundations Complete
