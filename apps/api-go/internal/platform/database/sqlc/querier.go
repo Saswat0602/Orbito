@@ -13,6 +13,31 @@ import (
 
 type Querier interface {
 	AddOrganizationMember(ctx context.Context, arg AddOrganizationMemberParams) error
+	AdminClearUsersDefaultOrg(ctx context.Context, orgID pgtype.UUID) error
+	AdminCountOrganizations(ctx context.Context, search string) (int64, error)
+	AdminCountSuperAdmins(ctx context.Context) (int64, error)
+	AdminCountUsers(ctx context.Context, arg AdminCountUsersParams) (int64, error)
+	AdminCreateOrganizationMember(ctx context.Context, arg AdminCreateOrganizationMemberParams) error
+	AdminDeleteOrganization(ctx context.Context, id uuid.UUID) error
+	AdminDeleteUserMemberships(ctx context.Context, userID uuid.UUID) error
+	AdminDeleteUserProjectMemberships(ctx context.Context, userID uuid.UUID) error
+	AdminDeleteUserWorkspaceMemberships(ctx context.Context, userID uuid.UUID) error
+	AdminGetOrganizationDetail(ctx context.Context, id uuid.UUID) (AdminGetOrganizationDetailRow, error)
+	AdminGetOrganizationMember(ctx context.Context, arg AdminGetOrganizationMemberParams) (AdminGetOrganizationMemberRow, error)
+	AdminGetOrganizationMembers(ctx context.Context, organizationID uuid.UUID) ([]AdminGetOrganizationMembersRow, error)
+	AdminGetOrganizationWorkspaces(ctx context.Context, organizationID uuid.UUID) ([]AdminGetOrganizationWorkspacesRow, error)
+	AdminGetUserDetail(ctx context.Context, id uuid.UUID) (AdminGetUserDetailRow, error)
+	AdminGetUserOrganizations(ctx context.Context, userID uuid.UUID) ([]AdminGetUserOrganizationsRow, error)
+	AdminGetUserOwnedOrganizations(ctx context.Context, ownerID uuid.UUID) ([]AdminGetUserOwnedOrganizationsRow, error)
+	AdminListOrganizations(ctx context.Context, arg AdminListOrganizationsParams) ([]AdminListOrganizationsRow, error)
+	AdminListUsers(ctx context.Context, arg AdminListUsersParams) ([]AdminListUsersRow, error)
+	AdminSetUserResetToken(ctx context.Context, arg AdminSetUserResetTokenParams) error
+	AdminSoftDeleteUser(ctx context.Context, arg AdminSoftDeleteUserParams) error
+	AdminToggleOrganizationArchive(ctx context.Context, id uuid.UUID) (AdminToggleOrganizationArchiveRow, error)
+	AdminTransferOrgOwnership(ctx context.Context, arg AdminTransferOrgOwnershipParams) (AdminTransferOrgOwnershipRow, error)
+	AdminUpdateOrganizationMemberRole(ctx context.Context, arg AdminUpdateOrganizationMemberRoleParams) error
+	AdminUpdateUserRole(ctx context.Context, arg AdminUpdateUserRoleParams) (AdminUpdateUserRoleRow, error)
+	AdminUpdateUserStatus(ctx context.Context, arg AdminUpdateUserStatusParams) (AdminUpdateUserStatusRow, error)
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
 	CountSuperAdmins(ctx context.Context) (int64, error)
 	CountTotalUsers(ctx context.Context) (int64, error)
@@ -23,6 +48,7 @@ type Querier interface {
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
+	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
 	GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrganizationByIDRow, error)
 	GetSettingByKeyAndUser(ctx context.Context, arg GetSettingByKeyAndUserParams) (Setting, error)

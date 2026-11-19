@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
+	"github.com/orbito/api-go/internal/modules/admin"
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
@@ -137,6 +138,14 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	usersSvc := users.NewService(usersRepo)
 	usersHandler := users.NewHandler(usersSvc)
 	r.Mount("/api/users", users.Routes(usersHandler, authMw))
+
+	var adminRepo admin.Repository
+	if db != nil {
+		adminRepo = admin.NewRepository(db)
+	}
+	adminSvc := admin.NewService(adminRepo, settingsSvc, emailSvc, cfg)
+	adminHandler := admin.NewHandler(adminSvc)
+	r.Mount("/api/admin", admin.Routes(adminHandler, authMw))
 
 	return r
 }

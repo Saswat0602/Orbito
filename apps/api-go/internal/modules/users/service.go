@@ -25,6 +25,9 @@ func NewService(repo Repository) *Service {
 
 // CheckUsersExist checks if any users exist in the system.
 func (s *Service) CheckUsersExist(ctx context.Context) (bool, error) {
+	if s.repo == nil {
+		return false, nil
+	}
 	count, err := s.repo.CountUsers(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to check users exist: %w", err)

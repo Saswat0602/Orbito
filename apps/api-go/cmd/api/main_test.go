@@ -81,6 +81,28 @@ func TestBuildRouter(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), `"enabled":true`)
 	})
 
+	t.Run("GET /api/users/exists routes correctly through mounted users subrouter", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/users/exists", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"exists":false`)
+	})
+
+	t.Run("GET /api/admin/dashboard routes correctly through mounted admin subrouter and checks role", func(t *testing.T) {
+		tokenSvc := auth.NewTokenService(cfg.JWTSecret, cfg.JWTRefreshSecret, 15*time.Minute, 7*24*time.Hour)
+		tok, _ := tokenSvc.MintAccessToken(uuid.New(), "admin@orbito.io", "SUPER_ADMIN")
+
+		req := httptest.NewRequest(http.MethodGet, "/api/admin/dashboard", nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"totalUsers":`)
+	})
+
 	t.Run("unknown route returns exact NestJS 404 JSON error envelope", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/nonexistent-route", nil)
 		rr := httptest.NewRecorder()
