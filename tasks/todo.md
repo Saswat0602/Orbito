@@ -578,14 +578,14 @@
 **Description:** Implement member invitation system in internal/modules/invitations: POST /api/invitations (creates unique token, 7d expiry, dispatches email), GET /api/invitations/token/:token (validates token), POST /api/invitations/accept, revoke, and resend endpoints.
 
 **Acceptance criteria:**
-- [ ] Invitation creates pending record in DB and dispatches invite email with accept link
-- [ ] Accepting invitation creates workspace/org member record and marks invitation ACCEPTED
-- [ ] Expired or revoked tokens are rejected with appropriate 400 Bad Request message
+- [x] Invitation creates pending record in DB and dispatches invite email with accept link
+- [x] Accepting invitation creates workspace/org member record and marks invitation ACCEPTED
+- [x] Expired or revoked tokens are rejected with appropriate 400 Bad Request message
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/invitations/...`
-- [ ] Build succeeds: `go build ./internal/modules/invitations/...`
-- [ ] Manual check: Create invitation, verify token via API, and accept token with test user
+- [x] Tests pass: `go test -v ./internal/modules/invitations/...`
+- [x] Build succeeds: `go build ./internal/modules/invitations/...`
+- [x] Manual check: Create invitation, verify token via API, and accept token with test user
 
 **Dependencies:** Task 20
 
@@ -602,10 +602,10 @@
 
 ## Checkpoint: After Task 22 — Multi-Tenancy & RBAC Verified
 
-- [ ] Role hierarchy rank checks strictly enforced across VIEWER, MEMBER, MANAGER, OWNER, SUPER_ADMIN
-- [ ] Organization and Workspace multi-tenancy boundaries isolated
-- [ ] Member invitations create signed tokens, send emails, and permit acceptance
-- [ ] Review with human before proceeding
+- [x] Role hierarchy rank checks strictly enforced across VIEWER, MEMBER, MANAGER, OWNER, SUPER_ADMIN
+- [x] Organization and Workspace multi-tenancy boundaries isolated
+- [x] Member invitations create signed tokens, send emails, and permit acceptance
+- [x] Review with human before proceeding
 
 ---
 

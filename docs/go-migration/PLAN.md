@@ -3,7 +3,7 @@
 > **Architectural Specification & Implementation Blueprint for Go Drop-in Twin**  
 > **Source Platform:** `@orbito/backend` (NestJS 11, Prisma ORM 6, Express, PostgreSQL 16, Redis 7, BullMQ)  
 > **Target Platform:** `apps/api-go` (Go 1.23+, net/http + Chi v5, pgx/v5, sqlc, slog)  
-> **Status:** Implementation In Progress — Phase 0 & Phase 1 (Core System & Auth) Complete (Checkpoint 2 Verified)  
+> **Status:** Implementation In Progress — Phase 0, Phase 1 & Phase 2 (Tenancy & RBAC) Complete (Checkpoint 3 Verified)  
 
 ---
 

@@ -21,6 +21,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
+	"github.com/orbito/api-go/internal/modules/invitations"
 	"github.com/orbito/api-go/internal/modules/organization_members"
 	"github.com/orbito/api-go/internal/modules/organizations"
 	"github.com/orbito/api-go/internal/modules/settings"
@@ -176,6 +177,14 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	wsMembersSvc := workspace_members.NewService(wsMembersRepo)
 	wsMembersHandler := workspace_members.NewHandler(wsMembersSvc)
 	r.Mount("/api/workspace-members", workspace_members.Routes(wsMembersHandler, authMw))
+
+	var invitationsRepo invitations.Repository
+	if db != nil {
+		invitationsRepo = invitations.NewRepository(db)
+	}
+	invitationsSvc := invitations.NewService(invitationsRepo, rbacResolver, emailSvc, cfg.FrontendURL)
+	invitationsHandler := invitations.NewHandler(invitationsSvc)
+	r.Mount("/api/invitations", invitations.Routes(invitationsHandler, authMw))
 
 	var adminRepo admin.Repository
 	if db != nil {
