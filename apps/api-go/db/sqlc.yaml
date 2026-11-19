@@ -1,0 +1,24 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "../../../backend/prisma/migrations/20261106114254_init_the_orbit/migration.sql"
+    queries: "queries"
+    gen:
+      go:
+        package: "sqlc"
+        out: "../internal/platform/database/sqlc"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+          - db_type: "decimal"
+            go_type: "github.com/shopspring/decimal.Decimal"
+          - db_type: "jsonb"
+            go_type: "encoding/json.RawMessage"
+          - db_type: "json"
+            go_type: "encoding/json.RawMessage"

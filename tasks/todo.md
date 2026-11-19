@@ -88,14 +88,14 @@
 **Description:** Configure the PostgreSQL connection pool using pgxpool with MaxConns=50, MinConns=10, connection health checks, and a transaction coordinator helper (WithTx). Configure db/sqlc.yaml pointing to backend/prisma/migrations/20261106114254_init_the_orbit/migration.sql as the schema source.
 
 **Acceptance criteria:**
-- [ ] `platform/database` connects to Postgres 16 using `DATABASE_URL` with connection pooling
-- [ ] `sqlc.yaml` generates type-safe Go structs and queries without errors against Prisma migration DDL
-- [ ] `WithTx` provides atomic transaction execution with deferred rollback on error
+- [x] `platform/database` connects to Postgres 16 using `DATABASE_URL` with connection pooling
+- [x] `sqlc.yaml` generates type-safe Go structs and queries without errors against Prisma migration DDL
+- [x] `WithTx` provides atomic transaction execution with deferred rollback on error
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/database/...`
-- [ ] Build succeeds: `sqlc generate -f db/sqlc.yaml && go build ./internal/platform/database/...`
-- [ ] Manual check: Execute database ping check against local PostgreSQL instance
+- [x] Tests pass: `go test -v ./internal/platform/database/...`
+- [x] Build succeeds: `sqlc generate -f db/sqlc.yaml && go build ./internal/platform/database/...`
+- [x] Manual check: Execute database ping check against local PostgreSQL instance
 
 **Dependencies:** Task 2
 

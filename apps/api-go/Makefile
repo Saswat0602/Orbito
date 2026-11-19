@@ -1,4 +1,6 @@
-.PHONY: all build clean dev test test-coverage lint fmt vet run tidy
+.PHONY: all build clean dev test test-coverage lint fmt vet run tidy generate
+
+export GOTOOLCHAIN = local
 
 APP_NAME = api
 BUILD_DIR = bin
@@ -9,6 +11,9 @@ all: build
 build:
 	@mkdir -p $(BUILD_DIR)
 	go build -ldflags="-w -s" -o $(BUILD_DIR)/$(APP_NAME) ./$(CMD_DIR)
+
+generate:
+	sqlc generate -f db/sqlc.yaml
 
 run:
 	go run ./$(CMD_DIR)
