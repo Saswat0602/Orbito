@@ -1,0 +1,14 @@
+{
+  "name": "@orbito/api-go",
+  "version": "1.0.0",
+  "description": "Orbito Platform - Go High-Performance Backend Twin",
+  "private": true,
+  "scripts": {
+    "build": "make build",
+    "dev": "make dev",
+    "lint": "make lint",
+    "test": "make test",
+    "typecheck": "make vet",
+    "clean": "make clean"
+  }
+}

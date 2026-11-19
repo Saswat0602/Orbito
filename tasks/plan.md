@@ -1,155 +1,123 @@
-# Comprehensive Implementation Plan: Complete Taskosaur Parity (Task Edit Design, Page Styles & Advanced Work Management)
+# Implementation Plan: Go Twin Backend (`apps/api-go`)
 
-## 1. Executive Summary
+## Overview
+This plan specifies the implementation breakdown for building a high-performance Go twin backend (`apps/api-go`) of the existing NestJS backend in `@orbito/platform`. The Go application serves as a drop-in replacement that connects to the identical PostgreSQL 16 database, preserves all existing user credentials, bcrypt password hashes, and JWT/cookie sessions without user logout, mirrors all 386 API endpoints across 39 modules with exact JSON request/response shapes, implements Socket.IO real-time events on `/events`, and runs background workers and scheduled crons.
 
-Based on an exhaustive, file-by-file audit of `/home/saswatranjanmohanty/Desktop/HysProject/taskosaur/frontend` against `@orbito/platform`, this plan directly addresses the user's feedback:
-> *"I think still many page style, task edit design and different things are still missing that are already present in Taskosaur."*
+## Architecture Decisions
+- **HTTP Routing:** `go-chi/chi/v5` for lightweight, standard-library-compatible HTTP routing and composable middleware.
+- **Database Engine & ORM:** `jackc/pgx/v5` connection pool with `sqlc` compiled directly against PostgreSQL 16 schema (`backend/prisma/migrations/20261106114254_init_the_orbit/migration.sql`), ensuring zero reflection overhead and compile-time SQL verification without altering Prisma schema.
+- **Structured Logging:** Go `log/slog` outputting structured JSON with request correlation IDs and user IDs.
+- **Validation:** `go-playground/validator/v10` mirroring NestJS `class-validator` rules, formatting validation failures as an array of strings in 400 responses.
+- **Authentication & Security:** HS256 JWTs via `golang-jwt/jwt/v5`, native `bcrypt` with cost 12, AES-256-GCM cookie encryption with SHA-256 key derivation matching `cookie-crypto.utils.ts`, and scrypt field encryption matching `encryption.util.ts`.
+- **Real-Time Gateway:** Socket.IO v4 protocol engine supporting the `/events` namespace and existing frontend rooms.
+- **Background Tasks:** Redis-backed job processing via `hibiken/asynq` with fallback handling, paired with `robfig/cron/v3` for scheduled cron jobs.
 
-While backend capabilities and baseline features exist, Taskosaur features a rich, polished **2-column Task Edit & Detail Workspace**, a **dedicated Full-Page Task View route**, **Project Health & Heatmap gauges**, **Pending Invitations & Member Role management**, **Full-Page Notification Center**, **Dynamic Grouping & Sorting**, and **Spreadsheet Exports**.
+## Task List Summary
 
----
+### Phase 0: Foundations & Project Scaffolding
+- [x] Task 1: Scaffolding, `go.mod`, Turbo Integration, Makefile, Air, Linter & Dockerfile
+- [ ] Task 2: Typed Configuration & Environment Validation (`internal/config`)
+- [ ] Task 3: Platform Logger (`slog`), Request ID & Ingress Middleware
+- [ ] Task 4: Platform Database (`pgx/v5`) & sqlc Setup (`db/sqlc.yaml`, migration DDL)
+- [ ] Task 5: Platform Crypto (AES-256-GCM cookie crypto, scrypt field encryption, bcrypt) & Unit Test Parity
+- [ ] Task 6: Shared HTTP & Error Framework (`httpx`, `apperror` mapper, 5-field pagination)
 
-## 2. Core Pillars of This Plan
+### Checkpoint: Foundations Complete
+- [ ] Platform database connects to Postgres, crypto test vectors match TypeScript, middleware logs JSON with correlation ID
 
-```mermaid
-flowchart TD
-    subgraph Pillar1["Pillar 1: Task Detail & Edit Design"]
-        T1["Dedicated Full-Page Route (/[workspaceSlug]/[projectSlug]/tasks/[taskId])"]
-        T2["Expand-to-Fullscreen button in Drawer"]
-        T3["2-Column Task Workspace (Main Content + Metadata Inspector)"]
-        T4["Inline Title & Description Edit Modes with Save/Cancel"]
-        T5["Metadata Inspector: Type Selector, Sprint Dropdown, Story Points (Fibonacci), Reporter, Start & Due Dates"]
-        T6["Task Hierarchy Tree, Parent Link Breadcrumb & Subtask Progress Bar"]
-    end
+### Phase 1: Core System & Authentication
+- [ ] Task 7: Health Module (`GET /api/health`, readiness check)
+- [ ] Task 8: Settings Module (`/api/settings` key-value store & registration status)
+- [ ] Task 9: Mailer Platform & Email Module (`/api/email/send`, stats, SMTP client)
+- [ ] Task 10: Auth Core & JWT Strategy (claims, token minting, `RequireAuth` middleware)
+- [ ] Task 11: Auth Module: Registration & Login (`/api/auth/register`, `/api/auth/login`, cookies, `/me`, `/profile`)
+- [ ] Task 12: Auth Module: Token Refresh & Logout (`/api/auth/refresh`, `/api/auth/logout`, user status check)
+- [ ] Task 13: Auth Module: Password Reset & Setup (`/forgot-password`, `/verify-reset-token`, `/reset-password`, `/setup`)
+- [ ] Task 14: Auth SSO / OIDC Services & Endpoints (`/api/auth/oidc/config`, `/login`, `/callback`, `/exchange`)
+- [ ] Task 15: Users Module (`/api/users` CRUD, `/status`, `/change-password`, profile avatar)
+- [ ] Task 16: Admin Module (`/api/admin/dashboard`, `/users`, `/organizations`, `/config`, `/test-smtp`)
 
-    subgraph Pillar2["Pillar 2: Page Styles & Layouts"]
-        P1["Projects Catalog Page: Search, Status/Priority Filters, Health Gauges, Member Stack"]
-        P2["Members Page: Dual-Tab (Active Members vs Pending Invitations with Revoke/Resend, Role Modifier Dropdown)"]
-        P3["Full-Page Notification Center (/notifications): Tabs, Search, Mark All Read, Delete Read"]
-        P4["Today's Agenda Daily Briefing Modal (Overdue, Due Today, Upcoming)"]
-    end
+### Checkpoint: Core System & Auth Verified
+- [ ] Existing users can log in with existing passwords, receive valid JWTs and encrypted cookies, access `/me` and admin routes
 
-    subgraph Pillar3["Pillar 3: Advanced Work Management & Power Tools"]
-        W1["Dynamic Group By Manager (Status, Priority, Assignee, Type, Due Date)"]
-        W2["Multi-Field Sorting Manager (ASC/DESC direction with Reset)"]
-        W3["Column Visibility Manager"]
-        W4["1-Click Task Export to CSV and Excel (XLSX)"]
-        W5["Multi-Select Floating Bulk Operations Bar (Status, Assignee, Delete)"]
-    end
-```
+### Phase 2: Multi-Tenancy, Hierarchy & Member RBAC
+- [ ] Task 17: RBAC Core Middleware (Hierarchy rank comparison, Scope resolver for ORG/WORKSPACE/PROJECT)
+- [ ] Task 18: Organizations Module (`/api/organizations` CRUD, transfer ownership, default org)
+- [ ] Task 19: Organization Members Module (`/api/organization-members` list, update role, remove)
+- [ ] Task 20: Workspaces Module (`/api/workspaces` CRUD, `/charts` metrics aggregation, archive)
+- [ ] Task 21: Workspace Members Module (`/api/workspace-members` list, role update, remove)
+- [ ] Task 22: Invitations Module (`/api/invitations` create token, verify, accept, revoke, resend)
 
----
+### Checkpoint: Multi-Tenancy & RBAC Verified
+- [ ] Tenancy boundary enforced, role ranks strictly checked, workspace charts calculate correct aggregates
 
-## 3. Ordered Vertical Task Slices
+### Phase 3: Project Domain & Agile Foundations
+- [ ] Task 23: Projects Module (`/api/projects` CRUD, slug/key, visibility, custom task prefixes, stats)
+- [ ] Task 24: Project Members Module (`/api/project-members` list, add, role update, remove)
+- [ ] Task 25: Workflows Module (`/api/workflows` CRUD, default workflow generation)
+- [ ] Task 26: Task Statuses Module (`/api/task-statuses` custom status columns, categories, transitions)
+- [ ] Task 27: Labels Module (`/api/labels` global and workspace labels CRUD)
+- [ ] Task 28: Sprints Module (`/api/sprints` planning, active, complete, burndown metrics)
 
-### Slice 1: Task Edit Design & Dedicated Full-Page Task View
-**Description:** Build the dedicated full-page task route `/[workspaceSlug]/[projectSlug]/tasks/[taskId]/page.tsx` and refactor the task view into a reusable 2-column workspace (`TaskDetailWorkspace.tsx`) used by both the full-page view and the drawer.
-**Acceptance Criteria:**
-- [ ] Route `/[workspaceSlug]/[projectSlug]/tasks/[taskId]` renders the full task detail page with breadcrumb navigation back to the board.
-- [ ] TaskDetailDrawer features an "Expand to Fullscreen" icon (`Maximize2`) that navigates to the full-page route.
-- [ ] Inline Title editing with Save (`Check`) / Cancel (`X`) and edit button (`Pencil`).
-- [ ] Inline Description editing with Markdown toolbar, `[Write]` / `[Preview]` tabs, and AI generator.
-- [ ] Metadata Inspector sidebar features:
-  - Task Type selector (Task, Bug, Story, Epic, Subtask) with color badges and icons.
-  - Sprint selector dropdown (Active Sprint vs. Backlog).
-  - Story Points selector (1, 2, 3, 5, 8, 13 Fibonacci score).
-  - Start Date and Due Date pickers with relative formatting ("Tomorrow", "Overdue").
-  - Reporter avatar and selector.
-  - Multi-assignee avatar stack with user search.
-- [ ] Task Hierarchy section: Parent task link breadcrumb, subtask completion progress bar (`X of Y completed - Z%`), convert to subtask, promote to parent.
+### Checkpoint: Project Domain & Workflows Verified
+- [ ] Projects, workflows, statuses, labels, and sprints function with exact status transition validation
 
-**Files likely touched:**
-- `frontend/src/app/[workspaceSlug]/[projectSlug]/tasks/[taskId]/page.tsx` (new)
-- `frontend/src/features/tasks/components/TaskDetailWorkspace.tsx` (new)
-- `frontend/src/features/tasks/components/TaskDetailDrawer.tsx`
-- `frontend/src/features/tasks/components/TaskHierarchy.tsx` (new)
-- `frontend/src/lib/store/api/tasksApi.ts`
+### Phase 4: Task Execution Engine & Agile Work Management
+- [ ] Task 29: Task Ranks Module & Lexorank Algorithm (`internal/modules/task_ranks`)
+- [ ] Task 30: Tasks Core CRUD & Slugs (`/api/tasks` create, get by id/slug/key, update, delete, archive)
+- [ ] Task 31: Tasks Listing, Filtering & Grouping (`/api/tasks` list, `/grouped`, `/by-status`, `/today`, `/all-tasks`)
+- [ ] Task 32: Tasks Bulk Operations (`/api/tasks/bulk-create`, `/bulk-delete`, `/bulk-status-update`, `/bulk-assign`)
+- [ ] Task 33: Tasks Reordering & Status Transitions (`/api/tasks/:id/reorder`, `/status`, `/assignees`, `/priority`)
+- [ ] Task 34: Task Recurrence Engine & Cron (`/api/tasks/:id/recurrence`, complete occurrence, daily generation)
+- [ ] Task 35: Task Dependencies Module (`/api/task-dependencies` blocking, blocked-by relations)
+- [ ] Task 36: Task Watchers & Labels Association (`/api/task-watchers`, `/api/task-label`)
+- [ ] Task 37: Task Comments Module (`/api/task-comments` CRUD, user mentions `@name`)
+- [ ] Task 38: Task Attachments Module (`/api/task-attachments` file upload, preview, download, stats)
+- [ ] Task 39: Time Entries Module (`/api/time-entries` timer start/stop, log, summary, IDOR checks)
+- [ ] Task 40: Gantt Module (`/api/gantt` project timeline, sprint schedule, resource allocation)
 
----
+### Checkpoint: Task Execution Engine Verified
+- [ ] Kanban boards, task detail drawers, list views, bulk actions, reordering, and timers match NestJS responses
 
-### Slice 2: Workspace Projects Catalog Page Styling
-**Description:** Upgrade `/[workspaceSlug]/projects/page.tsx` into a high-craft project catalog with live search, status & priority filters, member stacks, and Project Health Indicators.
-**Acceptance Criteria:**
-- [ ] Live search input with debounced filtering by project name and description.
-- [ ] Filter pills by Project Status (`ALL`, `ACTIVE`, `COMPLETED`, `ARCHIVED`) and Priority.
-- [ ] Project cards display:
-  - Project icon & key badge.
-  - Circular SVG Health Score gauge (`ProjectHealthIndicator.tsx`).
-  - Active sprint indicator.
-  - Collaborator avatar stack.
-  - Task count progress bar.
-- [ ] Responsive grid layout with empty state and "+ New Project" modal trigger.
+### Phase 5: Real-Time Collaboration & Audit
+- [ ] Task 41: Real-Time Events Gateway (Socket.IO v4 protocol engine at `/events`, room management)
+- [ ] Task 42: WebSocket Event Dispatcher & Presence (`user:online`, `typing`, `task:created/updated`, etc.)
+- [ ] Task 43: Notifications Module (`/api/notifications` list, unread count, mark-read, delete)
+- [ ] Task 44: Activity Log Module (`/api/activity-log` audit trail capture, project & org stats)
 
-**Files likely touched:**
-- `frontend/src/app/[workspaceSlug]/projects/page.tsx`
-- `frontend/src/features/projects/components/ProjectHealthIndicator.tsx` (new)
-- `frontend/src/features/projects/components/ProjectCard.tsx` (new or enhanced)
+### Checkpoint: Real-Time & Event Dispatching Verified
+- [ ] Frontend establishes live WebSocket connection, receives real-time room broadcasts and notifications
 
----
+### Phase 6: Async Workers, Storage, Integrations & Public Access
+- [ ] Task 45: Queue Engine & Background Processors (`asynq`/Redis worker runtime, `bulk-task-import`, `automation`)
+- [ ] Task 46: Scheduled Jobs Engine (Robfig cron: hourly reminders, 9am overdue alerts, midnight recurring tasks)
+- [ ] Task 47: Storage & File Management (`/uploads/upload/:folder`, `/uploads/:folder/:filename`, `/s3/presigned-*`)
+- [ ] Task 48: Editor Images & Media Assets (`/api/editor-images/upload`)
+- [ ] Task 49: Search Module (`/api/search/global`, `/advanced`, `/suggestions`, `/quick`)
+- [ ] Task 50: Project Inbox & Email Sync (`/api/inbox` project email accounts, rules, IMAP processor)
+- [ ] Task 51: Trello Sync Module & Scheduler (`/api/trello-sync` credentials, board import, sync loop)
+- [ ] Task 52: Jira Sync Module (`/api/jira-sync` safe outbound HTTP, credentials, project import, webhook sync)
+- [ ] Task 53: AI Chat Module (`/api/ai-chat` conversations, chat endpoint, tools, test-connection)
+- [ ] Task 54: Public Module (`/api/public` shared tasks, calendar, sprints, public project view)
 
-### Slice 3: Workspace Members & Pending Invitations Management
-**Description:** Upgrade `/[workspaceSlug]/members/page.tsx` with a dual-tab architecture (`Active Members` vs `Pending Invitations`), member search, role change dropdowns, and invitation revocation/resending.
-**Acceptance Criteria:**
-- [ ] Tab 1: `Active Members ({count})`:
-  - Search filter by member name/email.
-  - Role modifier dropdown (`Select`) allowing managers/owners to change member roles (`MEMBER`, `MANAGER`, `VIEWER`) directly.
-  - Remove member button with confirmation.
-- [ ] Tab 2: `Pending Invitations ({count})`:
-  - List of active invitation tokens querying `GET /api/invitations`.
-  - Recipient email, role, expiration countdown badge.
-  - 1-click "Copy Invite Link", "Resend Invite", and "Revoke Invite" actions.
+### Checkpoint: Full Platform Feature Parity Verified
+- [ ] Background crons run, files upload and serve, integrations sync, and public shares resolve without authentication
 
-**Files likely touched:**
-- `frontend/src/app/[workspaceSlug]/members/page.tsx`
-- `frontend/src/features/workspaces/components/PendingInvitationsList.tsx` (new)
-- `frontend/src/lib/store/api/invitationsApi.ts`
-- `frontend/src/lib/store/api/workspacesApi.ts`
+### Phase 7: Verification, Parity Diffing & Production Readiness
+- [ ] Task 55: Automated Parity Test Harness (Dual HTTP request fuzzer comparing NestJS vs Go responses)
+- [ ] Task 56: Production Containerization & CI/CD Pipeline (`deploy/Dockerfile`, GitHub Actions workflow)
 
----
+### Checkpoint: Final Acceptance & Ready for Production Cutover
+- [ ] All 386 endpoints pass parity tests, distroless Docker image builds, zero lint warnings, ready for drop-in cutover
 
-### Slice 4: Dedicated Full-Page Notification Center (`/notifications`)
-**Description:** Build the dedicated `/notifications/page.tsx` route matching Taskosaur's `NotificationScreen.tsx`, connected to the navbar popover.
-**Acceptance Criteria:**
-- [ ] Dedicated route `/notifications` accessible via "View all notifications" link in `NotificationPopover`.
-- [ ] Category filter pills with unread count badges: `All`, `Task Assigned`, `Mentions`, `Status Changes`, `Invitations`.
-- [ ] Search input filtering notification titles and messages.
-- [ ] "Mark All as Read" button calling `POST /api/notifications/mark-all-read`.
-- [ ] "Delete Read" button calling `DELETE /api/notifications/bulk`.
-- [ ] 1-click deep link to navigate directly to referenced task or sprint.
+## Risks and Mitigations
+| Risk | Impact | Mitigation |
+|:---|:---|:---|
+| **Cookie Decryption Discrepancy** | High | Test vectors verified against Node.js `cookie-crypto.utils.ts` in Task 5 unit tests before auth integration. |
+| **Password Hash Incompatibility** | High | Standard bcrypt cost 12 verified with unit tests against hashes created by NestJS. |
+| **Lexorank Calculation Drift** | Medium | Direct port of string midpoint math in `task_ranks` with dedicated unit test suite. |
+| **Database Connection Exhaustion** | Medium | `pgxpool` configured with `MaxConns: 50`, `MinConns: 10`, `MaxConnIdleTime: 30m`. |
+| **Outbound SSRF in Integrations** | High | Safe network dialer pinning DNS and blocking loopback, RFC 1918, and metadata IPs (`169.254.169.254`). |
 
-**Files likely touched:**
-- `frontend/src/app/notifications/page.tsx` (new)
-- `frontend/src/features/notifications/components/NotificationCenter.tsx` (new)
-- `frontend/src/components/layout/NotificationPopover.tsx`
-- `frontend/src/lib/store/api/notificationsApi.ts`
-
----
-
-### Slice 5: Advanced Tasks Organization (Dynamic Grouping, Sorting, Export & Bulk Bar)
-**Description:** Upgrade `ProjectTasksPage.tsx` with dynamic grouping (`GroupByManager`), multi-field sorting (`SortingManager`), column customization (`ColumnManager`), 1-click CSV/Excel export, and floating multi-select bulk operations bar.
-**Acceptance Criteria:**
-- [ ] `GroupByManager`: Group tasks by `Status`, `Priority`, `Assignee`, `Task Type`, and `Due Date` across Kanban & List.
-- [ ] `SortingManager`: Sort by Due Date, Priority, Created At, Title with ASC/DESC direction.
-- [ ] `ColumnManager`: Toggle table column visibility.
-- [ ] `taskExport.ts`: 1-click export of displayed tasks to **CSV** and **Excel (XLSX)**.
-- [ ] Multi-select row checkboxes in List view triggering floating bottom bar with Bulk Status, Bulk Assign, and Bulk Delete.
-- [ ] `TodayAgendaDialog`: Header & workspace briefing modal showing Overdue, Due Today, and Upcoming tasks.
-
-**Files likely touched:**
-- `frontend/src/features/tasks/components/GroupByManager.tsx` (new)
-- `frontend/src/features/tasks/components/SortingManager.tsx` (new)
-- `frontend/src/features/tasks/components/ColumnManager.tsx` (new)
-- `frontend/src/features/tasks/utils/taskExport.ts` (new)
-- `frontend/src/features/tasks/components/BulkActionsBar.tsx` (new)
-- `frontend/src/features/tasks/components/TodayAgendaDialog.tsx` (new)
-- `frontend/src/app/[workspaceSlug]/[projectSlug]/tasks/page.tsx`
-- `frontend/src/components/layout/Navbar.tsx`
-
----
-
-## 4. Verification & Clean Code Protocol
-
-- Zero `any` policy with strict TypeScript interfaces.
-- Obsidian monochrome styling (`#09090b` bg, `zinc-900` cards, 1px `border-zinc-800`, 4px radii `rounded-md`).
-- Strict layer separation: UI -> RTK Query -> NestJS REST API.
-- Compilation verification: `npm run build --workspace=@orbito/frontend` and `npm run build --workspace=@orbito/backend` must pass with 0 errors.
+## Open Questions
+- None. All architectural constraints, contracts, ports, and protocols have been verified.

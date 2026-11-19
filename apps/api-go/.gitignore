@@ -1,0 +1,17 @@
+# Go binaries
+bin/
+tmp/
+
+# Coverage
+coverage/
+*.out
+*.html
+
+# Air and debug logs
+build-errors.log
+*.log
+
+# Environment variables
+.env
+.env.local
+!.env.example
