@@ -17,11 +17,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
+	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/settings"
 	"github.com/orbito/api-go/internal/platform/crypto"
 	"github.com/orbito/api-go/internal/platform/database"
 	"github.com/orbito/api-go/internal/platform/logger"
+	"github.com/orbito/api-go/internal/platform/mailer"
 	"github.com/orbito/api-go/internal/shared/apperror"
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
@@ -94,6 +96,18 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	settingsSvc := settings.NewService(settingsRepo, fieldCrypto)
 	settingsHandler := settings.NewHandler(settingsSvc)
 	r.Mount("/api/settings", settings.Routes(settingsHandler, nil))
+
+	mailerClient := mailer.New(mailer.Config{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		User:     cfg.SMTPUser,
+		Pass:     cfg.SMTPPass,
+		From:     cfg.SMTPFrom,
+		Insecure: !cfg.IsProduction(),
+	})
+	emailSvc := email.NewService(mailerClient, 2)
+	emailHandler := email.NewHandler(emailSvc)
+	r.Mount("/api/email", email.Routes(emailHandler, nil))
 
 	return r
 }

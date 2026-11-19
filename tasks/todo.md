@@ -230,14 +230,14 @@
 **Description:** Implement SMTP mailer in platform/mailer with HTML email templates and the Email module providing POST /api/email/send, POST /api/email/send-bulk, and GET /api/email/queue/stats.
 
 **Acceptance criteria:**
-- [ ] SMTP client connects using SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS with STARTTLS/TLS
-- [ ] Email sending endpoints validate payload and dispatch email or enqueue for background delivery
-- [ ] Queue stats return active, pending, and failed email counts
+- [x] SMTP client connects using SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS with STARTTLS/TLS
+- [x] Email sending endpoints validate payload and dispatch email or enqueue for background delivery
+- [x] Queue stats return active, pending, and failed email counts
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/mailer/... ./internal/modules/email/...`
-- [ ] Build succeeds: `go build ./internal/modules/email/...`
-- [ ] Manual check: Trigger test email send and verify SMTP connection handshake
+- [x] Tests pass: `go test -v ./internal/platform/mailer/... ./internal/modules/email/...`
+- [x] Build succeeds: `go build ./internal/modules/email/...`
+- [x] Manual check: Trigger test email send and verify SMTP connection handshake
 
 **Dependencies:** Task 6
 

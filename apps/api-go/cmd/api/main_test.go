@@ -54,6 +54,15 @@ func TestBuildRouter(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), `"enabled":true`)
 	})
 
+	t.Run("GET /api/email/queue/stats routes correctly through mounted email subrouter", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/email/queue/stats", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"waiting":0`)
+	})
+
 	t.Run("unknown route returns exact NestJS 404 JSON error envelope", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/nonexistent-route", nil)
 		rr := httptest.NewRecorder()
