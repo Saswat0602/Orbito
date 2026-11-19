@@ -26,7 +26,7 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Platform database connects to Postgres, crypto test vectors match TypeScript, middleware logs JSON with correlation ID
 
 ### Phase 1: Core System & Authentication
-- [ ] Task 7: Health Module (`GET /api/health`, readiness check)
+- [x] Task 7: Health Module (`GET /api/health`, readiness check)
 - [ ] Task 8: Settings Module (`/api/settings` key-value store & registration status)
 - [ ] Task 9: Mailer Platform & Email Module (`/api/email/send`, stats, SMTP client)
 - [ ] Task 10: Auth Core & JWT Strategy (claims, token minting, `RequireAuth` middleware)

@@ -168,8 +168,8 @@
 - [x] Platform database connects to Postgres, executes sample query
 - [x] AES-256-GCM cookie encryption & decryption test vectors match Node.js byte-for-byte
 - [x] Ingress middleware assigns correlation ID and logs structured JSON with slog
-- [ ] Shared apperror maps domain errors to exact NestJS error JSON schema
-- [ ] Review with human before proceeding
+- [x] Shared apperror maps domain errors to exact NestJS error JSON schema
+- [x] Review with human before proceeding
 
 ---
 
@@ -178,14 +178,14 @@
 **Description:** Implement the health check module in internal/modules/health providing GET /api/health and readiness status including database ping and redis status checks.
 
 **Acceptance criteria:**
-- [ ] `GET /api/health` returns status: 'ok' with uptime, timestamp, and database connectivity state
-- [ ] Returns 200 when database is responsive, 503 when database is unreachable
-- [ ] Publicly accessible without JWT authentication
+- [x] `GET /api/health` returns status: 'ok' with uptime, timestamp, and database connectivity state
+- [x] Returns 200 when database is responsive, 503 when database is unreachable
+- [x] Publicly accessible without JWT authentication
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/health/...`
-- [ ] Build succeeds: `go build ./internal/modules/health/...`
-- [ ] Manual check: curl http://localhost:3002/api/health and assert 200 OK JSON response
+- [x] Tests pass: `go test -v ./internal/modules/health/...`
+- [x] Build succeeds: `go build ./internal/modules/health/...`
+- [x] Manual check: curl http://localhost:3002/api/health and assert 200 OK JSON response
 
 **Dependencies:** Task 4, Task 6
 
