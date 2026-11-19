@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/orbito/api-go/internal/config"
+	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/shared/httpx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,9 +19,11 @@ import (
 
 func TestBuildRouter(t *testing.T) {
 	cfg := &config.Config{
-		AppEnv:      "test",
-		CORSOrigins: []string{"http://localhost:3001"},
-		MaxFileSize: 10485760,
+		AppEnv:           "test",
+		JWTSecret:        "test-secret-at-least-32-chars-long!",
+		JWTRefreshSecret: "test-refresh-secret-at-least-32-chars!",
+		CORSOrigins:      []string{"http://localhost:3001"},
+		MaxFileSize:      10485760,
 	}
 	appLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
 	router := BuildRouter(cfg, nil, appLog)
@@ -55,12 +60,25 @@ func TestBuildRouter(t *testing.T) {
 	})
 
 	t.Run("GET /api/email/queue/stats routes correctly through mounted email subrouter", func(t *testing.T) {
+		tokenSvc := auth.NewTokenService(cfg.JWTSecret, cfg.JWTRefreshSecret, 15*time.Minute, 7*24*time.Hour)
+		tok, _ := tokenSvc.MintAccessToken(uuid.New(), "test@orbito.io", "MEMBER")
+
 		req := httptest.NewRequest(http.MethodGet, "/api/email/queue/stats", nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
 		rr := httptest.NewRecorder()
 		router.ServeHTTP(rr, req)
 
 		assert.Equal(t, http.StatusOK, rr.Code)
 		assert.Contains(t, rr.Body.String(), `"waiting":0`)
+	})
+
+	t.Run("GET /api/auth/registration-status routes correctly through mounted auth subrouter", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/auth/registration-status", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"enabled":true`)
 	})
 
 	t.Run("unknown route returns exact NestJS 404 JSON error envelope", func(t *testing.T) {

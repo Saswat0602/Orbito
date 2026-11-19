@@ -282,20 +282,20 @@
 **Description:** Implement core authentication endpoints: POST /api/auth/register (with auto-assigned unique username and default org join), POST /api/auth/login (with bootstrap super admin creation if first user), httpOnly encrypted cookie setting, GET /api/auth/me, and GET /api/auth/profile.
 
 **Acceptance criteria:**
-- [ ] POST /api/auth/login validates bcrypt password, updates lastLoginAt, returns AuthResponseDto and sets cookies
-- [ ] First account to register on fresh instance automatically receives SUPER_ADMIN role
-- [ ] GET /api/auth/me returns authenticated user profile without password field
+- [x] POST /api/auth/login validates bcrypt password, updates lastLoginAt, returns AuthResponseDto and sets cookies
+- [x] First account to register on fresh instance automatically receives SUPER_ADMIN role
+- [x] GET /api/auth/me returns authenticated user profile without password field
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/auth/login_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/auth/...`
-- [ ] Manual check: Execute login via curl, verify set-cookie headers contain access_token and encrypted refresh_token
+- [x] Tests pass: `go test -v ./internal/modules/auth/login_test.go`
+- [x] Build succeeds: `go build ./internal/modules/auth/...`
+- [x] Manual check: Execute login via curl, verify set-cookie headers contain access_token and encrypted refresh_token
 
 **Dependencies:** Task 10
 
 **Files likely touched:**
-- `apps/api-go/internal/modules/auth/handler_login.go`
-- `apps/api-go/internal/modules/auth/service_login.go`
+- `apps/api-go/internal/modules/auth/handler.go`
+- `apps/api-go/internal/modules/auth/service.go`
 - `apps/api-go/internal/modules/auth/repository.go`
 - `apps/api-go/internal/modules/auth/dto.go`
 - `apps/api-go/internal/modules/auth/routes.go`
@@ -309,20 +309,20 @@
 **Description:** Implement POST /api/auth/refresh and POST /api/auth/logout. Refresh decrypts cookie or accepts body token, verifies JWT signature, checks DB refresh_token column, asserts account active, rotates refresh token, and sets new cookies. Logout clears DB column and clears cookies.
 
 **Acceptance criteria:**
-- [ ] POST /api/auth/refresh validates refresh token from encrypted cookie or request body
-- [ ] Rotates refresh token in database and updates httpOnly cookies
-- [ ] POST /api/auth/logout sets user refresh_token to null and clears client cookies
+- [x] POST /api/auth/refresh validates refresh token from encrypted cookie or request body
+- [x] Rotates refresh token in database and updates httpOnly cookies
+- [x] POST /api/auth/logout sets user refresh_token to null and clears client cookies
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/auth/refresh_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/auth/...`
-- [ ] Manual check: Call refresh endpoint with expired access token and valid refresh cookie, verifying new tokens are returned
+- [x] Tests pass: `go test -v ./internal/modules/auth/refresh_test.go`
+- [x] Build succeeds: `go build ./internal/modules/auth/...`
+- [x] Manual check: Call refresh endpoint with expired access token and valid refresh cookie, verifying new tokens are returned
 
 **Dependencies:** Task 11
 
 **Files likely touched:**
-- `apps/api-go/internal/modules/auth/handler_refresh.go`
-- `apps/api-go/internal/modules/auth/service_refresh.go`
+- `apps/api-go/internal/modules/auth/handler.go`
+- `apps/api-go/internal/modules/auth/service.go`
 
 **Estimated scope:** Small: 1-2 files
 
@@ -333,22 +333,20 @@
 **Description:** Implement password recovery and initial instance setup: POST /api/auth/forgot-password (generates 32-byte hex token, hashes with bcrypt cost 10, sets 24h expiry), GET /api/auth/verify-reset-token/:token, POST /api/auth/reset-password, GET /api/auth/setup/required, and POST /api/auth/setup.
 
 **Acceptance criteria:**
-- [ ] Forgot password creates hashed reset token in DB and sends recovery email link
-- [ ] Reset password validates token, updates password with bcrypt cost 12, and clears reset token
-- [ ] Setup endpoints allow one-time super admin initialization when no admin exists
+- [x] Forgot password creates hashed reset token in DB and sends recovery email link
+- [x] Reset password validates token, updates password with bcrypt cost 12, and clears reset token
+- [x] Setup endpoints allow one-time super admin initialization when no admin exists
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/auth/reset_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/auth/...`
-- [ ] Manual check: Trigger forgot-password flow and test verify-reset-token with generated token
+- [x] Tests pass: `go test -v ./internal/modules/auth/reset_test.go`
+- [x] Build succeeds: `go build ./internal/modules/auth/...`
+- [x] Manual check: Trigger forgot-password flow and test verify-reset-token with generated token
 
 **Dependencies:** Task 11
 
 **Files likely touched:**
-- `apps/api-go/internal/modules/auth/handler_reset.go`
-- `apps/api-go/internal/modules/auth/service_reset.go`
-- `apps/api-go/internal/modules/auth/handler_setup.go`
-- `apps/api-go/internal/modules/auth/service_setup.go`
+- `apps/api-go/internal/modules/auth/handler.go`
+- `apps/api-go/internal/modules/auth/service.go`
 
 **Estimated scope:** Medium: 3-5 files
 
@@ -359,14 +357,14 @@
 **Description:** Implement OpenID Connect (SSO) authentication in internal/modules/auth: GET /api/auth/oidc/config, GET /api/auth/oidc/login (generates state/nonce in cookie), GET /api/auth/oidc/callback (validates code against IdP, provisions or links user), and POST /api/auth/oidc/exchange.
 
 **Acceptance criteria:**
-- [ ] OIDC discovery reads issuer configuration and redirects to provider login
-- [ ] Callback validates authorization code and state cookie, creating or updating user
-- [ ] Issues standard session JWT and refresh token cookies on successful SSO
+- [x] OIDC discovery reads issuer configuration and redirects to provider login
+- [x] Callback validates authorization code and state cookie, creating or updating user
+- [x] Issues standard session JWT and refresh token cookies on successful SSO
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/auth/oidc_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/auth/...`
-- [ ] Manual check: Query /api/auth/oidc/config and verify enabled flag and provider name
+- [x] Tests pass: `go test -v ./internal/modules/auth/oidc_test.go`
+- [x] Build succeeds: `go build ./internal/modules/auth/...`
+- [x] Manual check: Query /api/auth/oidc/config and verify enabled flag and provider name
 
 **Dependencies:** Task 11
 

@@ -52,6 +52,7 @@ func (s *TokenService) MintAccessToken(userID uuid.UUID, email, role string) (st
 		Email: email,
 		Role:  role,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.NewString(),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.accessTTL)),
 		},
@@ -69,6 +70,7 @@ func (s *TokenService) MintRefreshToken(userID uuid.UUID, email, role string) (s
 		Email: email,
 		Role:  role,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.NewString(),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.refreshTTL)),
 		},

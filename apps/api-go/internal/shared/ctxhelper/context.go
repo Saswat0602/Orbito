@@ -16,6 +16,9 @@ const (
 
 // WithUserID attaches the current user's ID to the request context.
 func WithUserID(ctx context.Context, userID string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, userIDKey, userID)
 }
 
@@ -32,6 +35,9 @@ func GetUserID(ctx context.Context) string {
 
 // WithUserEmail attaches the authenticated user's email to context.
 func WithUserEmail(ctx context.Context, email string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, userEmailKey, email)
 }
 
@@ -48,6 +54,9 @@ func GetUserEmail(ctx context.Context) string {
 
 // WithUserRole attaches the user's role to context.
 func WithUserRole(ctx context.Context, role string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, userRoleKey, role)
 }
 
@@ -64,6 +73,9 @@ func GetUserRole(ctx context.Context) string {
 
 // WithCorrelationID attaches the correlation ID to the context.
 func WithCorrelationID(ctx context.Context, id string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, correlationIDKey, id)
 }
 
@@ -80,6 +92,9 @@ func GetCorrelationID(ctx context.Context) string {
 
 // WithRequestID attaches the request ID to the context.
 func WithRequestID(ctx context.Context, id string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, requestIDKey, id)
 }
 

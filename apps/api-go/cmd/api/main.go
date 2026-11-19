@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
+	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/settings"
@@ -95,7 +96,6 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	}
 	settingsSvc := settings.NewService(settingsRepo, fieldCrypto)
 	settingsHandler := settings.NewHandler(settingsSvc)
-	r.Mount("/api/settings", settings.Routes(settingsHandler, nil))
 
 	mailerClient := mailer.New(mailer.Config{
 		Host:     cfg.SMTPHost,
@@ -107,7 +107,27 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	})
 	emailSvc := email.NewService(mailerClient, 2)
 	emailHandler := email.NewHandler(emailSvc)
-	r.Mount("/api/email", email.Routes(emailHandler, nil))
+
+	// Auth module & middleware
+	frontendURL := "http://localhost:3001"
+	if len(cfg.CORSOrigins) > 0 && cfg.CORSOrigins[0] != "" {
+		frontendURL = cfg.CORSOrigins[0]
+	}
+
+	tokenSvc := auth.NewTokenService(cfg.JWTSecret, cfg.JWTRefreshSecret, cfg.JWTExpiresIn, cfg.JWTRefreshExpiresIn)
+	var authRepo auth.Repository
+	var userChecker middleware.UserChecker
+	if db != nil {
+		authRepo = auth.NewRepository(db)
+		userChecker = authRepo.GetUserByID
+	}
+	authSvc := auth.NewService(authRepo, tokenSvc, emailSvc, settingsSvc, frontendURL)
+	authHandler := auth.NewHandler(authSvc, cfg.JWTSecret, cfg.IsProduction(), frontendURL)
+	authMw := middleware.RequireAuth(tokenSvc, userChecker)
+
+	r.Mount("/api/auth", auth.Routes(authHandler, authMw))
+	r.Mount("/api/settings", settings.Routes(settingsHandler, authMw))
+	r.Mount("/api/email", email.Routes(emailHandler, authMw))
 
 	return r
 }
