@@ -25,6 +25,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/organizations"
 	"github.com/orbito/api-go/internal/modules/settings"
 	"github.com/orbito/api-go/internal/modules/users"
+	"github.com/orbito/api-go/internal/modules/workspaces"
 	"github.com/orbito/api-go/internal/platform/crypto"
 	"github.com/orbito/api-go/internal/platform/database"
 	"github.com/orbito/api-go/internal/platform/logger"
@@ -157,6 +158,15 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	orgMembersSvc := organization_members.NewService(orgMembersRepo)
 	orgMembersHandler := organization_members.NewHandler(orgMembersSvc)
 	r.Mount("/api/organization-members", organization_members.Routes(orgMembersHandler, authMw))
+
+	var wsRepo workspaces.Repository
+	if db != nil {
+		wsRepo = workspaces.NewRepository(db)
+	}
+	wsChartsSvc := workspaces.NewChartsService(wsRepo)
+	wsSvc := workspaces.NewService(wsRepo, wsChartsSvc)
+	wsHandler := workspaces.NewHandler(wsSvc)
+	r.Mount("/api/workspaces", workspaces.Routes(wsHandler, authMw, rbacResolver))
 
 	var adminRepo admin.Repository
 	if db != nil {

@@ -39,8 +39,10 @@ type Querier interface {
 	AdminUpdateUserRole(ctx context.Context, arg AdminUpdateUserRoleParams) (AdminUpdateUserRoleRow, error)
 	AdminUpdateUserStatus(ctx context.Context, arg AdminUpdateUserStatusParams) (AdminUpdateUserStatusRow, error)
 	ArchiveOrganization(ctx context.Context, arg ArchiveOrganizationParams) error
+	ArchiveWorkspace(ctx context.Context, arg ArchiveWorkspaceParams) error
 	CheckOrganizationSlugExists(ctx context.Context, arg CheckOrganizationSlugExistsParams) (bool, error)
 	CheckUsersShareOrganization(ctx context.Context, arg CheckUsersShareOrganizationParams) (bool, error)
+	CheckWorkspaceSlugExists(ctx context.Context, arg CheckWorkspaceSlugExistsParams) (bool, error)
 	ClearUserDefaultOrgIfMatches(ctx context.Context, arg ClearUserDefaultOrgIfMatchesParams) error
 	ClearUserDefaultOrganization(ctx context.Context, defaultOrganizationID pgtype.UUID) error
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
@@ -53,6 +55,11 @@ type Querier interface {
 	CountSuperAdmins(ctx context.Context) (int64, error)
 	CountTotalUsers(ctx context.Context) (int64, error)
 	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
+	CountWorkspaceCompletedTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
+	CountWorkspaceOverdueTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
+	CountWorkspaceProjects(ctx context.Context, workspaceID uuid.UUID) (int64, error)
+	CountWorkspaceProjectsByStatus(ctx context.Context, arg CountWorkspaceProjectsByStatusParams) (int64, error)
+	CountWorkspaceTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
 	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateOrganizationMember(ctx context.Context, arg CreateOrganizationMemberParams) (OrganizationMember, error)
@@ -61,11 +68,14 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserWithProfile(ctx context.Context, arg CreateUserWithProfileParams) (CreateUserWithProfileRow, error)
 	CreateWorkflow(ctx context.Context, arg CreateWorkflowParams) (Workflow, error)
+	CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams) (Workspace, error)
+	CreateWorkspaceMemberDirect(ctx context.Context, arg CreateWorkspaceMemberDirectParams) (WorkspaceMember, error)
 	DeleteGlobalSetting(ctx context.Context, key string) error
 	DeleteOrganization(ctx context.Context, id uuid.UUID) error
 	DeleteOrganizationMemberByID(ctx context.Context, id uuid.UUID) error
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
+	DeleteWorkspace(ctx context.Context, id uuid.UUID) error
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
 	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
@@ -87,19 +97,27 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByResetToken(ctx context.Context, resetToken pgtype.Text) (GetUserByResetTokenRow, error)
 	GetUserByUsername(ctx context.Context, lower string) (GetUserByUsernameRow, error)
+	GetWorkspaceByID(ctx context.Context, id uuid.UUID) (GetWorkspaceByIDRow, error)
+	GetWorkspaceByOrgAndSlug(ctx context.Context, arg GetWorkspaceByOrgAndSlugParams) (GetWorkspaceByOrgAndSlugRow, error)
+	GetWorkspaceBySlugOnly(ctx context.Context, slug string) (GetWorkspaceBySlugOnlyRow, error)
 	GetWorkspaceIDBySlug(ctx context.Context, slug string) (uuid.UUID, error)
 	GetWorkspaceMemberRole(ctx context.Context, arg GetWorkspaceMemberRoleParams) (Role, error)
+	ListArchivedWorkspaces(ctx context.Context, organizationID uuid.UUID) ([]Workspace, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
 	ListOrganizationMembers(ctx context.Context, arg ListOrganizationMembersParams) ([]ListOrganizationMembersRow, error)
 	ListOrganizationMembersBySlug(ctx context.Context, arg ListOrganizationMembersBySlugParams) ([]ListOrganizationMembersBySlugRow, error)
 	ListOrganizationsForUser(ctx context.Context, userID uuid.UUID) ([]ListOrganizationsForUserRow, error)
 	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
+	ListWorkspaceMembersDetails(ctx context.Context, workspaceID uuid.UUID) ([]ListWorkspaceMembersDetailsRow, error)
+	ListWorkspaceTree(ctx context.Context, organizationID uuid.UUID) ([]ListWorkspaceTreeRow, error)
+	ListWorkspacesForUser(ctx context.Context, arg ListWorkspacesForUserParams) ([]ListWorkspacesForUserRow, error)
 	PingDatabase(ctx context.Context) (int32, error)
 	SetUserDefaultOrgForUser(ctx context.Context, arg SetUserDefaultOrgForUserParams) error
 	SetUserDefaultOrganization(ctx context.Context, arg SetUserDefaultOrganizationParams) error
 	SetUserResetToken(ctx context.Context, arg SetUserResetTokenParams) error
 	TransferOrganizationOwner(ctx context.Context, arg TransferOrganizationOwnerParams) error
+	UnarchiveWorkspace(ctx context.Context, arg UnarchiveWorkspaceParams) error
 	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateOrganizationMemberRole(ctx context.Context, arg UpdateOrganizationMemberRoleParams) error
@@ -110,7 +128,10 @@ type Querier interface {
 	UpdateUserRefreshToken(ctx context.Context, arg UpdateUserRefreshTokenParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error
 	UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (UpdateUserStatusRow, error)
+	UpdateWorkspace(ctx context.Context, arg UpdateWorkspaceParams) (Workspace, error)
 	UpsertUserSetting(ctx context.Context, arg UpsertUserSettingParams) (Setting, error)
+	WorkspaceProjectStatusStats(ctx context.Context, workspaceID uuid.UUID) ([]WorkspaceProjectStatusStatsRow, error)
+	WorkspaceTaskPriorityStats(ctx context.Context, workspaceID uuid.UUID) ([]WorkspaceTaskPriorityStatsRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

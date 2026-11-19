@@ -523,14 +523,14 @@
 **Description:** Implement the Workspaces module in internal/modules/workspaces: workspace CRUD, slug lookup, archive/unarchive, and aggregated charts/metrics endpoint calculating task completion rate, workload health, and status distribution.
 
 **Acceptance criteria:**
-- [ ] `POST /api/workspaces` creates workspace within target organization and auto-adds creator as OWNER
-- [ ] `GET /api/workspaces/:id/charts` computes aggregated task statistics across all projects in the workspace
-- [ ] Archived workspaces are excluded from active directory queries
+- [x] `POST /api/workspaces` creates workspace within target organization and auto-adds creator as OWNER
+- [x] `GET /api/workspaces/:id/charts` computes aggregated task statistics across all projects in the workspace
+- [x] Archived workspaces are excluded from active directory queries
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/workspaces/...`
-- [ ] Build succeeds: `go build ./internal/modules/workspaces/...`
-- [ ] Manual check: Fetch workspace charts endpoint and verify task percentage calculation
+- [x] Tests pass: `go test -v ./internal/modules/workspaces/...`
+- [x] Build succeeds: `go build ./internal/modules/workspaces/...`
+- [x] Manual check: Fetch workspace charts endpoint and verify task percentage calculation
 
 **Dependencies:** Task 18
 
