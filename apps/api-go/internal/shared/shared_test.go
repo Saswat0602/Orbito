@@ -28,7 +28,7 @@ type sampleRequest struct {
 }
 
 func TestRespondError(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/api/auth/register", nil)
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/register?referral=abc", nil)
 	// Inject correlation ID into request context
 	req = req.WithContext(middleware.WithCorrelationID(req.Context(), "cid-test-1234"))
 
@@ -45,15 +45,34 @@ func TestRespondError(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, 400, resp.StatusCode)
-	assert.Equal(t, "BadRequest", resp.Error)
+	assert.Equal(t, "Bad Request", resp.Error)
 	assert.Equal(t, "Invalid username", resp.Message)
-	assert.Equal(t, "/api/auth/register", resp.Path)
+	assert.Equal(t, "/api/auth/register?referral=abc", resp.Path)
 	assert.Equal(t, "POST", resp.Method)
+	assert.Equal(t, "cid-test-1234", resp.CorrelationID)
 	assert.NotEmpty(t, resp.Timestamp)
 	// Verify timestamp format: must end with Z and have .000 millisecond precision
 	assert.True(t, strings.HasSuffix(resp.Timestamp, "Z"))
 	_, parseErr := time.Parse(httpx.ISO8601Format, resp.Timestamp)
 	require.NoError(t, parseErr, "Timestamp must parse as exact ISO8601 with milliseconds")
+}
+
+func TestISOTimeSerialization(t *testing.T) {
+	type TestPayload struct {
+		CreatedAt httpx.ISOTime `json:"createdAt"`
+	}
+
+	fixedTime := time.Date(2026, 11, 19, 12, 0, 0, 0, time.UTC)
+	payload := TestPayload{CreatedAt: httpx.ISOTime(fixedTime)}
+
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+	assert.Equal(t, `{"createdAt":"2026-11-19T12:00:00.000Z"}`, string(data))
+
+	var decoded TestPayload
+	err = json.Unmarshal(data, &decoded)
+	require.NoError(t, err)
+	assert.Equal(t, fixedTime, decoded.CreatedAt.Time())
 }
 
 func TestBindJSONValidation(t *testing.T) {
@@ -78,21 +97,28 @@ func TestBindJSONValidation(t *testing.T) {
 
 		appErr := apperror.Map(err)
 		assert.Equal(t, 400, appErr.StatusCode)
-		assert.Equal(t, "BadRequest", appErr.ErrorName)
+		assert.Equal(t, "Bad Request", appErr.ErrorName)
 
 		messages, ok := appErr.Message.([]string)
 		require.True(t, ok, "Validation errors must be formatted as []string")
 		assert.Len(t, messages, 3)
 	})
 
-	t.Run("disallows unknown fields", func(t *testing.T) {
+	t.Run("disallows unknown fields and formats as property should not exist", func(t *testing.T) {
 		body := `{"email":"test@orbito.io","name":"Valid","role":"MEMBER","hackerField":"injection"}`
 		req := httptest.NewRequest(http.MethodPost, "/api/users", strings.NewReader(body))
 
 		var target sampleRequest
 		err := httpx.BindJSON(req, &target)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "unknown field")
+
+		appErr := apperror.Map(err)
+		assert.Equal(t, 400, appErr.StatusCode)
+		assert.Equal(t, "Bad Request", appErr.ErrorName)
+
+		messages, ok := appErr.Message.([]string)
+		require.True(t, ok)
+		assert.Contains(t, messages, "property hackerField should not exist")
 	})
 }
 
@@ -129,7 +155,7 @@ func TestAppErrorMapper(t *testing.T) {
 	t.Run("maps generic error to 500", func(t *testing.T) {
 		appErr := apperror.Map(errors.New("unexpected crash"))
 		assert.Equal(t, 500, appErr.StatusCode)
-		assert.Equal(t, "InternalServerError", appErr.ErrorName)
+		assert.Equal(t, "Internal Server Error", appErr.ErrorName)
 	})
 }
 

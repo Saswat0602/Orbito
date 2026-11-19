@@ -22,7 +22,12 @@ func Map(err error) *AppError {
 
 	// 2. pgx.ErrNoRows (matches Prisma P2025)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return NotFound("Requested record was not found.")
+		return &AppError{
+			StatusCode: 404,
+			ErrorName:  "NotFound",
+			Message:    "Requested record was not found.",
+			Err:        err,
+		}
 	}
 
 	// 3. PostgreSQL Database specific errors

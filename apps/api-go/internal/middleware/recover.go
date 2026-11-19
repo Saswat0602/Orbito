@@ -36,11 +36,19 @@ func Recoverer(isProduction bool) func(http.Handler) http.Handler {
 					correlationID := GetCorrelationID(ctx)
 					log := logger.FromContext(ctx)
 
+					reqPath := r.RequestURI
+					if reqPath == "" && r.URL != nil {
+						reqPath = r.URL.RequestURI()
+					}
+					if reqPath == "" && r.URL != nil {
+						reqPath = r.URL.Path
+					}
+
 					stack := string(debug.Stack())
 					log.Error("panic recovered",
 						slog.Any("error", rvr),
 						slog.String("stack", stack),
-						slog.String("path", r.URL.Path),
+						slog.String("path", reqPath),
 						slog.String("method", r.Method),
 						slog.String("correlation_id", correlationID),
 					)
@@ -54,7 +62,7 @@ func Recoverer(isProduction bool) func(http.Handler) http.Handler {
 						StatusCode:    http.StatusInternalServerError,
 						Error:         "InternalServerError",
 						Message:       message,
-						Path:          r.URL.Path,
+						Path:          reqPath,
 						Method:        r.Method,
 						Timestamp:     time.Now().UTC().Format("2006-01-02T15:04:05.000Z"),
 						CorrelationID: correlationID,

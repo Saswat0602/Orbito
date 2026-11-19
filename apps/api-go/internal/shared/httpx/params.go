@@ -1,7 +1,6 @@
 package httpx
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,16 +15,16 @@ func URLParam(r *http.Request, key string) string {
 	return chi.URLParam(r, key)
 }
 
-// URLParamUUID extracts and parses a path parameter as an RFC 4122 UUID.
+// URLParamUUID extracts and parses a path parameter as an RFC 4122 UUID matching NestJS ParseUUIDPipe.
 func URLParamUUID(r *http.Request, key string) (uuid.UUID, error) {
 	val := chi.URLParam(r, key)
 	if val == "" {
-		return uuid.Nil, apperror.BadRequest(fmt.Sprintf("Missing required path parameter: %s", key))
+		return uuid.Nil, apperror.BadRequest("Validation failed (uuid is expected)")
 	}
 
 	id, err := uuid.Parse(val)
 	if err != nil {
-		return uuid.Nil, apperror.BadRequest(fmt.Sprintf("Invalid UUID format for parameter '%s': %s", key, val))
+		return uuid.Nil, apperror.BadRequest("Validation failed (uuid is expected)")
 	}
 
 	return id, nil

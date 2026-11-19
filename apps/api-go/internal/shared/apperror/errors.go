@@ -38,19 +38,19 @@ func New(statusCode int, errorName string, message any) *AppError {
 	}
 }
 
-// NotFound returns a 404 AppError.
+// NotFound returns a 404 AppError matching NestJS NotFoundException.
 func NotFound(message string) *AppError {
 	if message == "" {
 		message = "Requested record was not found."
 	}
 	return &AppError{
 		StatusCode: http.StatusNotFound,
-		ErrorName:  "NotFound",
+		ErrorName:  "Not Found",
 		Message:    message,
 	}
 }
 
-// Conflict returns a 409 AppError.
+// Conflict returns a 409 AppError matching NestJS ConflictException.
 func Conflict(message string) *AppError {
 	if message == "" {
 		message = "A record with this unique value already exists."
@@ -62,25 +62,25 @@ func Conflict(message string) *AppError {
 	}
 }
 
-// BadRequest returns a 400 AppError.
+// BadRequest returns a 400 AppError matching NestJS BadRequestException.
 func BadRequest(message string) *AppError {
 	return &AppError{
 		StatusCode: http.StatusBadRequest,
-		ErrorName:  "BadRequest",
+		ErrorName:  "Bad Request",
 		Message:    message,
 	}
 }
 
-// Validation returns a 400 AppError with an array of validation failure strings.
+// Validation returns a 400 AppError with an array of validation failure strings matching NestJS ValidationPipe.
 func Validation(messages []string) *AppError {
 	return &AppError{
 		StatusCode: http.StatusBadRequest,
-		ErrorName:  "BadRequest",
+		ErrorName:  "Bad Request",
 		Message:    messages,
 	}
 }
 
-// Unauthorized returns a 401 AppError.
+// Unauthorized returns a 401 AppError matching NestJS UnauthorizedException.
 func Unauthorized(message string) *AppError {
 	if message == "" {
 		message = "Unauthorized"
@@ -92,7 +92,7 @@ func Unauthorized(message string) *AppError {
 	}
 }
 
-// Forbidden returns a 403 AppError.
+// Forbidden returns a 403 AppError matching NestJS ForbiddenException.
 func Forbidden(message string) *AppError {
 	if message == "" {
 		message = "Forbidden resource"
@@ -104,7 +104,7 @@ func Forbidden(message string) *AppError {
 	}
 }
 
-// Internal returns a 500 AppError.
+// Internal returns a 500 AppError matching NestJS InternalServerErrorException.
 func Internal(message string, originalErr ...error) *AppError {
 	if message == "" {
 		message = "An unexpected internal error occurred."
@@ -115,7 +115,7 @@ func Internal(message string, originalErr ...error) *AppError {
 	}
 	return &AppError{
 		StatusCode: http.StatusInternalServerError,
-		ErrorName:  "InternalServerError",
+		ErrorName:  "Internal Server Error",
 		Message:    message,
 		Err:        err,
 	}

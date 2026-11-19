@@ -12,6 +12,47 @@ import (
 // ISO8601Format defines the UTC timestamp format with 3-digit millisecond precision matching JavaScript toISOString().
 const ISO8601Format = "2006-01-02T15:04:05.000Z"
 
+// ISOTime wraps time.Time to enforce JSON marshaling and unmarshaling
+// into exact ISO 8601 UTC with 3-digit millisecond precision (.000Z).
+type ISOTime time.Time
+
+// Time returns the underlying time.Time.
+func (t ISOTime) Time() time.Time {
+	return time.Time(t)
+}
+
+// MarshalJSON serializes the timestamp to ISO 8601 UTC with milliseconds.
+func (t ISOTime) MarshalJSON() ([]byte, error) {
+	ts := time.Time(t)
+	if ts.IsZero() {
+		return []byte("null"), nil
+	}
+	formatted := ts.UTC().Format(ISO8601Format)
+	return json.Marshal(formatted)
+}
+
+// UnmarshalJSON deserializes an ISO 8601 string into ISOTime.
+func (t *ISOTime) UnmarshalJSON(data []byte) error {
+	str := string(data)
+	if str == "null" || str == `""` {
+		*t = ISOTime(time.Time{})
+		return nil
+	}
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	parsed, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		parsed, err = time.Parse(ISO8601Format, s)
+		if err != nil {
+			return err
+		}
+	}
+	*t = ISOTime(parsed.UTC())
+	return nil
+}
+
 // FormatTimestamp returns the current UTC timestamp formatted in exact ISO 8601 with milliseconds.
 func FormatTimestamp(t ...time.Time) string {
 	ts := time.Now().UTC()
@@ -41,6 +82,28 @@ func RespondJSON(w http.ResponseWriter, statusCode int, data any) {
 	}
 }
 
+// RespondText writes a plain text or HTML string matching Express res.send().
+func RespondText(w http.ResponseWriter, statusCode int, text string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(statusCode)
+	_, _ = w.Write([]byte(text))
+}
+
+// RequestPath returns the exact request path including query parameters matching Express req.url.
+func RequestPath(r *http.Request) string {
+	if r.RequestURI != "" {
+		return r.RequestURI
+	}
+	if r.URL != nil {
+		uri := r.URL.RequestURI()
+		if uri != "" {
+			return uri
+		}
+		return r.URL.Path
+	}
+	return "/"
+}
+
 // RespondError maps an error to an AppError and serializes the exact NestJS error envelope.
 func RespondError(w http.ResponseWriter, r *http.Request, err error) {
 	appErr := apperror.Map(err)
@@ -50,7 +113,7 @@ func RespondError(w http.ResponseWriter, r *http.Request, err error) {
 		StatusCode:    appErr.StatusCode,
 		Error:         appErr.ErrorName,
 		Message:       appErr.Message,
-		Path:          r.URL.Path,
+		Path:          RequestPath(r),
 		Method:        r.Method,
 		Timestamp:     FormatTimestamp(),
 		CorrelationID: correlationID,
