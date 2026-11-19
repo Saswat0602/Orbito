@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -61,36 +62,68 @@ func (s *Service) Create(ctx context.Context, dto CreateUserDTO) (*ResponseDTO, 
 		status = sqlc.UserStatus(*dto.Status)
 	}
 
-	var uname pgtype.Text
+	var uname string
 	if dto.Username != nil && *dto.Username != "" {
-		uname = pgtype.Text{String: *dto.Username, Valid: true}
+		uname = strings.TrimSpace(*dto.Username)
+		existingUname, _ := s.repo.GetUserByUsername(ctx, uname)
+		if existingUname != nil {
+			return nil, apperror.Conflict("Email or username already exists.")
+		}
 	} else {
-		uname = pgtype.Text{String: strings.Split(emailClean, "@")[0], Valid: true}
+		baseUsername := strings.ToLower(strings.Split(emailClean, "@")[0])
+		uname = baseUsername
+		counter := 1
+		for {
+			existingUname, _ := s.repo.GetUserByUsername(ctx, uname)
+			if existingUname == nil {
+				break
+			}
+			uname = fmt.Sprintf("%s%d", baseUsername, counter)
+			counter++
+		}
 	}
 
 	tz := "UTC"
 	if dto.Timezone != nil && *dto.Timezone != "" {
 		tz = *dto.Timezone
 	}
+	lang := "en"
+	if dto.Language != nil && *dto.Language != "" {
+		lang = *dto.Language
+	}
 
-	user, err := s.repo.CreateUser(ctx, sqlc.CreateUserParams{
-		ID:        uuid.New(),
-		Email:     emailClean,
-		Username:  uname,
-		FirstName: strings.TrimSpace(dto.FirstName),
-		LastName:  strings.TrimSpace(dto.LastName),
-		Password:  pgtype.Text{String: pwdHash, Valid: true},
-		Role:      role,
-		Status:    status,
-		Timezone:  tz,
-		Language:  "en",
-		Source:    sqlc.UserSourceMANUAL,
+	var av, bio, mob pgtype.Text
+	if dto.Avatar != nil {
+		av = pgtype.Text{String: *dto.Avatar, Valid: true}
+	}
+	if dto.Bio != nil {
+		bio = pgtype.Text{String: *dto.Bio, Valid: true}
+	}
+	if dto.MobileNumber != nil {
+		mob = pgtype.Text{String: *dto.MobileNumber, Valid: true}
+	}
+
+	row, err := s.repo.CreateUserWithProfile(ctx, sqlc.CreateUserWithProfileParams{
+		ID:           uuid.New(),
+		Email:        emailClean,
+		Username:     pgtype.Text{String: uname, Valid: true},
+		FirstName:    strings.TrimSpace(dto.FirstName),
+		LastName:     strings.TrimSpace(dto.LastName),
+		Password:     pgtype.Text{String: pwdHash, Valid: true},
+		Role:         role,
+		Status:       status,
+		Timezone:     tz,
+		Language:     lang,
+		MobileNumber: mob,
+		Avatar:       av,
+		Bio:          bio,
+		Source:       sqlc.UserSourceMANUAL,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	res := mapUserToResponse(*user)
+	res := mapCreateProfileRowToResponse(*row)
 	return &res, nil
 }
 
@@ -145,7 +178,7 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, dto UpdateUserDTO, r
 		}
 	}
 
-	var fn, ln, un, av, bio, tz string
+	var fn, ln, un, av, bio, tz, lang, mob string
 	if dto.FirstName != nil {
 		fn = *dto.FirstName
 	}
@@ -164,15 +197,23 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, dto UpdateUserDTO, r
 	if dto.Timezone != nil {
 		tz = *dto.Timezone
 	}
+	if dto.Language != nil {
+		lang = *dto.Language
+	}
+	if dto.MobileNumber != nil {
+		mob = *dto.MobileNumber
+	}
 
 	row, err := s.repo.UpdateUserProfile(ctx, sqlc.UpdateUserProfileParams{
-		ID:        id,
-		FirstName: fn,
-		LastName:  ln,
-		Username:  un,
-		Avatar:    av,
-		Bio:       bio,
-		Timezone:  tz,
+		ID:           id,
+		FirstName:    fn,
+		LastName:     ln,
+		Username:     un,
+		Avatar:       av,
+		Bio:          bio,
+		Timezone:     tz,
+		Language:     lang,
+		MobileNumber: mob,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user profile: %w", err)
@@ -205,8 +246,8 @@ func (s *Service) UpdateStatus(ctx context.Context, id uuid.UUID, status sqlc.Us
 
 // ChangePassword updates user password verifying the current password first.
 func (s *Service) ChangePassword(ctx context.Context, id uuid.UUID, dto ChangePasswordDTO) error {
-	if dto.ConfirmPassword != "" && dto.NewPassword != dto.ConfirmPassword {
-		return apperror.BadRequest("Passwords do not match")
+	if dto.NewPassword != dto.ConfirmPassword {
+		return apperror.BadRequest("New password and confirm password do not match")
 	}
 
 	user, err := s.repo.GetUserByID(ctx, id)
@@ -215,7 +256,11 @@ func (s *Service) ChangePassword(ctx context.Context, id uuid.UUID, dto ChangePa
 	}
 
 	if !user.Password.Valid || !crypto.CheckPasswordHash(dto.CurrentPassword, user.Password.String) {
-		return apperror.Unauthorized("Current password is incorrect")
+		return apperror.BadRequest("Current password is not correct")
+	}
+
+	if crypto.CheckPasswordHash(dto.NewPassword, user.Password.String) {
+		return apperror.BadRequest("New password must be different from current password")
 	}
 
 	pwdHash, err := crypto.HashPassword(dto.NewPassword)
@@ -236,10 +281,87 @@ func (s *Service) Remove(ctx context.Context, id, deletedBy uuid.UUID, requester
 }
 
 // GetOnlineStatus returns online state for user.
-func (s *Service) GetOnlineStatus(_ context.Context, _ uuid.UUID) OnlineStatusDTO {
+func (s *Service) GetOnlineStatus(ctx context.Context, id uuid.UUID) OnlineStatusDTO {
+	user, err := s.repo.GetUserByID(ctx, id)
+	lastSeen := time.Now().UTC().Format(httpx.ISO8601Format)
+	if err == nil && user != nil && user.LastLoginAt.Valid {
+		lastSeen = user.LastLoginAt.Time.Format(httpx.ISO8601Format)
+	}
 	return OnlineStatusDTO{
 		IsOnline: false,
+		LastSeen: &lastSeen,
 	}
+}
+
+// GetPublicProfile retrieves public user profile for shared organization members.
+func (s *Service) GetPublicProfile(ctx context.Context, identifier string, requesterID uuid.UUID, requesterRole string) (*PublicProfileDTO, error) {
+	var targetUser *sqlc.GetPublicUserByIDRow
+	var av, mob, bio *string
+	var idStr, firstName, lastName, email, timezone, role string
+
+	if targetUUID, err := uuid.Parse(identifier); err == nil {
+		row, err := s.repo.GetPublicUserByID(ctx, targetUUID)
+		if err == nil && row != nil {
+			targetUser = row
+			idStr = row.ID.String()
+			firstName = row.FirstName
+			lastName = row.LastName
+			email = row.Email
+			timezone = row.Timezone
+			role = string(row.Role)
+			if row.Avatar.Valid {
+				av = &row.Avatar.String
+			}
+			if row.MobileNumber.Valid {
+				mob = &row.MobileNumber.String
+			}
+			if row.Bio.Valid {
+				bio = &row.Bio.String
+			}
+		}
+	}
+
+	if targetUser == nil {
+		row, err := s.repo.GetPublicUserByUsername(ctx, identifier)
+		if err != nil || row == nil {
+			return nil, apperror.NotFound("User not found")
+		}
+		idStr = row.ID.String()
+		firstName = row.FirstName
+		lastName = row.LastName
+		email = row.Email
+		timezone = row.Timezone
+		role = string(row.Role)
+		if row.Avatar.Valid {
+			av = &row.Avatar.String
+		}
+		if row.MobileNumber.Valid {
+			mob = &row.MobileNumber.String
+		}
+		if row.Bio.Valid {
+			bio = &row.Bio.String
+		}
+	}
+
+	parsedID, _ := uuid.Parse(idStr)
+	if requesterRole != string(sqlc.RoleSUPERADMIN) && requesterID != parsedID {
+		isShared, err := s.repo.CheckUsersShareOrganization(ctx, parsedID, requesterID)
+		if err != nil || !isShared {
+			return nil, apperror.Forbidden("Profile access not allowed. You must belong to the same organization.")
+		}
+	}
+
+	return &PublicProfileDTO{
+		ID:           idStr,
+		FirstName:    firstName,
+		LastName:     lastName,
+		Email:        email,
+		Avatar:       av,
+		MobileNumber: mob,
+		Bio:          bio,
+		Timezone:     timezone,
+		Role:         role,
+	}, nil
 }
 
 func mapUserToResponse(u sqlc.User) ResponseDTO {
@@ -281,7 +403,7 @@ func mapUserToResponse(u sqlc.User) ResponseDTO {
 }
 
 func mapListRowToResponse(u sqlc.ListUsersRow) ResponseDTO {
-	var uname, avatar, bio, lastLogin *string
+	var uname, avatar, bio, mobile, lastLogin *string
 	if u.Username.Valid {
 		uname = &u.Username.String
 	}
@@ -291,31 +413,35 @@ func mapListRowToResponse(u sqlc.ListUsersRow) ResponseDTO {
 	if u.Bio.Valid {
 		bio = &u.Bio.String
 	}
+	if u.MobileNumber.Valid {
+		mobile = &u.MobileNumber.String
+	}
 	if u.LastLoginAt.Valid {
 		ll := u.LastLoginAt.Time.Format(httpx.ISO8601Format)
 		lastLogin = &ll
 	}
 
 	return ResponseDTO{
-		ID:          u.ID.String(),
-		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		Username:    uname,
-		Role:        string(u.Role),
-		Status:      string(u.Status),
-		Avatar:      avatar,
-		Bio:         bio,
-		Timezone:    u.Timezone,
-		Language:    u.Language,
-		LastLoginAt: lastLogin,
-		CreatedAt:   u.CreatedAt.Time.Format(httpx.ISO8601Format),
-		UpdatedAt:   u.UpdatedAt.Time.Format(httpx.ISO8601Format),
+		ID:           u.ID.String(),
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Username:     uname,
+		Role:         string(u.Role),
+		Status:       string(u.Status),
+		Avatar:       avatar,
+		Bio:          bio,
+		Timezone:     u.Timezone,
+		Language:     u.Language,
+		MobileNumber: mobile,
+		LastLoginAt:  lastLogin,
+		CreatedAt:    u.CreatedAt.Time.Format(httpx.ISO8601Format),
+		UpdatedAt:    u.UpdatedAt.Time.Format(httpx.ISO8601Format),
 	}
 }
 
 func mapUpdateRowToResponse(u sqlc.UpdateUserProfileRow) ResponseDTO {
-	var uname, avatar, bio, lastLogin *string
+	var uname, avatar, bio, mobile, lastLogin *string
 	if u.Username.Valid {
 		uname = &u.Username.String
 	}
@@ -325,31 +451,35 @@ func mapUpdateRowToResponse(u sqlc.UpdateUserProfileRow) ResponseDTO {
 	if u.Bio.Valid {
 		bio = &u.Bio.String
 	}
+	if u.MobileNumber.Valid {
+		mobile = &u.MobileNumber.String
+	}
 	if u.LastLoginAt.Valid {
 		ll := u.LastLoginAt.Time.Format(httpx.ISO8601Format)
 		lastLogin = &ll
 	}
 
 	return ResponseDTO{
-		ID:          u.ID.String(),
-		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		Username:    uname,
-		Role:        string(u.Role),
-		Status:      string(u.Status),
-		Avatar:      avatar,
-		Bio:         bio,
-		Timezone:    u.Timezone,
-		Language:    u.Language,
-		LastLoginAt: lastLogin,
-		CreatedAt:   u.CreatedAt.Time.Format(httpx.ISO8601Format),
-		UpdatedAt:   u.UpdatedAt.Time.Format(httpx.ISO8601Format),
+		ID:           u.ID.String(),
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Username:     uname,
+		Role:         string(u.Role),
+		Status:       string(u.Status),
+		Avatar:       avatar,
+		Bio:          bio,
+		Timezone:     u.Timezone,
+		Language:     u.Language,
+		MobileNumber: mobile,
+		LastLoginAt:  lastLogin,
+		CreatedAt:    u.CreatedAt.Time.Format(httpx.ISO8601Format),
+		UpdatedAt:    u.UpdatedAt.Time.Format(httpx.ISO8601Format),
 	}
 }
 
 func mapStatusRowToResponse(u sqlc.UpdateUserStatusRow) ResponseDTO {
-	var uname, avatar, bio, lastLogin *string
+	var uname, avatar, bio, mobile, lastLogin *string
 	if u.Username.Valid {
 		uname = &u.Username.String
 	}
@@ -359,25 +489,67 @@ func mapStatusRowToResponse(u sqlc.UpdateUserStatusRow) ResponseDTO {
 	if u.Bio.Valid {
 		bio = &u.Bio.String
 	}
+	if u.MobileNumber.Valid {
+		mobile = &u.MobileNumber.String
+	}
 	if u.LastLoginAt.Valid {
 		ll := u.LastLoginAt.Time.Format(httpx.ISO8601Format)
 		lastLogin = &ll
 	}
 
 	return ResponseDTO{
-		ID:          u.ID.String(),
-		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		Username:    uname,
-		Role:        string(u.Role),
-		Status:      string(u.Status),
-		Avatar:      avatar,
-		Bio:         bio,
-		Timezone:    u.Timezone,
-		Language:    u.Language,
-		LastLoginAt: lastLogin,
-		CreatedAt:   u.CreatedAt.Time.Format(httpx.ISO8601Format),
-		UpdatedAt:   u.UpdatedAt.Time.Format(httpx.ISO8601Format),
+		ID:           u.ID.String(),
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Username:     uname,
+		Role:         string(u.Role),
+		Status:       string(u.Status),
+		Avatar:       avatar,
+		Bio:          bio,
+		Timezone:     u.Timezone,
+		Language:     u.Language,
+		MobileNumber: mobile,
+		LastLoginAt:  lastLogin,
+		CreatedAt:    u.CreatedAt.Time.Format(httpx.ISO8601Format),
+		UpdatedAt:    u.UpdatedAt.Time.Format(httpx.ISO8601Format),
+	}
+}
+
+func mapCreateProfileRowToResponse(u sqlc.CreateUserWithProfileRow) ResponseDTO {
+	var uname, avatar, bio, mobile, lastLogin *string
+	if u.Username.Valid {
+		uname = &u.Username.String
+	}
+	if u.Avatar.Valid {
+		avatar = &u.Avatar.String
+	}
+	if u.Bio.Valid {
+		bio = &u.Bio.String
+	}
+	if u.MobileNumber.Valid {
+		mobile = &u.MobileNumber.String
+	}
+	if u.LastLoginAt.Valid {
+		ll := u.LastLoginAt.Time.Format(httpx.ISO8601Format)
+		lastLogin = &ll
+	}
+
+	return ResponseDTO{
+		ID:           u.ID.String(),
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Username:     uname,
+		Role:         string(u.Role),
+		Status:       string(u.Status),
+		Avatar:       avatar,
+		Bio:          bio,
+		Timezone:     u.Timezone,
+		Language:     u.Language,
+		MobileNumber: mobile,
+		LastLoginAt:  lastLogin,
+		CreatedAt:    u.CreatedAt.Time.Format(httpx.ISO8601Format),
+		UpdatedAt:    u.UpdatedAt.Time.Format(httpx.ISO8601Format),
 	}
 }

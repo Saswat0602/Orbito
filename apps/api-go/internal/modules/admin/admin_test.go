@@ -515,6 +515,9 @@ func TestAdminModule(t *testing.T) {
 		if res.Total != 2 {
 			t.Fatalf("Expected total 2, got %d", res.Total)
 		}
+		if !strings.Contains(rec.Body.String(), `"_count":{"organizationMembers":`) {
+			t.Fatalf("Expected _count.organizationMembers object in JSON response, got: %s", rec.Body.String())
+		}
 	})
 
 	// 4. Super admin gets user detail

@@ -2,6 +2,7 @@ package users
 
 import (
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/orbito/api-go/internal/shared/httpx"
 	"github.com/orbito/api-go/internal/shared/pagination"
 )
+
+var validIdentifierRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
 // Handler handles HTTP requests for user profiles, directory, and status operations.
 type Handler struct {
@@ -112,22 +115,21 @@ func (h *Handler) FindOne(w http.ResponseWriter, r *http.Request) {
 // GetPublicProfile handles GET /api/users/{id}/profile.
 func (h *Handler) GetPublicProfile(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	targetID, err := uuid.Parse(idStr)
-	if err != nil {
-		httpx.RespondError(w, r, apperror.BadRequest("Invalid user ID format"))
+	if !validIdentifierRegex.MatchString(idStr) {
+		httpx.RespondError(w, r, apperror.BadRequest("Invalid identifier format"))
 		return
 	}
 
 	requesterID, _ := uuid.Parse(ctxhelper.GetUserID(r.Context()))
 	requesterRole := ctxhelper.GetUserRole(r.Context())
 
-	user, err := h.service.FindOne(r.Context(), targetID, requesterID, requesterRole)
+	profile, err := h.service.GetPublicProfile(r.Context(), idStr, requesterID, requesterRole)
 	if err != nil {
 		httpx.RespondError(w, r, err)
 		return
 	}
 
-	httpx.RespondJSON(w, http.StatusOK, user)
+	httpx.RespondJSON(w, http.StatusOK, profile)
 }
 
 // UpdateCurrentUserProfile handles PATCH /api/users/profile.

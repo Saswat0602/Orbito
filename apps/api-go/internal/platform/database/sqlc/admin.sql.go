@@ -50,8 +50,8 @@ SELECT COUNT(*)
 FROM users u
 WHERE u.deleted_at IS NULL
   AND ($1::text = '' OR u.email ILIKE '%' || $1 || '%' OR u.first_name ILIKE '%' || $1 || '%' OR u.last_name ILIKE '%' || $1 || '%')
-  AND ($2::text = '' OR u.status = $2::"UserStatus")
-  AND ($3::text = '' OR u.role = $3::"Role")
+  AND ($2::text = '' OR u.status::text = $2::text)
+  AND ($3::text = '' OR u.role::text = $3::text)
 `
 
 type AdminCountUsersParams struct {
@@ -197,15 +197,16 @@ func (q *Queries) AdminGetOrganizationMember(ctx context.Context, arg AdminGetOr
 }
 
 const adminGetOrganizationMembers = `-- name: AdminGetOrganizationMembers :many
-SELECT om.role, om.joined_at, u.id as user_id, u.first_name, u.last_name, u.email, u.avatar, u.status
+SELECT om.role, om.created_at, om.joined_at, u.id as user_id, u.first_name, u.last_name, u.email, u.avatar, u.status
 FROM organization_members om
 JOIN users u ON om.user_id = u.id
 WHERE om.organization_id = $1
-ORDER BY om.joined_at ASC
+ORDER BY om.created_at ASC
 `
 
 type AdminGetOrganizationMembersRow struct {
 	Role      Role             `json:"role"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 	JoinedAt  pgtype.Timestamp `json:"joined_at"`
 	UserID    uuid.UUID        `json:"user_id"`
 	FirstName string           `json:"first_name"`
@@ -226,6 +227,7 @@ func (q *Queries) AdminGetOrganizationMembers(ctx context.Context, organizationI
 		var i AdminGetOrganizationMembersRow
 		if err := rows.Scan(
 			&i.Role,
+			&i.CreatedAt,
 			&i.JoinedAt,
 			&i.UserID,
 			&i.FirstName,
@@ -481,8 +483,8 @@ SELECT u.id, u.email, u.first_name, u.last_name, u.avatar, u.role, u.status, u.l
 FROM users u
 WHERE u.deleted_at IS NULL
   AND ($1::text = '' OR u.email ILIKE '%' || $1 || '%' OR u.first_name ILIKE '%' || $1 || '%' OR u.last_name ILIKE '%' || $1 || '%')
-  AND ($2::text = '' OR u.status = $2::"UserStatus")
-  AND ($3::text = '' OR u.role = $3::"Role")
+  AND ($2::text = '' OR u.status::text = $2::text)
+  AND ($3::text = '' OR u.role::text = $3::text)
 ORDER BY u.created_at DESC
 LIMIT $5::int OFFSET $4::int
 `

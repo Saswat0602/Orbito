@@ -19,10 +19,14 @@ type Repository interface {
 	GetUserByEmail(ctx context.Context, email string) (*sqlc.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*sqlc.User, error)
 	CreateUser(ctx context.Context, params sqlc.CreateUserParams) (*sqlc.User, error)
+	CreateUserWithProfile(ctx context.Context, params sqlc.CreateUserWithProfileParams) (*sqlc.CreateUserWithProfileRow, error)
 	UpdateUserProfile(ctx context.Context, params sqlc.UpdateUserProfileParams) (*sqlc.UpdateUserProfileRow, error)
 	UpdateUserStatus(ctx context.Context, id uuid.UUID, status sqlc.UserStatus) (*sqlc.UpdateUserStatusRow, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, hash pgtype.Text) error
 	DeleteUser(ctx context.Context, id, deletedBy uuid.UUID) error
+	CheckUsersShareOrganization(ctx context.Context, u1, u2 uuid.UUID) (bool, error)
+	GetPublicUserByID(ctx context.Context, id uuid.UUID) (*sqlc.GetPublicUserByIDRow, error)
+	GetPublicUserByUsername(ctx context.Context, username string) (*sqlc.GetPublicUserByUsernameRow, error)
 }
 
 type pgRepository struct {
@@ -63,6 +67,7 @@ func (r *pgRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*sqlc.Use
 		Bio:                   row.Bio,
 		Timezone:              row.Timezone,
 		Language:              row.Language,
+		MobileNumber:          row.MobileNumber,
 		Role:                  row.Role,
 		Status:                row.Status,
 		Password:              row.Password,
@@ -95,6 +100,7 @@ func (r *pgRepository) GetUserByEmail(ctx context.Context, email string) (*sqlc.
 		Bio:                   row.Bio,
 		Timezone:              row.Timezone,
 		Language:              row.Language,
+		MobileNumber:          row.MobileNumber,
 		Role:                  row.Role,
 		Status:                row.Status,
 		Password:              row.Password,
@@ -127,6 +133,7 @@ func (r *pgRepository) GetUserByUsername(ctx context.Context, username string) (
 		Bio:                   row.Bio,
 		Timezone:              row.Timezone,
 		Language:              row.Language,
+		MobileNumber:          row.MobileNumber,
 		Role:                  row.Role,
 		Status:                row.Status,
 		Password:              row.Password,
@@ -168,6 +175,43 @@ func (r *pgRepository) CreateUser(ctx context.Context, params sqlc.CreateUserPar
 		UpdatedAt:             row.UpdatedAt,
 		DeletedAt:             row.DeletedAt,
 	}, nil
+}
+
+func (r *pgRepository) CreateUserWithProfile(ctx context.Context, params sqlc.CreateUserWithProfileParams) (*sqlc.CreateUserWithProfileRow, error) {
+	row, err := r.queries.CreateUserWithProfile(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *pgRepository) CheckUsersShareOrganization(ctx context.Context, u1, u2 uuid.UUID) (bool, error) {
+	return r.queries.CheckUsersShareOrganization(ctx, sqlc.CheckUsersShareOrganizationParams{
+		UserID:   u1,
+		UserID_2: u2,
+	})
+}
+
+func (r *pgRepository) GetPublicUserByID(ctx context.Context, id uuid.UUID) (*sqlc.GetPublicUserByIDRow, error) {
+	row, err := r.queries.GetPublicUserByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *pgRepository) GetPublicUserByUsername(ctx context.Context, username string) (*sqlc.GetPublicUserByUsernameRow, error) {
+	row, err := r.queries.GetPublicUserByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &row, nil
 }
 
 func (r *pgRepository) UpdateUserProfile(ctx context.Context, params sqlc.UpdateUserProfileParams) (*sqlc.UpdateUserProfileRow, error) {

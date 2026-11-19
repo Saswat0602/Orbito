@@ -48,18 +48,23 @@ type TestSMTPDTO struct {
 	Email string `json:"email,omitempty" validate:"omitempty,email"`
 }
 
+// UserOrgCountDTO counts organizations for an admin user item.
+type UserOrgCountDTO struct {
+	OrganizationMembers int64 `json:"organizationMembers"`
+}
+
 // UserListItemDTO represents summary user data for admin directory.
 type UserListItemDTO struct {
-	ID                 string  `json:"id"`
-	Email              string  `json:"email"`
-	FirstName          string  `json:"firstName"`
-	LastName           string  `json:"lastName"`
-	Avatar             *string `json:"avatar,omitempty"`
-	Role               string  `json:"role"`
-	Status             string  `json:"status"`
-	LastLoginAt        *string `json:"lastLoginAt,omitempty"`
-	CreatedAt          string  `json:"createdAt"`
-	OrganizationsCount int64   `json:"_count,omitempty"`
+	ID          string          `json:"id"`
+	Email       string          `json:"email"`
+	FirstName   string          `json:"firstName"`
+	LastName    string          `json:"lastName"`
+	Avatar      *string         `json:"avatar,omitempty"`
+	Role        string          `json:"role"`
+	Status      string          `json:"status"`
+	LastLoginAt *string         `json:"lastLoginAt,omitempty"`
+	CreatedAt   string          `json:"createdAt"`
+	Count       UserOrgCountDTO `json:"_count"`
 }
 
 // PaginatedUsersDTO wraps user list pagination matching NestJS admin service.
@@ -157,9 +162,10 @@ type OrgDetailDTO struct {
 
 // OrgMemberItemDTO represents member row in organization detail.
 type OrgMemberItemDTO struct {
-	Role     string           `json:"role"`
-	JoinedAt string           `json:"joinedAt"`
-	User     UserMemberDetail `json:"user"`
+	Role      string           `json:"role"`
+	CreatedAt string           `json:"createdAt"`
+	JoinedAt  string           `json:"joinedAt,omitempty"`
+	User      UserMemberDetail `json:"user"`
 }
 
 // UserMemberDetail represents user summary for member list.

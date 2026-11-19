@@ -1,19 +1,19 @@
 -- name: GetUserByID :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
 WHERE id = $1 AND deleted_at IS NULL;
 
 -- name: GetUserByEmail :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
 WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL;
 
 -- name: GetUserByUsername :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
@@ -86,7 +86,7 @@ UPDATE users
 SET status = $2,
     updated_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
           last_login_at, created_at, updated_at, deleted_at;
 
 -- name: UpdateUserProfile :one
@@ -97,13 +97,15 @@ SET first_name = COALESCE(NULLIF(@first_name::text, ''), first_name),
     avatar = COALESCE(NULLIF(@avatar::text, ''), avatar),
     bio = COALESCE(NULLIF(@bio::text, ''), bio),
     timezone = COALESCE(NULLIF(@timezone::text, ''), timezone),
+    language = COALESCE(NULLIF(@language::text, ''), language),
+    mobile_number = COALESCE(NULLIF(@mobile_number::text, ''), mobile_number),
     updated_at = NOW()
 WHERE id = @id AND deleted_at IS NULL
-RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
           last_login_at, created_at, updated_at, deleted_at;
 
 -- name: ListUsers :many
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        last_login_at, created_at, updated_at, deleted_at
 FROM users
 WHERE deleted_at IS NULL
@@ -130,3 +132,35 @@ INSERT INTO organization_members (
 
 -- name: GetOrganizationByID :one
 SELECT id, name, slug FROM organizations WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: CheckUsersShareOrganization :one
+SELECT EXISTS (
+    SELECT 1
+    FROM organization_members om1
+    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
+    WHERE om1.user_id = $1 AND om2.user_id = $2
+) AS shared;
+
+-- name: GetPublicUserByID :one
+SELECT id, email, first_name, last_name, avatar, mobile_number, bio, timezone, role
+FROM users
+WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: GetPublicUserByUsername :one
+SELECT id, email, first_name, last_name, avatar, mobile_number, bio, timezone, role
+FROM users
+WHERE LOWER(username) = LOWER($1) AND deleted_at IS NULL;
+
+-- name: CreateUserWithProfile :one
+INSERT INTO users (
+    id, email, username, first_name, last_name, password, role, status,
+    timezone, language, mobile_number, avatar, bio, email_verified,
+    default_organization_id, source, created_at, updated_at
+) VALUES (
+    @id, @email, @username, @first_name, @last_name, @password, @role, @status,
+    @timezone, @language, @mobile_number, @avatar, @bio, @email_verified,
+    @default_organization_id, @source, NOW(), NOW()
+)
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
+          password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
+          last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider;

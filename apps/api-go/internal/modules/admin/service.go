@@ -98,16 +98,18 @@ func (s *Service) GetUsers(ctx context.Context, page, limit int, search, status,
 		}
 
 		items[i] = UserListItemDTO{
-			ID:                 r.ID.String(),
-			Email:              r.Email,
-			FirstName:          r.FirstName,
-			LastName:           r.LastName,
-			Avatar:             av,
-			Role:               string(r.Role),
-			Status:             string(r.Status),
-			LastLoginAt:        ll,
-			CreatedAt:          r.CreatedAt.Time.Format(httpx.ISO8601Format),
-			OrganizationsCount: r.OrganizationCount,
+			ID:          r.ID.String(),
+			Email:       r.Email,
+			FirstName:   r.FirstName,
+			LastName:    r.LastName,
+			Avatar:      av,
+			Role:        string(r.Role),
+			Status:      string(r.Status),
+			LastLoginAt: ll,
+			CreatedAt:   r.CreatedAt.Time.Format(httpx.ISO8601Format),
+			Count: UserOrgCountDTO{
+				OrganizationMembers: r.OrganizationCount,
+			},
 		}
 	}
 
@@ -457,8 +459,9 @@ func (s *Service) GetOrganizationDetail(ctx context.Context, id uuid.UUID) (*Org
 			av = &m.Avatar.String
 		}
 		memberItems[i] = OrgMemberItemDTO{
-			Role:     string(m.Role),
-			JoinedAt: m.JoinedAt.Time.Format(httpx.ISO8601Format),
+			Role:      string(m.Role),
+			CreatedAt: m.CreatedAt.Time.Format(httpx.ISO8601Format),
+			JoinedAt:  m.JoinedAt.Time.Format(httpx.ISO8601Format),
 			User: UserMemberDetail{
 				ID:        m.UserID.String(),
 				FirstName: m.FirstName,

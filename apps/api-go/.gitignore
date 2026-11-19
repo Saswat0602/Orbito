@@ -1,6 +1,8 @@
 # Go binaries
 bin/
 tmp/
+api
+api-go
 
 # Coverage
 coverage/

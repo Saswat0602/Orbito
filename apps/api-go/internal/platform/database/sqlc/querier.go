@@ -38,12 +38,14 @@ type Querier interface {
 	AdminUpdateOrganizationMemberRole(ctx context.Context, arg AdminUpdateOrganizationMemberRoleParams) error
 	AdminUpdateUserRole(ctx context.Context, arg AdminUpdateUserRoleParams) (AdminUpdateUserRoleRow, error)
 	AdminUpdateUserStatus(ctx context.Context, arg AdminUpdateUserStatusParams) (AdminUpdateUserStatusRow, error)
+	CheckUsersShareOrganization(ctx context.Context, arg CheckUsersShareOrganizationParams) (bool, error)
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
 	CountSuperAdmins(ctx context.Context) (int64, error)
 	CountTotalUsers(ctx context.Context) (int64, error)
 	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
 	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateUserWithProfile(ctx context.Context, arg CreateUserWithProfileParams) (CreateUserWithProfileRow, error)
 	DeleteGlobalSetting(ctx context.Context, key string) error
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
@@ -51,6 +53,8 @@ type Querier interface {
 	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
 	GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrganizationByIDRow, error)
+	GetPublicUserByID(ctx context.Context, id uuid.UUID) (GetPublicUserByIDRow, error)
+	GetPublicUserByUsername(ctx context.Context, lower string) (GetPublicUserByUsernameRow, error)
 	GetSettingByKeyAndUser(ctx context.Context, arg GetSettingByKeyAndUserParams) (Setting, error)
 	GetUserByEmail(ctx context.Context, lower string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)

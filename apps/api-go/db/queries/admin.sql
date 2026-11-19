@@ -17,8 +17,8 @@ SELECT u.id, u.email, u.first_name, u.last_name, u.avatar, u.role, u.status, u.l
 FROM users u
 WHERE u.deleted_at IS NULL
   AND (@search::text = '' OR u.email ILIKE '%' || @search || '%' OR u.first_name ILIKE '%' || @search || '%' OR u.last_name ILIKE '%' || @search || '%')
-  AND (@status::text = '' OR u.status = @status::"UserStatus")
-  AND (@role::text = '' OR u.role = @role::"Role")
+  AND (@status::text = '' OR u.status::text = @status::text)
+  AND (@role::text = '' OR u.role::text = @role::text)
 ORDER BY u.created_at DESC
 LIMIT @limit_val::int OFFSET @offset_val::int;
 
@@ -27,8 +27,8 @@ SELECT COUNT(*)
 FROM users u
 WHERE u.deleted_at IS NULL
   AND (@search::text = '' OR u.email ILIKE '%' || @search || '%' OR u.first_name ILIKE '%' || @search || '%' OR u.last_name ILIKE '%' || @search || '%')
-  AND (@status::text = '' OR u.status = @status::"UserStatus")
-  AND (@role::text = '' OR u.role = @role::"Role");
+  AND (@status::text = '' OR u.status::text = @status::text)
+  AND (@role::text = '' OR u.role::text = @role::text);
 
 -- name: AdminGetUserDetail :one
 SELECT u.id, u.email, u.first_name, u.last_name, u.avatar, u.bio, u.timezone, u.language,
@@ -120,11 +120,11 @@ LEFT JOIN users u ON o.owner_id = u.id
 WHERE o.id = @id;
 
 -- name: AdminGetOrganizationMembers :many
-SELECT om.role, om.joined_at, u.id as user_id, u.first_name, u.last_name, u.email, u.avatar, u.status
+SELECT om.role, om.created_at, om.joined_at, u.id as user_id, u.first_name, u.last_name, u.email, u.avatar, u.status
 FROM organization_members om
 JOIN users u ON om.user_id = u.id
 WHERE om.organization_id = @organization_id
-ORDER BY om.joined_at ASC;
+ORDER BY om.created_at ASC;
 
 -- name: AdminGetOrganizationWorkspaces :many
 SELECT w.id, w.name, w.slug,

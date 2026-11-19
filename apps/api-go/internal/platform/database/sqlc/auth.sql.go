@@ -37,6 +37,27 @@ func (q *Queries) AddOrganizationMember(ctx context.Context, arg AddOrganization
 	return err
 }
 
+const checkUsersShareOrganization = `-- name: CheckUsersShareOrganization :one
+SELECT EXISTS (
+    SELECT 1
+    FROM organization_members om1
+    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
+    WHERE om1.user_id = $1 AND om2.user_id = $2
+) AS shared
+`
+
+type CheckUsersShareOrganizationParams struct {
+	UserID   uuid.UUID `json:"user_id"`
+	UserID_2 uuid.UUID `json:"user_id_2"`
+}
+
+func (q *Queries) CheckUsersShareOrganization(ctx context.Context, arg CheckUsersShareOrganizationParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkUsersShareOrganization, arg.UserID, arg.UserID_2)
+	var shared bool
+	err := row.Scan(&shared)
+	return shared, err
+}
+
 const countSuperAdmins = `-- name: CountSuperAdmins :one
 SELECT COUNT(*) FROM users
 WHERE role = 'SUPER_ADMIN' AND deleted_at IS NULL
@@ -171,6 +192,116 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
+const createUserWithProfile = `-- name: CreateUserWithProfile :one
+INSERT INTO users (
+    id, email, username, first_name, last_name, password, role, status,
+    timezone, language, mobile_number, avatar, bio, email_verified,
+    default_organization_id, source, created_at, updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8,
+    $9, $10, $11, $12, $13, $14,
+    $15, $16, NOW(), NOW()
+)
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
+          password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
+          last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
+`
+
+type CreateUserWithProfileParams struct {
+	ID                    uuid.UUID   `json:"id"`
+	Email                 string      `json:"email"`
+	Username              pgtype.Text `json:"username"`
+	FirstName             string      `json:"first_name"`
+	LastName              string      `json:"last_name"`
+	Password              pgtype.Text `json:"password"`
+	Role                  Role        `json:"role"`
+	Status                UserStatus  `json:"status"`
+	Timezone              string      `json:"timezone"`
+	Language              string      `json:"language"`
+	MobileNumber          pgtype.Text `json:"mobile_number"`
+	Avatar                pgtype.Text `json:"avatar"`
+	Bio                   pgtype.Text `json:"bio"`
+	EmailVerified         bool        `json:"email_verified"`
+	DefaultOrganizationID pgtype.UUID `json:"default_organization_id"`
+	Source                UserSource  `json:"source"`
+}
+
+type CreateUserWithProfileRow struct {
+	ID                    uuid.UUID        `json:"id"`
+	Email                 string           `json:"email"`
+	Username              pgtype.Text      `json:"username"`
+	FirstName             string           `json:"first_name"`
+	LastName              string           `json:"last_name"`
+	Avatar                pgtype.Text      `json:"avatar"`
+	Bio                   pgtype.Text      `json:"bio"`
+	Timezone              string           `json:"timezone"`
+	Language              string           `json:"language"`
+	MobileNumber          pgtype.Text      `json:"mobile_number"`
+	Role                  Role             `json:"role"`
+	Status                UserStatus       `json:"status"`
+	Password              pgtype.Text      `json:"password"`
+	RefreshToken          pgtype.Text      `json:"refresh_token"`
+	ResetToken            pgtype.Text      `json:"reset_token"`
+	ResetTokenExpiry      pgtype.Timestamp `json:"reset_token_expiry"`
+	DefaultOrganizationID pgtype.UUID      `json:"default_organization_id"`
+	LastLoginAt           pgtype.Timestamp `json:"last_login_at"`
+	CreatedAt             pgtype.Timestamp `json:"created_at"`
+	UpdatedAt             pgtype.Timestamp `json:"updated_at"`
+	DeletedAt             pgtype.Timestamp `json:"deleted_at"`
+	Source                UserSource       `json:"source"`
+	ExternalID            pgtype.Text      `json:"external_id"`
+	ExternalProvider      pgtype.Text      `json:"external_provider"`
+}
+
+func (q *Queries) CreateUserWithProfile(ctx context.Context, arg CreateUserWithProfileParams) (CreateUserWithProfileRow, error) {
+	row := q.db.QueryRow(ctx, createUserWithProfile,
+		arg.ID,
+		arg.Email,
+		arg.Username,
+		arg.FirstName,
+		arg.LastName,
+		arg.Password,
+		arg.Role,
+		arg.Status,
+		arg.Timezone,
+		arg.Language,
+		arg.MobileNumber,
+		arg.Avatar,
+		arg.Bio,
+		arg.EmailVerified,
+		arg.DefaultOrganizationID,
+		arg.Source,
+	)
+	var i CreateUserWithProfileRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.Avatar,
+		&i.Bio,
+		&i.Timezone,
+		&i.Language,
+		&i.MobileNumber,
+		&i.Role,
+		&i.Status,
+		&i.Password,
+		&i.RefreshToken,
+		&i.ResetToken,
+		&i.ResetTokenExpiry,
+		&i.DefaultOrganizationID,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Source,
+		&i.ExternalID,
+		&i.ExternalProvider,
+	)
+	return i, err
+}
+
 const deleteUserSoft = `-- name: DeleteUserSoft :exec
 UPDATE users
 SET deleted_at = NOW(),
@@ -236,8 +367,78 @@ func (q *Queries) GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrg
 	return i, err
 }
 
+const getPublicUserByID = `-- name: GetPublicUserByID :one
+SELECT id, email, first_name, last_name, avatar, mobile_number, bio, timezone, role
+FROM users
+WHERE id = $1 AND deleted_at IS NULL
+`
+
+type GetPublicUserByIDRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	FirstName    string      `json:"first_name"`
+	LastName     string      `json:"last_name"`
+	Avatar       pgtype.Text `json:"avatar"`
+	MobileNumber pgtype.Text `json:"mobile_number"`
+	Bio          pgtype.Text `json:"bio"`
+	Timezone     string      `json:"timezone"`
+	Role         Role        `json:"role"`
+}
+
+func (q *Queries) GetPublicUserByID(ctx context.Context, id uuid.UUID) (GetPublicUserByIDRow, error) {
+	row := q.db.QueryRow(ctx, getPublicUserByID, id)
+	var i GetPublicUserByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FirstName,
+		&i.LastName,
+		&i.Avatar,
+		&i.MobileNumber,
+		&i.Bio,
+		&i.Timezone,
+		&i.Role,
+	)
+	return i, err
+}
+
+const getPublicUserByUsername = `-- name: GetPublicUserByUsername :one
+SELECT id, email, first_name, last_name, avatar, mobile_number, bio, timezone, role
+FROM users
+WHERE LOWER(username) = LOWER($1) AND deleted_at IS NULL
+`
+
+type GetPublicUserByUsernameRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	FirstName    string      `json:"first_name"`
+	LastName     string      `json:"last_name"`
+	Avatar       pgtype.Text `json:"avatar"`
+	MobileNumber pgtype.Text `json:"mobile_number"`
+	Bio          pgtype.Text `json:"bio"`
+	Timezone     string      `json:"timezone"`
+	Role         Role        `json:"role"`
+}
+
+func (q *Queries) GetPublicUserByUsername(ctx context.Context, lower string) (GetPublicUserByUsernameRow, error) {
+	row := q.db.QueryRow(ctx, getPublicUserByUsername, lower)
+	var i GetPublicUserByUsernameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FirstName,
+		&i.LastName,
+		&i.Avatar,
+		&i.MobileNumber,
+		&i.Bio,
+		&i.Timezone,
+		&i.Role,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
@@ -254,6 +455,7 @@ type GetUserByEmailRow struct {
 	Bio                   pgtype.Text      `json:"bio"`
 	Timezone              string           `json:"timezone"`
 	Language              string           `json:"language"`
+	MobileNumber          pgtype.Text      `json:"mobile_number"`
 	Role                  Role             `json:"role"`
 	Status                UserStatus       `json:"status"`
 	Password              pgtype.Text      `json:"password"`
@@ -283,6 +485,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, lower string) (GetUserByEm
 		&i.Bio,
 		&i.Timezone,
 		&i.Language,
+		&i.MobileNumber,
 		&i.Role,
 		&i.Status,
 		&i.Password,
@@ -302,7 +505,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, lower string) (GetUserByEm
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
@@ -319,6 +522,7 @@ type GetUserByIDRow struct {
 	Bio                   pgtype.Text      `json:"bio"`
 	Timezone              string           `json:"timezone"`
 	Language              string           `json:"language"`
+	MobileNumber          pgtype.Text      `json:"mobile_number"`
 	Role                  Role             `json:"role"`
 	Status                UserStatus       `json:"status"`
 	Password              pgtype.Text      `json:"password"`
@@ -348,6 +552,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 		&i.Bio,
 		&i.Timezone,
 		&i.Language,
+		&i.MobileNumber,
 		&i.Role,
 		&i.Status,
 		&i.Password,
@@ -432,7 +637,7 @@ func (q *Queries) GetUserByResetToken(ctx context.Context, resetToken pgtype.Tex
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        password, refresh_token, reset_token, reset_token_expiry, default_organization_id,
        last_login_at, created_at, updated_at, deleted_at, source, external_id, external_provider
 FROM users
@@ -449,6 +654,7 @@ type GetUserByUsernameRow struct {
 	Bio                   pgtype.Text      `json:"bio"`
 	Timezone              string           `json:"timezone"`
 	Language              string           `json:"language"`
+	MobileNumber          pgtype.Text      `json:"mobile_number"`
 	Role                  Role             `json:"role"`
 	Status                UserStatus       `json:"status"`
 	Password              pgtype.Text      `json:"password"`
@@ -478,6 +684,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, lower string) (GetUserB
 		&i.Bio,
 		&i.Timezone,
 		&i.Language,
+		&i.MobileNumber,
 		&i.Role,
 		&i.Status,
 		&i.Password,
@@ -497,7 +704,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, lower string) (GetUserB
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+SELECT id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
        last_login_at, created_at, updated_at, deleted_at
 FROM users
 WHERE deleted_at IS NULL
@@ -511,21 +718,22 @@ type ListUsersParams struct {
 }
 
 type ListUsersRow struct {
-	ID          uuid.UUID        `json:"id"`
-	Email       string           `json:"email"`
-	Username    pgtype.Text      `json:"username"`
-	FirstName   string           `json:"first_name"`
-	LastName    string           `json:"last_name"`
-	Avatar      pgtype.Text      `json:"avatar"`
-	Bio         pgtype.Text      `json:"bio"`
-	Timezone    string           `json:"timezone"`
-	Language    string           `json:"language"`
-	Role        Role             `json:"role"`
-	Status      UserStatus       `json:"status"`
-	LastLoginAt pgtype.Timestamp `json:"last_login_at"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
-	DeletedAt   pgtype.Timestamp `json:"deleted_at"`
+	ID           uuid.UUID        `json:"id"`
+	Email        string           `json:"email"`
+	Username     pgtype.Text      `json:"username"`
+	FirstName    string           `json:"first_name"`
+	LastName     string           `json:"last_name"`
+	Avatar       pgtype.Text      `json:"avatar"`
+	Bio          pgtype.Text      `json:"bio"`
+	Timezone     string           `json:"timezone"`
+	Language     string           `json:"language"`
+	MobileNumber pgtype.Text      `json:"mobile_number"`
+	Role         Role             `json:"role"`
+	Status       UserStatus       `json:"status"`
+	LastLoginAt  pgtype.Timestamp `json:"last_login_at"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	DeletedAt    pgtype.Timestamp `json:"deleted_at"`
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
@@ -547,6 +755,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUse
 			&i.Bio,
 			&i.Timezone,
 			&i.Language,
+			&i.MobileNumber,
 			&i.Role,
 			&i.Status,
 			&i.LastLoginAt,
@@ -622,38 +831,43 @@ SET first_name = COALESCE(NULLIF($1::text, ''), first_name),
     avatar = COALESCE(NULLIF($4::text, ''), avatar),
     bio = COALESCE(NULLIF($5::text, ''), bio),
     timezone = COALESCE(NULLIF($6::text, ''), timezone),
+    language = COALESCE(NULLIF($7::text, ''), language),
+    mobile_number = COALESCE(NULLIF($8::text, ''), mobile_number),
     updated_at = NOW()
-WHERE id = $7 AND deleted_at IS NULL
-RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+WHERE id = $9 AND deleted_at IS NULL
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
           last_login_at, created_at, updated_at, deleted_at
 `
 
 type UpdateUserProfileParams struct {
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Username  string    `json:"username"`
-	Avatar    string    `json:"avatar"`
-	Bio       string    `json:"bio"`
-	Timezone  string    `json:"timezone"`
-	ID        uuid.UUID `json:"id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	Username     string    `json:"username"`
+	Avatar       string    `json:"avatar"`
+	Bio          string    `json:"bio"`
+	Timezone     string    `json:"timezone"`
+	Language     string    `json:"language"`
+	MobileNumber string    `json:"mobile_number"`
+	ID           uuid.UUID `json:"id"`
 }
 
 type UpdateUserProfileRow struct {
-	ID          uuid.UUID        `json:"id"`
-	Email       string           `json:"email"`
-	Username    pgtype.Text      `json:"username"`
-	FirstName   string           `json:"first_name"`
-	LastName    string           `json:"last_name"`
-	Avatar      pgtype.Text      `json:"avatar"`
-	Bio         pgtype.Text      `json:"bio"`
-	Timezone    string           `json:"timezone"`
-	Language    string           `json:"language"`
-	Role        Role             `json:"role"`
-	Status      UserStatus       `json:"status"`
-	LastLoginAt pgtype.Timestamp `json:"last_login_at"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
-	DeletedAt   pgtype.Timestamp `json:"deleted_at"`
+	ID           uuid.UUID        `json:"id"`
+	Email        string           `json:"email"`
+	Username     pgtype.Text      `json:"username"`
+	FirstName    string           `json:"first_name"`
+	LastName     string           `json:"last_name"`
+	Avatar       pgtype.Text      `json:"avatar"`
+	Bio          pgtype.Text      `json:"bio"`
+	Timezone     string           `json:"timezone"`
+	Language     string           `json:"language"`
+	MobileNumber pgtype.Text      `json:"mobile_number"`
+	Role         Role             `json:"role"`
+	Status       UserStatus       `json:"status"`
+	LastLoginAt  pgtype.Timestamp `json:"last_login_at"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	DeletedAt    pgtype.Timestamp `json:"deleted_at"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error) {
@@ -664,6 +878,8 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		arg.Avatar,
 		arg.Bio,
 		arg.Timezone,
+		arg.Language,
+		arg.MobileNumber,
 		arg.ID,
 	)
 	var i UpdateUserProfileRow
@@ -677,6 +893,7 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		&i.Bio,
 		&i.Timezone,
 		&i.Language,
+		&i.MobileNumber,
 		&i.Role,
 		&i.Status,
 		&i.LastLoginAt,
@@ -726,7 +943,7 @@ UPDATE users
 SET status = $2,
     updated_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, role, status,
+RETURNING id, email, username, first_name, last_name, avatar, bio, timezone, language, mobile_number, role, status,
           last_login_at, created_at, updated_at, deleted_at
 `
 
@@ -736,21 +953,22 @@ type UpdateUserStatusParams struct {
 }
 
 type UpdateUserStatusRow struct {
-	ID          uuid.UUID        `json:"id"`
-	Email       string           `json:"email"`
-	Username    pgtype.Text      `json:"username"`
-	FirstName   string           `json:"first_name"`
-	LastName    string           `json:"last_name"`
-	Avatar      pgtype.Text      `json:"avatar"`
-	Bio         pgtype.Text      `json:"bio"`
-	Timezone    string           `json:"timezone"`
-	Language    string           `json:"language"`
-	Role        Role             `json:"role"`
-	Status      UserStatus       `json:"status"`
-	LastLoginAt pgtype.Timestamp `json:"last_login_at"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
-	DeletedAt   pgtype.Timestamp `json:"deleted_at"`
+	ID           uuid.UUID        `json:"id"`
+	Email        string           `json:"email"`
+	Username     pgtype.Text      `json:"username"`
+	FirstName    string           `json:"first_name"`
+	LastName     string           `json:"last_name"`
+	Avatar       pgtype.Text      `json:"avatar"`
+	Bio          pgtype.Text      `json:"bio"`
+	Timezone     string           `json:"timezone"`
+	Language     string           `json:"language"`
+	MobileNumber pgtype.Text      `json:"mobile_number"`
+	Role         Role             `json:"role"`
+	Status       UserStatus       `json:"status"`
+	LastLoginAt  pgtype.Timestamp `json:"last_login_at"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	DeletedAt    pgtype.Timestamp `json:"deleted_at"`
 }
 
 func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (UpdateUserStatusRow, error) {
@@ -766,6 +984,7 @@ func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusPara
 		&i.Bio,
 		&i.Timezone,
 		&i.Language,
+		&i.MobileNumber,
 		&i.Role,
 		&i.Status,
 		&i.LastLoginAt,
