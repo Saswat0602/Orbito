@@ -5,13 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-)
-
-type contextKey string
-
-const (
-	correlationIDKey contextKey = "correlation_id"
-	requestIDKey     contextKey = "request_id"
+	"github.com/orbito/api-go/internal/shared/ctxhelper"
 )
 
 // HTTP headers used for distributed tracing and correlation.
@@ -37,8 +31,8 @@ func RequestID(next http.Handler) http.Handler {
 		}
 
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, correlationIDKey, correlationID)
-		ctx = context.WithValue(ctx, requestIDKey, requestID)
+		ctx = ctxhelper.WithCorrelationID(ctx, correlationID)
+		ctx = ctxhelper.WithRequestID(ctx, requestID)
 
 		// Mirror NestJS RequestContextInterceptor header behavior
 		w.Header().Set(HeaderXCorrelationID, correlationID)
@@ -50,27 +44,15 @@ func RequestID(next http.Handler) http.Handler {
 
 // WithCorrelationID injects a correlation ID into context (primarily for testing and synthetic requests).
 func WithCorrelationID(ctx context.Context, correlationID string) context.Context {
-	return context.WithValue(ctx, correlationIDKey, correlationID)
+	return ctxhelper.WithCorrelationID(ctx, correlationID)
 }
 
 // GetCorrelationID extracts correlation ID from context.
 func GetCorrelationID(ctx context.Context) string {
-	if ctx == nil {
-		return ""
-	}
-	if val, ok := ctx.Value(correlationIDKey).(string); ok {
-		return val
-	}
-	return ""
+	return ctxhelper.GetCorrelationID(ctx)
 }
 
 // GetRequestID extracts request ID from context.
 func GetRequestID(ctx context.Context) string {
-	if ctx == nil {
-		return ""
-	}
-	if val, ok := ctx.Value(requestIDKey).(string); ok {
-		return val
-	}
-	return ""
+	return ctxhelper.GetRequestID(ctx)
 }

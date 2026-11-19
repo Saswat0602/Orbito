@@ -6,20 +6,42 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	AddOrganizationMember(ctx context.Context, arg AddOrganizationMemberParams) error
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
+	CountSuperAdmins(ctx context.Context) (int64, error)
+	CountTotalUsers(ctx context.Context) (int64, error)
 	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
 	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	DeleteGlobalSetting(ctx context.Context, key string) error
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
+	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
+	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
+	GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrganizationByIDRow, error)
 	GetSettingByKeyAndUser(ctx context.Context, arg GetSettingByKeyAndUserParams) (Setting, error)
+	GetUserByEmail(ctx context.Context, lower string) (GetUserByEmailRow, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
+	GetUserByResetToken(ctx context.Context, resetToken pgtype.Text) (GetUserByResetTokenRow, error)
+	GetUserByUsername(ctx context.Context, lower string) (GetUserByUsernameRow, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
 	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	PingDatabase(ctx context.Context) (int32, error)
+	SetUserResetToken(ctx context.Context, arg SetUserResetTokenParams) error
 	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
+	UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error)
+	UpdateUserRefreshToken(ctx context.Context, arg UpdateUserRefreshTokenParams) error
+	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error
+	UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (UpdateUserStatusRow, error)
 	UpsertUserSetting(ctx context.Context, arg UpsertUserSettingParams) (Setting, error)
 }
 

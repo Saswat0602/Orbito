@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/orbito/api-go/internal/middleware"
 	"github.com/orbito/api-go/internal/shared/apperror"
+	"github.com/orbito/api-go/internal/shared/ctxhelper"
 )
 
 // ISO8601Format defines the UTC timestamp format with 3-digit millisecond precision matching JavaScript toISOString().
@@ -107,7 +107,7 @@ func RequestPath(r *http.Request) string {
 // RespondError maps an error to an AppError and serializes the exact NestJS error envelope.
 func RespondError(w http.ResponseWriter, r *http.Request, err error) {
 	appErr := apperror.Map(err)
-	correlationID := middleware.GetCorrelationID(r.Context())
+	correlationID := ctxhelper.GetCorrelationID(r.Context())
 
 	payload := ErrorResponse{
 		StatusCode:    appErr.StatusCode,

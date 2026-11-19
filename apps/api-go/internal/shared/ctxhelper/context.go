@@ -2,16 +2,16 @@ package ctxhelper
 
 import (
 	"context"
-
-	"github.com/orbito/api-go/internal/middleware"
 )
 
 type contextKey string
 
 const (
-	userIDKey    contextKey = "user_id"
-	userEmailKey contextKey = "user_email"
-	userRoleKey  contextKey = "user_role"
+	userIDKey        contextKey = "user_id"
+	userEmailKey     contextKey = "user_email"
+	userRoleKey      contextKey = "user_role"
+	correlationIDKey contextKey = "correlation_id"
+	requestIDKey     contextKey = "request_id"
 )
 
 // WithUserID attaches the current user's ID to the request context.
@@ -62,7 +62,34 @@ func GetUserRole(ctx context.Context) string {
 	return ""
 }
 
-// GetCorrelationID delegates to middleware.GetCorrelationID.
+// WithCorrelationID attaches the correlation ID to the context.
+func WithCorrelationID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, correlationIDKey, id)
+}
+
+// GetCorrelationID extracts the correlation ID from context.
 func GetCorrelationID(ctx context.Context) string {
-	return middleware.GetCorrelationID(ctx)
+	if ctx == nil {
+		return ""
+	}
+	if val, ok := ctx.Value(correlationIDKey).(string); ok {
+		return val
+	}
+	return ""
+}
+
+// WithRequestID attaches the request ID to the context.
+func WithRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey, id)
+}
+
+// GetRequestID extracts the request ID from context.
+func GetRequestID(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	if val, ok := ctx.Value(requestIDKey).(string); ok {
+		return val
+	}
+	return ""
 }
