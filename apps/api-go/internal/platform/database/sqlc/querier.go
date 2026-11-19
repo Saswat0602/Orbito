@@ -9,7 +9,18 @@ import (
 )
 
 type Querier interface {
+	CountGlobalSetting(ctx context.Context, key string) (int64, error)
+	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
+	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
+	DeleteGlobalSetting(ctx context.Context, key string) error
+	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
+	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
+	GetSettingByKeyAndUser(ctx context.Context, arg GetSettingByKeyAndUserParams) (Setting, error)
+	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
+	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
 	PingDatabase(ctx context.Context) (int32, error)
+	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
+	UpsertUserSetting(ctx context.Context, arg UpsertUserSettingParams) (Setting, error)
 }
 
 var _ Querier = (*Queries)(nil)

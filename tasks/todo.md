@@ -203,14 +203,14 @@
 **Description:** Implement the system settings module managing key-value configuration rows in the Settings table, including public registration status endpoint.
 
 **Acceptance criteria:**
-- [ ] `GET /api/settings` and `PATCH /api/settings` handle settings key-value entries
-- [ ] Registration status check is accessible by auth registration flow
-- [ ] Encrypted keys are properly decrypted when retrieved
+- [x] `GET /api/settings` and `PATCH /api/settings` handle settings key-value entries
+- [x] Registration status check is accessible by auth registration flow
+- [x] Encrypted keys are properly decrypted when retrieved
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/settings/...`
-- [ ] Build succeeds: `go build ./internal/modules/settings/...`
-- [ ] Manual check: Query settings endpoint and verify response matches NestJS settings controller
+- [x] Tests pass: `go test -v ./internal/modules/settings/...`
+- [x] Build succeeds: `go build ./internal/modules/settings/...`
+- [x] Manual check: Query settings endpoint and verify response matches NestJS settings controller
 
 **Dependencies:** Task 4, Task 6
 

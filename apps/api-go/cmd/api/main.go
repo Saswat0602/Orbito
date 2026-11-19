@@ -18,6 +18,8 @@ import (
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
 	"github.com/orbito/api-go/internal/modules/health"
+	"github.com/orbito/api-go/internal/modules/settings"
+	"github.com/orbito/api-go/internal/platform/crypto"
 	"github.com/orbito/api-go/internal/platform/database"
 	"github.com/orbito/api-go/internal/platform/logger"
 	"github.com/orbito/api-go/internal/shared/apperror"
@@ -83,6 +85,15 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	healthSvc := health.NewService(db, cfg)
 	healthHandler := health.NewHandler(healthSvc)
 	r.Mount("/api/health", health.Routes(healthHandler))
+
+	fieldCrypto, _ := crypto.NewFieldCrypto(cfg.EncryptionKey)
+	var settingsRepo settings.Repository
+	if db != nil {
+		settingsRepo = settings.NewRepository(db)
+	}
+	settingsSvc := settings.NewService(settingsRepo, fieldCrypto)
+	settingsHandler := settings.NewHandler(settingsSvc)
+	r.Mount("/api/settings", settings.Routes(settingsHandler, nil))
 
 	return r
 }
