@@ -551,14 +551,14 @@
 **Description:** Implement workspace membership operations in internal/modules/workspace_members: listing members by workspace, adding members, modifying roles, and removing workspace members.
 
 **Acceptance criteria:**
-- [ ] `GET /api/workspace-members/workspace/:id` returns members list with role and joinedAt timestamps
-- [ ] `POST /api/workspace-members` adds user to workspace with specified role
-- [ ] `DELETE /api/workspace-members/:id` removes user from workspace
+- [x] `GET /api/workspace-members/workspace/:id` returns members list with role and joinedAt timestamps
+- [x] `POST /api/workspace-members` adds user to workspace with specified role
+- [x] `DELETE /api/workspace-members/:id` removes user from workspace
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/workspace_members/...`
-- [ ] Build succeeds: `go build ./internal/modules/workspace_members/...`
-- [ ] Manual check: Add member to workspace and verify membership in response
+- [x] Tests pass: `go test -v ./internal/modules/workspace_members/...`
+- [x] Build succeeds: `go build ./internal/modules/workspace_members/...`
+- [x] Manual check: Add member to workspace and verify membership in response
 
 **Dependencies:** Task 20
 

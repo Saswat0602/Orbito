@@ -56,6 +56,7 @@ type Querier interface {
 	CountTotalUsers(ctx context.Context) (int64, error)
 	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
 	CountWorkspaceCompletedTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
+	CountWorkspaceMembersFiltered(ctx context.Context, arg CountWorkspaceMembersFilteredParams) (int64, error)
 	CountWorkspaceOverdueTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
 	CountWorkspaceProjects(ctx context.Context, workspaceID uuid.UUID) (int64, error)
 	CountWorkspaceProjectsByStatus(ctx context.Context, arg CountWorkspaceProjectsByStatusParams) (int64, error)
@@ -76,6 +77,7 @@ type Querier interface {
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) error
+	DeleteWorkspaceMemberByID(ctx context.Context, id uuid.UUID) error
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
 	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
@@ -101,6 +103,8 @@ type Querier interface {
 	GetWorkspaceByOrgAndSlug(ctx context.Context, arg GetWorkspaceByOrgAndSlugParams) (GetWorkspaceByOrgAndSlugRow, error)
 	GetWorkspaceBySlugOnly(ctx context.Context, slug string) (GetWorkspaceBySlugOnlyRow, error)
 	GetWorkspaceIDBySlug(ctx context.Context, slug string) (uuid.UUID, error)
+	GetWorkspaceMemberByUserAndWorkspace(ctx context.Context, arg GetWorkspaceMemberByUserAndWorkspaceParams) (GetWorkspaceMemberByUserAndWorkspaceRow, error)
+	GetWorkspaceMemberDetailsByID(ctx context.Context, id uuid.UUID) (GetWorkspaceMemberDetailsByIDRow, error)
 	GetWorkspaceMemberRole(ctx context.Context, arg GetWorkspaceMemberRoleParams) (Role, error)
 	ListArchivedWorkspaces(ctx context.Context, organizationID uuid.UUID) ([]Workspace, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
@@ -110,6 +114,7 @@ type Querier interface {
 	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	ListWorkspaceMembersDetails(ctx context.Context, workspaceID uuid.UUID) ([]ListWorkspaceMembersDetailsRow, error)
+	ListWorkspaceMembersPaginated(ctx context.Context, arg ListWorkspaceMembersPaginatedParams) ([]ListWorkspaceMembersPaginatedRow, error)
 	ListWorkspaceTree(ctx context.Context, organizationID uuid.UUID) ([]ListWorkspaceTreeRow, error)
 	ListWorkspacesForUser(ctx context.Context, arg ListWorkspacesForUserParams) ([]ListWorkspacesForUserRow, error)
 	PingDatabase(ctx context.Context) (int32, error)
@@ -129,6 +134,7 @@ type Querier interface {
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error
 	UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (UpdateUserStatusRow, error)
 	UpdateWorkspace(ctx context.Context, arg UpdateWorkspaceParams) (Workspace, error)
+	UpdateWorkspaceMemberRoleByID(ctx context.Context, arg UpdateWorkspaceMemberRoleByIDParams) (WorkspaceMember, error)
 	UpsertUserSetting(ctx context.Context, arg UpsertUserSettingParams) (Setting, error)
 	WorkspaceProjectStatusStats(ctx context.Context, workspaceID uuid.UUID) ([]WorkspaceProjectStatusStatsRow, error)
 	WorkspaceTaskPriorityStats(ctx context.Context, workspaceID uuid.UUID) ([]WorkspaceTaskPriorityStatsRow, error)
