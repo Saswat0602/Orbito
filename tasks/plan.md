@@ -20,10 +20,10 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Task 3: Platform Logger (`slog`), Request ID & Ingress Middleware
 - [x] Task 4: Platform Database (`pgx/v5`) & sqlc Setup (`db/sqlc.yaml`, migration DDL)
 - [x] Task 5: Platform Crypto (AES-256-GCM cookie crypto, scrypt field encryption, bcrypt) & Unit Test Parity
-- [ ] Task 6: Shared HTTP & Error Framework (`httpx`, `apperror` mapper, 5-field pagination)
+- [x] Task 6: Shared HTTP & Error Framework (`httpx`, `apperror` mapper, 5-field pagination)
 
 ### Checkpoint: Foundations Complete
-- [ ] Platform database connects to Postgres, crypto test vectors match TypeScript, middleware logs JSON with correlation ID
+- [x] Platform database connects to Postgres, crypto test vectors match TypeScript, middleware logs JSON with correlation ID
 
 ### Phase 1: Core System & Authentication
 - [ ] Task 7: Health Module (`GET /api/health`, readiness check)

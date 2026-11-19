@@ -48,6 +48,11 @@ func RequestID(next http.Handler) http.Handler {
 	})
 }
 
+// WithCorrelationID injects a correlation ID into context (primarily for testing and synthetic requests).
+func WithCorrelationID(ctx context.Context, correlationID string) context.Context {
+	return context.WithValue(ctx, correlationIDKey, correlationID)
+}
+
 // GetCorrelationID extracts correlation ID from context.
 func GetCorrelationID(ctx context.Context) string {
 	if ctx == nil {

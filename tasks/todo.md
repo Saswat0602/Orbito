@@ -139,14 +139,14 @@
 **Description:** Implement the shared HTTP layer in internal/shared: standard JSON responder, request binding with validator/v10, path parameter helpers, apperror domain errors with mapping to exact NestJS GlobalExceptionFilter JSON shape, and the 5-field pagination envelope.
 
 **Acceptance criteria:**
-- [ ] `httpx.RespondError` returns `{ statusCode, error, message, path, method, timestamp, correlationId }`
-- [ ] Validation errors return 400 with `message` as array of error strings
-- [ ] `pagination.Envelope` formats `{ [entity]: [...], pagination: { currentPage, totalPages, totalCount, hasNextPage, hasPrevPage } }`
+- [x] `httpx.RespondError` returns `{ statusCode, error, message, path, method, timestamp, correlationId }`
+- [x] Validation errors return 400 with `message` as array of error strings
+- [x] `pagination.Envelope` formats `{ [entity]: [...], pagination: { currentPage, totalPages, totalCount, hasNextPage, hasPrevPage } }`
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/shared/...`
-- [ ] Build succeeds: `go build ./internal/shared/...`
-- [ ] Manual check: Verify JSON serialization of date formats produces exact ISO 8601 with milliseconds (`.000Z`)
+- [x] Tests pass: `go test -v ./internal/shared/...`
+- [x] Build succeeds: `go build ./internal/shared/...`
+- [x] Manual check: Verify JSON serialization of date formats produces exact ISO 8601 with milliseconds (`.000Z`)
 
 **Dependencies:** Task 3
 
@@ -165,9 +165,9 @@
 
 ## Checkpoint: After Task 6 — Foundations Complete
 
-- [ ] Platform database connects to Postgres, executes sample query
-- [ ] AES-256-GCM cookie encryption & decryption test vectors match Node.js byte-for-byte
-- [ ] Ingress middleware assigns correlation ID and logs structured JSON with slog
+- [x] Platform database connects to Postgres, executes sample query
+- [x] AES-256-GCM cookie encryption & decryption test vectors match Node.js byte-for-byte
+- [x] Ingress middleware assigns correlation ID and logs structured JSON with slog
 - [ ] Shared apperror maps domain errors to exact NestJS error JSON schema
 - [ ] Review with human before proceeding
 
