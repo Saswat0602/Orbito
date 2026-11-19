@@ -59,14 +59,14 @@
 **Description:** Build the structured logging system with slog and essential HTTP ingress middleware: Request ID / correlation ID extraction and injection, panic recovery, CORS handler mirroring NestJS whitelist, Helmet-equivalent security headers, and a 10MB body reader limiter.
 
 **Acceptance criteria:**
-- [ ] `slog` outputs JSON formatted logs containing `request_id`, `correlation_id`, `method`, `path`, and latency
-- [ ] Incoming `x-correlation-id` or `x-request-id` is preserved and returned in response headers; otherwise UUID is generated
-- [ ] Panic recovery middleware catches runtime panics, logs stack trace, and returns 500 error envelope
+- [x] `slog` outputs JSON formatted logs containing `request_id`, `correlation_id`, `method`, `path`, and latency
+- [x] Incoming `x-correlation-id` or `x-request-id` is preserved and returned in response headers; otherwise UUID is generated
+- [x] Panic recovery middleware catches runtime panics, logs stack trace, and returns 500 error envelope
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/middleware/... ./internal/platform/logger/...`
-- [ ] Build succeeds: `go build ./internal/middleware/...`
-- [ ] Manual check: Send curl request with `-H 'x-correlation-id: test-123'` and check header in response
+- [x] Tests pass: `go test -v ./internal/middleware/... ./internal/platform/logger/...`
+- [x] Build succeeds: `go build ./internal/middleware/...`
+- [x] Manual check: Send curl request with `-H 'x-correlation-id: test-123'` and check header in response
 
 **Dependencies:** Task 2
 
