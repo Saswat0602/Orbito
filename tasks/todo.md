@@ -614,14 +614,14 @@
 **Description:** Implement the Projects module in internal/modules/projects: project creation (auto-generating 3-4 letter uppercase key if not provided), slug generation, project listing with pagination, visibility controls (PUBLIC, INTERNAL, PRIVATE), and project stats.
 
 **Acceptance criteria:**
-- [ ] `POST /api/projects` creates project with custom task key prefix (e.g. 'ORB') and default workflow
-- [ ] Project listing filters by workspace, status, search, and visibility permissions
-- [ ] `GET /api/projects/:id/stats` returns total tasks, completed tasks, and member count
+- [x] `POST /api/projects` creates project with custom task key prefix (e.g. 'ORB') and default workflow
+- [x] Project listing filters by workspace, status, search, and visibility permissions
+- [x] `GET /api/projects/:id/stats` returns total tasks, completed tasks, and member count
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/projects/...`
-- [ ] Build succeeds: `go build ./internal/modules/projects/...`
-- [ ] Manual check: Create a project and verify custom key prefix and default workflow assignment
+- [x] Tests pass: `go test -v ./internal/modules/projects/...`
+- [x] Build succeeds: `go build ./internal/modules/projects/...`
+- [x] Manual check: Create a project and verify custom key prefix and default workflow assignment
 
 **Dependencies:** Task 20
 

@@ -39,11 +39,13 @@ type Querier interface {
 	AdminUpdateUserRole(ctx context.Context, arg AdminUpdateUserRoleParams) (AdminUpdateUserRoleRow, error)
 	AdminUpdateUserStatus(ctx context.Context, arg AdminUpdateUserStatusParams) (AdminUpdateUserStatusRow, error)
 	ArchiveOrganization(ctx context.Context, arg ArchiveOrganizationParams) error
+	ArchiveProject(ctx context.Context, arg ArchiveProjectParams) error
 	ArchiveWorkspace(ctx context.Context, arg ArchiveWorkspaceParams) error
 	CheckOrgMemberExists(ctx context.Context, arg CheckOrgMemberExistsParams) (int64, error)
 	CheckOrganizationSlugExists(ctx context.Context, arg CheckOrganizationSlugExistsParams) (bool, error)
 	CheckProjectBelongsToWorkspace(ctx context.Context, arg CheckProjectBelongsToWorkspaceParams) (int64, error)
 	CheckProjectMemberExists(ctx context.Context, arg CheckProjectMemberExistsParams) (int64, error)
+	CheckProjectSlugExists(ctx context.Context, arg CheckProjectSlugExistsParams) (int64, error)
 	CheckUsersShareOrganization(ctx context.Context, arg CheckUsersShareOrganizationParams) (bool, error)
 	CheckWorkspaceMemberExists(ctx context.Context, arg CheckWorkspaceMemberExistsParams) (int64, error)
 	CheckWorkspaceSlugExists(ctx context.Context, arg CheckWorkspaceSlugExistsParams) (bool, error)
@@ -56,6 +58,11 @@ type Querier interface {
 	CountOrganizationTasks(ctx context.Context, organizationID uuid.UUID) (int64, error)
 	CountOrganizationTasksCompleted(ctx context.Context, organizationID uuid.UUID) (int64, error)
 	CountOrganizationWorkspaces(ctx context.Context, organizationID uuid.UUID) (int64, error)
+	CountProjectCompletedTasks(ctx context.Context, projectID uuid.UUID) (int64, error)
+	CountProjectMembers(ctx context.Context, projectID uuid.UUID) (int64, error)
+	CountProjectTasks(ctx context.Context, projectID uuid.UUID) (int64, error)
+	CountProjectsByOrganization(ctx context.Context, arg CountProjectsByOrganizationParams) (int64, error)
+	CountProjectsForUser(ctx context.Context, arg CountProjectsForUserParams) (int64, error)
 	CountSuperAdmins(ctx context.Context) (int64, error)
 	CountTotalUsers(ctx context.Context) (int64, error)
 	CountUserSetting(ctx context.Context, arg CountUserSettingParams) (int64, error)
@@ -66,9 +73,11 @@ type Querier interface {
 	CountWorkspaceProjectsByStatus(ctx context.Context, arg CountWorkspaceProjectsByStatusParams) (int64, error)
 	CountWorkspaceTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
 	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
+	CreateInitialSprint(ctx context.Context, arg CreateInitialSprintParams) (Sprint, error)
 	CreateInvitation(ctx context.Context, arg CreateInvitationParams) (Invitation, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateOrganizationMember(ctx context.Context, arg CreateOrganizationMemberParams) (OrganizationMember, error)
+	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMemberDirect(ctx context.Context, arg CreateProjectMemberDirectParams) (ProjectMember, error)
 	CreateStatusTransition(ctx context.Context, arg CreateStatusTransitionParams) (StatusTransition, error)
 	CreateTaskStatus(ctx context.Context, arg CreateTaskStatusParams) (TaskStatus, error)
@@ -81,6 +90,7 @@ type Querier interface {
 	DeleteInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteOrganization(ctx context.Context, id uuid.UUID) error
 	DeleteOrganizationMemberByID(ctx context.Context, id uuid.UUID) error
+	DeleteProject(ctx context.Context, id uuid.UUID) error
 	DeleteUserSetting(ctx context.Context, arg DeleteUserSettingParams) error
 	DeleteUserSoft(ctx context.Context, arg DeleteUserSoftParams) error
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) error
@@ -89,6 +99,7 @@ type Querier interface {
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
 	FindPendingInvitation(ctx context.Context, arg FindPendingInvitationParams) (Invitation, error)
 	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
+	GetDefaultWorkflowForOrg(ctx context.Context, organizationID uuid.UUID) (Workflow, error)
 	GetEntityInvitations(ctx context.Context, arg GetEntityInvitationsParams) ([]GetEntityInvitationsRow, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
 	GetInvitationByID(ctx context.Context, id uuid.UUID) (GetInvitationByIDRow, error)
@@ -101,6 +112,9 @@ type Querier interface {
 	GetOrganizationMemberByID(ctx context.Context, id uuid.UUID) (GetOrganizationMemberByIDRow, error)
 	GetOrganizationMemberByUserAndOrg(ctx context.Context, arg GetOrganizationMemberByUserAndOrgParams) (GetOrganizationMemberByUserAndOrgRow, error)
 	GetOrganizationMemberRole(ctx context.Context, arg GetOrganizationMemberRoleParams) (Role, error)
+	GetProjectByIDRow(ctx context.Context, id uuid.UUID) (GetProjectByIDRowRow, error)
+	GetProjectByKeyRow(ctx context.Context, arg GetProjectByKeyRowParams) (GetProjectByKeyRowRow, error)
+	GetProjectBySlugRow(ctx context.Context, slug string) (GetProjectBySlugRowRow, error)
 	GetProjectMemberRole(ctx context.Context, arg GetProjectMemberRoleParams) (Role, error)
 	GetProjectScopeInfo(ctx context.Context, id uuid.UUID) (GetProjectScopeInfoRow, error)
 	GetProjectScopeInfoBySlug(ctx context.Context, slug string) (GetProjectScopeInfoBySlugRow, error)
@@ -113,6 +127,7 @@ type Querier interface {
 	GetUserByResetToken(ctx context.Context, resetToken pgtype.Text) (GetUserByResetTokenRow, error)
 	GetUserByUsername(ctx context.Context, lower string) (GetUserByUsernameRow, error)
 	GetUserInvitations(ctx context.Context, inviteeEmail string) ([]GetUserInvitationsRow, error)
+	GetWorkflowByID(ctx context.Context, id uuid.UUID) (Workflow, error)
 	GetWorkspaceByID(ctx context.Context, id uuid.UUID) (GetWorkspaceByIDRow, error)
 	GetWorkspaceByOrgAndSlug(ctx context.Context, arg GetWorkspaceByOrgAndSlugParams) (GetWorkspaceByOrgAndSlugRow, error)
 	GetWorkspaceBySlugOnly(ctx context.Context, slug string) (GetWorkspaceBySlugOnlyRow, error)
@@ -120,11 +135,16 @@ type Querier interface {
 	GetWorkspaceMemberByUserAndWorkspace(ctx context.Context, arg GetWorkspaceMemberByUserAndWorkspaceParams) (GetWorkspaceMemberByUserAndWorkspaceRow, error)
 	GetWorkspaceMemberDetailsByID(ctx context.Context, id uuid.UUID) (GetWorkspaceMemberDetailsByIDRow, error)
 	GetWorkspaceMemberRole(ctx context.Context, arg GetWorkspaceMemberRoleParams) (Role, error)
+	ListArchivedProjectsByOrganization(ctx context.Context, organizationID uuid.UUID) ([]ListArchivedProjectsByOrganizationRow, error)
+	ListArchivedProjectsByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]ListArchivedProjectsByWorkspaceRow, error)
 	ListArchivedWorkspaces(ctx context.Context, organizationID uuid.UUID) ([]Workspace, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
 	ListOrganizationMembers(ctx context.Context, arg ListOrganizationMembersParams) ([]ListOrganizationMembersRow, error)
 	ListOrganizationMembersBySlug(ctx context.Context, arg ListOrganizationMembersBySlugParams) ([]ListOrganizationMembersBySlugRow, error)
 	ListOrganizationsForUser(ctx context.Context, userID uuid.UUID) ([]ListOrganizationsForUserRow, error)
+	ListProjectSlugsStartingWith(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	ListProjectsByOrganization(ctx context.Context, arg ListProjectsByOrganizationParams) ([]ListProjectsByOrganizationRow, error)
+	ListProjectsForUser(ctx context.Context, arg ListProjectsForUserParams) ([]ListProjectsForUserRow, error)
 	ListRelatedProjectInvitations(ctx context.Context, arg ListRelatedProjectInvitationsParams) ([]Invitation, error)
 	ListUserSettings(ctx context.Context, arg ListUserSettingsParams) ([]Setting, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
@@ -133,17 +153,21 @@ type Querier interface {
 	ListWorkspaceTree(ctx context.Context, organizationID uuid.UUID) ([]ListWorkspaceTreeRow, error)
 	ListWorkspacesForUser(ctx context.Context, arg ListWorkspacesForUserParams) ([]ListWorkspacesForUserRow, error)
 	PingDatabase(ctx context.Context) (int32, error)
+	ProjectTaskPriorityStats(ctx context.Context, projectID uuid.UUID) ([]ProjectTaskPriorityStatsRow, error)
+	ProjectTaskStatusStats(ctx context.Context, projectID uuid.UUID) ([]ProjectTaskStatusStatsRow, error)
 	ResendInvitation(ctx context.Context, arg ResendInvitationParams) (Invitation, error)
 	SetUserDefaultOrgForUser(ctx context.Context, arg SetUserDefaultOrgForUserParams) error
 	SetUserDefaultOrganization(ctx context.Context, arg SetUserDefaultOrganizationParams) error
 	SetUserResetToken(ctx context.Context, arg SetUserResetTokenParams) error
 	TransferOrganizationOwner(ctx context.Context, arg TransferOrganizationOwnerParams) error
+	UnarchiveProject(ctx context.Context, arg UnarchiveProjectParams) error
 	UnarchiveWorkspace(ctx context.Context, arg UnarchiveWorkspaceParams) error
 	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
 	UpdateInvitationStatus(ctx context.Context, arg UpdateInvitationStatusParams) error
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateOrganizationMemberRole(ctx context.Context, arg UpdateOrganizationMemberRoleParams) error
 	UpdateOrganizationMemberRoleByID(ctx context.Context, arg UpdateOrganizationMemberRoleByIDParams) (OrganizationMember, error)
+	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
 	UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error)
