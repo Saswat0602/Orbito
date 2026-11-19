@@ -16,7 +16,7 @@ This plan specifies the implementation breakdown for building a high-performance
 
 ### Phase 0: Foundations & Project Scaffolding
 - [x] Task 1: Scaffolding, `go.mod`, Turbo Integration, Makefile, Air, Linter & Dockerfile
-- [ ] Task 2: Typed Configuration & Environment Validation (`internal/config`)
+- [x] Task 2: Typed Configuration & Environment Validation (`internal/config`)
 - [ ] Task 3: Platform Logger (`slog`), Request ID & Ingress Middleware
 - [ ] Task 4: Platform Database (`pgx/v5`) & sqlc Setup (`db/sqlc.yaml`, migration DDL)
 - [ ] Task 5: Platform Crypto (AES-256-GCM cookie crypto, scrypt field encryption, bcrypt) & Unit Test Parity

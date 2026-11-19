@@ -34,14 +34,14 @@
 **Description:** Implement strongly typed configuration loading in internal/config using caarlos0/env/v11 with validation tags. Supports all variables from .env.example (DATABASE_URL, JWT_SECRET, ENCRYPTION_KEY, REDIS_HOST, CORS origins, ports) with fail-fast validation on missing required secrets.
 
 **Acceptance criteria:**
-- [ ] Typed `Config` struct parses environment variables with exact default fallbacks
-- [ ] Application panics or exits cleanly with clear error message if critical secrets (DATABASE_URL, JWT_SECRET) are missing
-- [ ] Unit tests verify environment variable overrides and default values
+- [x] Typed `Config` struct parses environment variables with exact default fallbacks
+- [x] Application panics or exits cleanly with clear error message if critical secrets (DATABASE_URL, JWT_SECRET) are missing
+- [x] Unit tests verify environment variable overrides and default values
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/config/...`
-- [ ] Build succeeds: `go build ./internal/config/...`
-- [ ] Manual check: Verify config loads with default values when run without environment flags
+- [x] Tests pass: `go test -v ./internal/config/...`
+- [x] Build succeeds: `go build ./internal/config/...`
+- [x] Manual check: Verify config loads with default values when run without environment flags
 
 **Dependencies:** Task 1
 
