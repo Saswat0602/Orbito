@@ -445,14 +445,14 @@
 **Description:** Implement the role hierarchy and scope-based access control middleware in internal/middleware/rbac.go. Compares role ranks (VIEWER < MEMBER < MANAGER < OWNER < SUPER_ADMIN), inspects path/query/body parameters for scope IDs, queries membership tables, handles public project read-only access, and supports internal visibility inheritance.
 
 **Acceptance criteria:**
-- [ ] `SUPER_ADMIN` bypasses all scope checks
-- [ ] Evaluates member role in target scope (Organization, Workspace, Project) against required minimum role
-- [ ] Public project visibility allows read-only (GET/HEAD) for VIEWER-level requirements; denies writes
+- [x] `SUPER_ADMIN` bypasses all scope checks
+- [x] Evaluates member role in target scope (Organization, Workspace, Project) against required minimum role
+- [x] Public project visibility allows read-only (GET/HEAD) for VIEWER-level requirements; denies writes
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/middleware/rbac_test.go`
-- [ ] Build succeeds: `go build ./internal/middleware/...`
-- [ ] Manual check: Verify user with MEMBER role in workspace is denied access to OWNER-only workspace endpoint
+- [x] Tests pass: `go test -v ./internal/middleware/rbac_test.go`
+- [x] Build succeeds: `go build ./internal/middleware/...`
+- [x] Manual check: Verify user with MEMBER role in workspace is denied access to OWNER-only workspace endpoint
 
 **Dependencies:** Task 10
 
