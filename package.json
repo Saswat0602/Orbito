@@ -58,8 +58,8 @@
     "docker:ps": "docker compose -f docker-compose.prod.yml ps"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "dotenv-cli": "^7.4.4",
-    "turbo": "^2.11.10"
+    "concurrently": "^10.0.7",
+    "dotenv-cli": "^11.1.0",
+    "turbo": "^2.11.11"
   }
 }
