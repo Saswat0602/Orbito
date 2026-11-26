@@ -5,10 +5,25 @@
   "private": true,
   "scripts": {
     "build": "make build",
+    "ctl": "make ctl",
     "dev": "make dev",
+    "generate": "make generate",
     "lint": "make lint",
+    "fmt": "make fmt",
     "test": "make test",
+    "test:coverage": "make test-coverage",
     "typecheck": "make vet",
-    "clean": "make clean"
+    "tidy": "make tidy",
+    "clean": "make clean",
+    "db:generate": "make db-generate",
+    "db:migrate": "make db-migrate",
+    "db:migrate:deploy": "make db-migrate-deploy",
+    "db:status": "make db-status",
+    "db:seed": "make db-seed",
+    "db:seed:admin": "make db-seed-admin",
+    "db:seed:demo": "make db-seed-demo",
+    "db:seed:clear": "make db-seed-clear",
+    "db:seed:reset": "make db-seed-reset",
+    "db:reset": "make db-reset"
   }
 }
