@@ -27,33 +27,33 @@ This plan specifies the implementation breakdown for building a high-performance
 
 ### Phase 1: Core System & Authentication
 - [x] Task 7: Health Module (`GET /api/health`, readiness check)
-- [ ] Task 8: Settings Module (`/api/settings` key-value store & registration status)
-- [ ] Task 9: Mailer Platform & Email Module (`/api/email/send`, stats, SMTP client)
-- [ ] Task 10: Auth Core & JWT Strategy (claims, token minting, `RequireAuth` middleware)
-- [ ] Task 11: Auth Module: Registration & Login (`/api/auth/register`, `/api/auth/login`, cookies, `/me`, `/profile`)
-- [ ] Task 12: Auth Module: Token Refresh & Logout (`/api/auth/refresh`, `/api/auth/logout`, user status check)
-- [ ] Task 13: Auth Module: Password Reset & Setup (`/forgot-password`, `/verify-reset-token`, `/reset-password`, `/setup`)
-- [ ] Task 14: Auth SSO / OIDC Services & Endpoints (`/api/auth/oidc/config`, `/login`, `/callback`, `/exchange`)
-- [ ] Task 15: Users Module (`/api/users` CRUD, `/status`, `/change-password`, profile avatar)
-- [ ] Task 16: Admin Module (`/api/admin/dashboard`, `/users`, `/organizations`, `/config`, `/test-smtp`)
+- [x] Task 8: Settings Module (`/api/settings` key-value store & registration status)
+- [x] Task 9: Mailer Platform & Email Module (`/api/email/send`, stats, SMTP client)
+- [x] Task 10: Auth Core & JWT Strategy (claims, token minting, `RequireAuth` middleware)
+- [x] Task 11: Auth Module: Registration & Login (`/api/auth/register`, `/api/auth/login`, cookies, `/me`, `/profile`)
+- [x] Task 12: Auth Module: Token Refresh & Logout (`/api/auth/refresh`, `/api/auth/logout`, user status check)
+- [x] Task 13: Auth Module: Password Reset & Setup (`/forgot-password`, `/verify-reset-token`, `/reset-password`, `/setup`)
+- [x] Task 14: Auth SSO / OIDC Services & Endpoints (`/api/auth/oidc/config`, `/login`, `/callback`, `/exchange`)
+- [x] Task 15: Users Module (`/api/users` CRUD, `/status`, `/change-password`, profile avatar)
+- [x] Task 16: Admin Module (`/api/admin/dashboard`, `/users`, `/organizations`, `/config`, `/test-smtp`)
 
 ### Checkpoint: Core System & Auth Verified
-- [ ] Existing users can log in with existing passwords, receive valid JWTs and encrypted cookies, access `/me` and admin routes
+- [x] Existing users can log in with existing passwords, receive valid JWTs and encrypted cookies, access `/me` and admin routes
 
 ### Phase 2: Multi-Tenancy, Hierarchy & Member RBAC
-- [ ] Task 17: RBAC Core Middleware (Hierarchy rank comparison, Scope resolver for ORG/WORKSPACE/PROJECT)
-- [ ] Task 18: Organizations Module (`/api/organizations` CRUD, transfer ownership, default org)
-- [ ] Task 19: Organization Members Module (`/api/organization-members` list, update role, remove)
-- [ ] Task 20: Workspaces Module (`/api/workspaces` CRUD, `/charts` metrics aggregation, archive)
-- [ ] Task 21: Workspace Members Module (`/api/workspace-members` list, role update, remove)
-- [ ] Task 22: Invitations Module (`/api/invitations` create token, verify, accept, revoke, resend)
+- [x] Task 17: RBAC Core Middleware (Hierarchy rank comparison, Scope resolver for ORG/WORKSPACE/PROJECT)
+- [x] Task 18: Organizations Module (`/api/organizations` CRUD, transfer ownership, default org)
+- [x] Task 19: Organization Members Module (`/api/organization-members` list, update role, remove)
+- [x] Task 20: Workspaces Module (`/api/workspaces` CRUD, `/charts` metrics aggregation, archive)
+- [x] Task 21: Workspace Members Module (`/api/workspace-members` list, role update, remove)
+- [x] Task 22: Invitations Module (`/api/invitations` create token, verify, accept, revoke, resend)
 
 ### Checkpoint: Multi-Tenancy & RBAC Verified
-- [ ] Tenancy boundary enforced, role ranks strictly checked, workspace charts calculate correct aggregates
+- [x] Tenancy boundary enforced, role ranks strictly checked, workspace charts calculate correct aggregates
 
 ### Phase 3: Project Domain & Agile Foundations
-- [ ] Task 23: Projects Module (`/api/projects` CRUD, slug/key, visibility, custom task prefixes, stats)
-- [ ] Task 24: Project Members Module (`/api/project-members` list, add, role update, remove)
+- [x] Task 23: Projects Module (`/api/projects` CRUD, slug/key, visibility, custom task prefixes, stats)
+- [x] Task 24: Project Members Module (`/api/project-members` list, add, role update, remove)
 - [ ] Task 25: Workflows Module (`/api/workflows` CRUD, default workflow generation)
 - [ ] Task 26: Task Statuses Module (`/api/task-statuses` custom status columns, categories, transitions)
 - [ ] Task 27: Labels Module (`/api/labels` global and workspace labels CRUD)

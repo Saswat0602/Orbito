@@ -641,14 +641,14 @@
 **Description:** Implement project membership management in internal/modules/project_members: listing members by project, adding members, modifying roles, and removing members.
 
 **Acceptance criteria:**
-- [ ] `GET /api/project-members/project/:id` returns project members with user profile details
-- [ ] `POST /api/project-members` adds member with designated role
-- [ ] `DELETE /api/project-members/:id` removes member from project
+- [x] `GET /api/project-members/project/:id` returns project members with user profile details
+- [x] `POST /api/project-members` adds member with designated role
+- [x] `DELETE /api/project-members/:id` removes member from project
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/project_members/...`
-- [ ] Build succeeds: `go build ./internal/modules/project_members/...`
-- [ ] Manual check: Assign member to project and verify role permissions apply
+- [x] Tests pass: `go test -v ./internal/modules/project_members/...`
+- [x] Build succeeds: `go build ./internal/modules/project_members/...`
+- [x] Manual check: Assign member to project and verify role permissions apply
 
 **Dependencies:** Task 23
 
