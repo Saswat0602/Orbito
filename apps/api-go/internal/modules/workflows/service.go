@@ -47,12 +47,12 @@ func (s *service) assertOrgMember(ctx context.Context, orgID uuid.UUID, userID u
 		return nil
 	}
 
-	if row.MemberRole == nil {
+	if !row.MemberRole.Valid {
 		return apperror.Forbidden("You are not a member of this organization")
 	}
 
 	if minRole != "" {
-		memberRole := middleware.Role(*row.MemberRole)
+		memberRole := middleware.Role(row.MemberRole.Role)
 		if middleware.RoleRank[memberRole] < middleware.RoleRank[minRole] {
 			return apperror.Forbidden(fmt.Sprintf("This action requires the %s role or higher in this organization", minRole))
 		}
@@ -71,12 +71,12 @@ func (s *service) assertOrgMemberForWorkflow(ctx context.Context, workflowID uui
 		return row, nil
 	}
 
-	if row.MemberRole == nil {
+	if !row.MemberRole.Valid {
 		return nil, apperror.Forbidden("You are not a member of this organization")
 	}
 
 	if minRole != "" {
-		memberRole := middleware.Role(*row.MemberRole)
+		memberRole := middleware.Role(row.MemberRole.Role)
 		if middleware.RoleRank[memberRole] < middleware.RoleRank[minRole] {
 			return nil, apperror.Forbidden(fmt.Sprintf("This action requires the %s role or higher in this organization", minRole))
 		}
@@ -170,7 +170,7 @@ func (s *service) FindAll(ctx context.Context, orgID *uuid.UUID, currentUserID u
 	if err != nil {
 		return nil, apperror.Internal("Failed to list workflows: " + err.Error())
 	}
-	return s.mapOrgWorkflowRows(ctx, rows)
+	return s.mapOrgIDsWorkflowRows(ctx, rows)
 }
 
 func (s *service) FindByOrganizationSlug(ctx context.Context, slug string, currentUserID uuid.UUID, isSuperAdmin bool) ([]WorkflowResponse, error) {
@@ -184,7 +184,7 @@ func (s *service) FindByOrganizationSlug(ctx context.Context, slug string, curre
 		return nil, apperror.NotFound(fmt.Sprintf("Organization with slug \"%s\" not found", trimmed))
 	}
 
-	if !isSuperAdmin && orgRow.OwnerID != currentUserID && orgRow.MemberRole == nil {
+	if !isSuperAdmin && orgRow.OwnerID != currentUserID && !orgRow.MemberRole.Valid {
 		return nil, apperror.Forbidden("You are not a member of this organization")
 	}
 
@@ -229,8 +229,8 @@ func (s *service) FindOne(ctx context.Context, id uuid.UUID, currentUserID uuid.
 			Position:    st.Position,
 			IsDefault:   st.IsDefault,
 			WorkflowID:  st.WorkflowID.String(),
-			CreatedAt:   formatTime(st.CreatedAt),
-			UpdatedAt:   formatTime(st.UpdatedAt),
+			CreatedAt:   formatTimestamp(st.CreatedAt),
+			UpdatedAt:   formatTimestamp(st.UpdatedAt),
 			CreatedByID: pgUUIDToPtr(st.CreatedByID),
 			UpdatedByID: pgUUIDToPtr(st.UpdatedByID),
 			DeletedAt:   pgTimestampToPtr(st.DeletedAt),
@@ -242,15 +242,15 @@ func (s *service) FindOne(ctx context.Context, id uuid.UUID, currentUserID uuid.
 	for _, tr := range transitions {
 		transitionResponses = append(transitionResponses, StatusTransitionResponse{
 			ID:           tr.ID.String(),
-			Name:         tr.Name,
+			Name:         pgTextToString(tr.Name),
 			Description:  pgTextToPtr(tr.Description),
 			WorkflowID:   tr.WorkflowID.String(),
 			FromStatusID: tr.FromStatusID.String(),
 			ToStatusID:   tr.ToStatusID.String(),
 			CreatedByID:  pgUUIDToPtr(tr.CreatedByID),
 			UpdatedByID:  pgUUIDToPtr(tr.UpdatedByID),
-			CreatedAt:    formatTime(tr.CreatedAt),
-			UpdatedAt:    formatTime(tr.UpdatedAt),
+			CreatedAt:    formatTimestamp(tr.CreatedAt),
+			UpdatedAt:    formatTimestamp(tr.UpdatedAt),
 			FromStatus: &TransitionStatusBrief{
 				ID:       tr.FromStatusID_2.String(),
 				Name:     tr.FromStatusName,
@@ -274,8 +274,8 @@ func (s *service) FindOne(ctx context.Context, id uuid.UUID, currentUserID uuid.
 		OrganizationID: wfRow.OrganizationID.String(),
 		CreatedByID:    pgUUIDToPtr(wfRow.CreatedByID),
 		UpdatedByID:    pgUUIDToPtr(wfRow.UpdatedByID),
-		CreatedAt:      formatTime(wfRow.CreatedAt),
-		UpdatedAt:      formatTime(wfRow.UpdatedAt),
+		CreatedAt:      formatTimestamp(wfRow.CreatedAt),
+		UpdatedAt:      formatTimestamp(wfRow.UpdatedAt),
 		Organization: &OrgBrief{
 			ID:   wfRow.OrgID.String(),
 			Name: wfRow.OrgName,
@@ -334,8 +334,8 @@ func (s *service) GetDefaultWorkflow(ctx context.Context, orgID uuid.UUID, curre
 			Position:    st.Position,
 			IsDefault:   st.IsDefault,
 			WorkflowID:  st.WorkflowID.String(),
-			CreatedAt:   formatTime(st.CreatedAt),
-			UpdatedAt:   formatTime(st.UpdatedAt),
+			CreatedAt:   formatTimestamp(st.CreatedAt),
+			UpdatedAt:   formatTimestamp(st.UpdatedAt),
 			CreatedByID: pgUUIDToPtr(st.CreatedByID),
 			UpdatedByID: pgUUIDToPtr(st.UpdatedByID),
 			DeletedAt:   pgTimestampToPtr(st.DeletedAt),
@@ -351,8 +351,8 @@ func (s *service) GetDefaultWorkflow(ctx context.Context, orgID uuid.UUID, curre
 		OrganizationID: wfRow.OrganizationID.String(),
 		CreatedByID:    pgUUIDToPtr(wfRow.CreatedByID),
 		UpdatedByID:    pgUUIDToPtr(wfRow.UpdatedByID),
-		CreatedAt:      formatTime(wfRow.CreatedAt),
-		UpdatedAt:      formatTime(wfRow.UpdatedAt),
+		CreatedAt:      formatTimestamp(wfRow.CreatedAt),
+		UpdatedAt:      formatTimestamp(wfRow.UpdatedAt),
 		Organization: &OrgBrief{
 			ID:   wfRow.OrgID.String(),
 			Name: wfRow.OrgName,
@@ -457,8 +457,8 @@ func (s *service) mapOrgWorkflowRows(ctx context.Context, rows []sqlc.ListWorkfl
 				Position:    st.Position,
 				IsDefault:   st.IsDefault,
 				WorkflowID:  st.WorkflowID.String(),
-				CreatedAt:   formatTime(st.CreatedAt),
-				UpdatedAt:   formatTime(st.UpdatedAt),
+				CreatedAt:   formatTimestamp(st.CreatedAt),
+				UpdatedAt:   formatTimestamp(st.UpdatedAt),
 				CreatedByID: pgUUIDToPtr(st.CreatedByID),
 				UpdatedByID: pgUUIDToPtr(st.UpdatedByID),
 				DeletedAt:   pgTimestampToPtr(st.DeletedAt),
@@ -474,8 +474,78 @@ func (s *service) mapOrgWorkflowRows(ctx context.Context, rows []sqlc.ListWorkfl
 			OrganizationID: r.OrganizationID.String(),
 			CreatedByID:    pgUUIDToPtr(r.CreatedByID),
 			UpdatedByID:    pgUUIDToPtr(r.UpdatedByID),
-			CreatedAt:      formatTime(r.CreatedAt),
-			UpdatedAt:      formatTime(r.UpdatedAt),
+			CreatedAt:      formatTimestamp(r.CreatedAt),
+			UpdatedAt:      formatTimestamp(r.UpdatedAt),
+			Organization: &OrgBrief{
+				ID:   r.OrgID.String(),
+				Name: r.OrgName,
+				Slug: r.OrgSlug,
+			},
+			Statuses: statusResponses,
+			Count: &WorkflowCounts{
+				Statuses:    activeCount,
+				Transitions: transitionCount,
+			},
+		}
+
+		if r.CreatedByUserID.Valid {
+			wfRes.CreatedByUser = &UserBrief{
+				ID:        uuid.UUID(r.CreatedByUserID.Bytes).String(),
+				Email:     r.CreatedByEmail.String,
+				FirstName: pgTextToPtr(r.CreatedByFirstName),
+				LastName:  pgTextToPtr(r.CreatedByLastName),
+			}
+		}
+		if r.UpdatedByUserID.Valid {
+			wfRes.UpdatedByUser = &UserBrief{
+				ID:        uuid.UUID(r.UpdatedByUserID.Bytes).String(),
+				Email:     r.UpdatedByEmail.String,
+				FirstName: pgTextToPtr(r.UpdatedByFirstName),
+				LastName:  pgTextToPtr(r.UpdatedByLastName),
+			}
+		}
+
+		res = append(res, wfRes)
+	}
+	return res, nil
+}
+
+func (s *service) mapOrgIDsWorkflowRows(ctx context.Context, rows []sqlc.ListWorkflowsByOrganizationIDsRow) ([]WorkflowResponse, error) {
+	res := make([]WorkflowResponse, 0, len(rows))
+	for _, r := range rows {
+		statuses, _ := s.repo.FindStatusesByWorkflowID(ctx, r.ID)
+		activeCount, _ := s.repo.CountActiveStatuses(ctx, r.ID)
+		transitionCount, _ := s.repo.CountTransitions(ctx, r.ID)
+
+		statusResponses := make([]TaskStatusResponse, 0, len(statuses))
+		for _, st := range statuses {
+			statusResponses = append(statusResponses, TaskStatusResponse{
+				ID:          st.ID.String(),
+				Name:        st.Name,
+				Color:       st.Color,
+				Category:    string(st.Category),
+				Position:    st.Position,
+				IsDefault:   st.IsDefault,
+				WorkflowID:  st.WorkflowID.String(),
+				CreatedAt:   formatTimestamp(st.CreatedAt),
+				UpdatedAt:   formatTimestamp(st.UpdatedAt),
+				CreatedByID: pgUUIDToPtr(st.CreatedByID),
+				UpdatedByID: pgUUIDToPtr(st.UpdatedByID),
+				DeletedAt:   pgTimestampToPtr(st.DeletedAt),
+				DeletedBy:   pgUUIDToPtr(st.DeletedBy),
+			})
+		}
+
+		wfRes := WorkflowResponse{
+			ID:             r.ID.String(),
+			Name:           r.Name,
+			Description:    pgTextToPtr(r.Description),
+			IsDefault:      r.IsDefault,
+			OrganizationID: r.OrganizationID.String(),
+			CreatedByID:    pgUUIDToPtr(r.CreatedByID),
+			UpdatedByID:    pgUUIDToPtr(r.UpdatedByID),
+			CreatedAt:      formatTimestamp(r.CreatedAt),
+			UpdatedAt:      formatTimestamp(r.UpdatedAt),
 			Organization: &OrgBrief{
 				ID:   r.OrgID.String(),
 				Name: r.OrgName,
@@ -527,8 +597,8 @@ func (s *service) mapAllWorkflowRows(ctx context.Context, rows []sqlc.ListAllWor
 				Position:    st.Position,
 				IsDefault:   st.IsDefault,
 				WorkflowID:  st.WorkflowID.String(),
-				CreatedAt:   formatTime(st.CreatedAt),
-				UpdatedAt:   formatTime(st.UpdatedAt),
+				CreatedAt:   formatTimestamp(st.CreatedAt),
+				UpdatedAt:   formatTimestamp(st.UpdatedAt),
 				CreatedByID: pgUUIDToPtr(st.CreatedByID),
 				UpdatedByID: pgUUIDToPtr(st.UpdatedByID),
 				DeletedAt:   pgTimestampToPtr(st.DeletedAt),
@@ -544,8 +614,8 @@ func (s *service) mapAllWorkflowRows(ctx context.Context, rows []sqlc.ListAllWor
 			OrganizationID: r.OrganizationID.String(),
 			CreatedByID:    pgUUIDToPtr(r.CreatedByID),
 			UpdatedByID:    pgUUIDToPtr(r.UpdatedByID),
-			CreatedAt:      formatTime(r.CreatedAt),
-			UpdatedAt:      formatTime(r.UpdatedAt),
+			CreatedAt:      formatTimestamp(r.CreatedAt),
+			UpdatedAt:      formatTimestamp(r.UpdatedAt),
 			Organization: &OrgBrief{
 				ID:   r.OrgID.String(),
 				Name: r.OrgName,

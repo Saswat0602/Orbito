@@ -19,7 +19,7 @@ type mockRepo struct {
 	orgs        map[uuid.UUID]*sqlc.GetOrganizationOwnerAndUserRoleRow
 	orgsBySlug  map[string]*sqlc.GetOrganizationBySlugForWorkflowRow
 	workflows   map[uuid.UUID]*sqlc.GetWorkflowDetailsByIDRow
-	wfStatuses  map[uuid.UUID][]sqlc.GetWorkflowStatusesByWorkflowIDRow
+	wfStatuses  map[uuid.UUID][]sqlc.TaskStatus
 	transitions map[uuid.UUID][]sqlc.GetWorkflowTransitionsByWorkflowIDRow
 	projectDeps map[uuid.UUID]int64
 	taskDeps    map[uuid.UUID]int64
@@ -30,7 +30,7 @@ func newMockRepo() *mockRepo {
 		orgs:        make(map[uuid.UUID]*sqlc.GetOrganizationOwnerAndUserRoleRow),
 		orgsBySlug:  make(map[string]*sqlc.GetOrganizationBySlugForWorkflowRow),
 		workflows:   make(map[uuid.UUID]*sqlc.GetWorkflowDetailsByIDRow),
-		wfStatuses:  make(map[uuid.UUID][]sqlc.GetWorkflowStatusesByWorkflowIDRow),
+		wfStatuses:  make(map[uuid.UUID][]sqlc.TaskStatus),
 		transitions: make(map[uuid.UUID][]sqlc.GetWorkflowTransitionsByWorkflowIDRow),
 		projectDeps: make(map[uuid.UUID]int64),
 		taskDeps:    make(map[uuid.UUID]int64),
@@ -51,17 +51,17 @@ func (m *mockRepo) Create(_ context.Context, workflow sqlc.CreateWorkflowParams,
 		OrganizationID: workflow.OrganizationID,
 		CreatedByID:    workflow.CreatedByID,
 		UpdatedByID:    workflow.UpdatedByID,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		CreatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
+		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
 		OrgID:          workflow.OrganizationID,
 		OrgName:        "Test Org",
 		OrgSlug:        "test-org",
 	}
 	m.workflows[workflow.ID] = row
 
-	var stRows []sqlc.GetWorkflowStatusesByWorkflowIDRow
+	var stRows []sqlc.TaskStatus
 	for _, s := range statuses {
-		stRows = append(stRows, sqlc.GetWorkflowStatusesByWorkflowIDRow{
+		stRows = append(stRows, sqlc.TaskStatus{
 			ID:          s.ID,
 			Name:        s.Name,
 			Color:       s.Color,
@@ -69,8 +69,8 @@ func (m *mockRepo) Create(_ context.Context, workflow sqlc.CreateWorkflowParams,
 			Position:    s.Position,
 			IsDefault:   s.IsDefault,
 			WorkflowID:  workflow.ID,
-			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
+			CreatedAt:   pgtype.Timestamp{Time: time.Now(), Valid: true},
+			UpdatedAt:   pgtype.Timestamp{Time: time.Now(), Valid: true},
 			CreatedByID: s.CreatedByID,
 			UpdatedByID: s.UpdatedByID,
 		})
@@ -85,8 +85,8 @@ func (m *mockRepo) Create(_ context.Context, workflow sqlc.CreateWorkflowParams,
 		OrganizationID: workflow.OrganizationID,
 		CreatedByID:    workflow.CreatedByID,
 		UpdatedByID:    workflow.UpdatedByID,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		CreatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
+		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}, nil
 }
 
@@ -98,7 +98,7 @@ func (m *mockRepo) FindDetailsByID(_ context.Context, id uuid.UUID) (*sqlc.GetWo
 	return row, nil
 }
 
-func (m *mockRepo) FindStatusesByWorkflowID(_ context.Context, workflowID uuid.UUID) ([]sqlc.GetWorkflowStatusesByWorkflowIDRow, error) {
+func (m *mockRepo) FindStatusesByWorkflowID(_ context.Context, workflowID uuid.UUID) ([]sqlc.TaskStatus, error) {
 	return m.wfStatuses[workflowID], nil
 }
 
@@ -159,7 +159,7 @@ func (m *mockRepo) ListByOrgIDs(_ context.Context, orgIDs []uuid.UUID) ([]sqlc.L
 	var rows []sqlc.ListWorkflowsByOrganizationIDsRow
 	for _, wf := range m.workflows {
 		if orgMap[wf.OrganizationID] {
-			rows = append(rows, sqlc.ListWorkflowsByOrganizationIDRow{
+			rows = append(rows, sqlc.ListWorkflowsByOrganizationIDsRow{
 				ID:             wf.ID,
 				Name:           wf.Name,
 				Description:    wf.Description,
@@ -315,19 +315,19 @@ func TestWorkflowsService(t *testing.T) {
 	outsiderID := uuid.New()
 	orgID := uuid.New()
 
-	managerRole := string(middleware.RoleManager)
-	memberRole := string(middleware.RoleMember)
+	managerRole := sqlc.Role(middleware.RoleManager)
+	memberRole := sqlc.Role(middleware.RoleMember)
 
 	repo := newMockRepo()
 	repo.orgs[orgID] = &sqlc.GetOrganizationOwnerAndUserRoleRow{
 		ID:         orgID,
 		OwnerID:    ownerID,
-		MemberRole: nil,
+		MemberRole: sqlc.NullRole{Valid: false},
 	}
 	repo.orgsBySlug["test-org"] = &sqlc.GetOrganizationBySlugForWorkflowRow{
 		ID:         orgID,
 		OwnerID:    ownerID,
-		MemberRole: nil,
+		MemberRole: sqlc.NullRole{Valid: false},
 	}
 
 	svc := NewService(repo)
@@ -338,17 +338,21 @@ func TestWorkflowsService(t *testing.T) {
 			OrganizationID: "invalid-uuid",
 		}, ownerID, false)
 		require.Error(t, err)
-		assert.True(t, apperror.IsBadRequest(err))
+		var appErr *apperror.AppError
+		require.ErrorAs(t, err, &appErr)
+		assert.Equal(t, 400, appErr.StatusCode)
 	})
 
 	t.Run("Create workflow - denies non-member", func(t *testing.T) {
-		repo.orgs[orgID].MemberRole = nil
+		repo.orgs[orgID].MemberRole = sqlc.NullRole{Valid: false}
 		_, err := svc.Create(ctx, CreateWorkflowRequest{
 			Name:           "Dev Workflow",
 			OrganizationID: orgID.String(),
 		}, outsiderID, false)
 		require.Error(t, err)
-		assert.True(t, apperror.IsForbidden(err))
+		var appErr *apperror.AppError
+		require.ErrorAs(t, err, &appErr)
+		assert.Equal(t, 403, appErr.StatusCode)
 	})
 
 	var createdWfID uuid.UUID
@@ -388,13 +392,17 @@ func TestWorkflowsService(t *testing.T) {
 		t.Run("fails on empty slug", func(t *testing.T) {
 			_, err := svc.FindByOrganizationSlug(ctx, "  ", ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsBadRequest(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 400, appErr.StatusCode)
 		})
 
 		t.Run("fails on unknown slug", func(t *testing.T) {
 			_, err := svc.FindByOrganizationSlug(ctx, "nonexistent", ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsNotFound(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 404, appErr.StatusCode)
 		})
 
 		t.Run("succeeds for valid slug", func(t *testing.T) {
@@ -408,7 +416,9 @@ func TestWorkflowsService(t *testing.T) {
 		t.Run("fails on unknown id", func(t *testing.T) {
 			_, err := svc.FindOne(ctx, uuid.New(), ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsNotFound(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 404, appErr.StatusCode)
 		})
 
 		t.Run("succeeds for existing workflow", func(t *testing.T) {
@@ -429,17 +439,19 @@ func TestWorkflowsService(t *testing.T) {
 
 	t.Run("Update workflow", func(t *testing.T) {
 		t.Run("denies member role (requires MANAGER)", func(t *testing.T) {
-			repo.orgs[orgID].MemberRole = &memberRole
+			repo.orgs[orgID].MemberRole = sqlc.NullRole{Role: memberRole, Valid: true}
 			newName := "Member Hack"
 			_, err := svc.Update(ctx, createdWfID, UpdateWorkflowRequest{
 				Name: &newName,
 			}, memberID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsForbidden(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 403, appErr.StatusCode)
 		})
 
 		t.Run("allows manager to update workflow details", func(t *testing.T) {
-			repo.orgs[orgID].MemberRole = &managerRole
+			repo.orgs[orgID].MemberRole = sqlc.NullRole{Role: managerRole, Valid: true}
 			newName := "Updated Workflow Name"
 			res, err := svc.Update(ctx, createdWfID, UpdateWorkflowRequest{
 				Name: &newName,
@@ -455,11 +467,13 @@ func TestWorkflowsService(t *testing.T) {
 			repo.orgs[otherOrgID] = &sqlc.GetOrganizationOwnerAndUserRoleRow{
 				ID:         otherOrgID,
 				OwnerID:    ownerID,
-				MemberRole: nil,
+				MemberRole: sqlc.NullRole{Valid: false},
 			}
 			_, err := svc.MakeDefault(ctx, createdWfID, otherOrgID, ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsBadRequest(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 400, appErr.StatusCode)
 			assert.Contains(t, err.Error(), "Workflow does not belong to this organization")
 		})
 
@@ -477,7 +491,9 @@ func TestWorkflowsService(t *testing.T) {
 
 			err := svc.Delete(ctx, createdWfID, ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsConflict(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 409, appErr.StatusCode)
 			assert.Contains(t, err.Error(), "This workflow is still in use by 2 projects. Move them to another workflow before deleting it")
 		})
 
@@ -487,7 +503,9 @@ func TestWorkflowsService(t *testing.T) {
 
 			err := svc.Delete(ctx, createdWfID, ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsConflict(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 409, appErr.StatusCode)
 			assert.Contains(t, err.Error(), "This workflow is still in use by 5 tasks and 1 project. Move them to another workflow before deleting it")
 		})
 
@@ -500,7 +518,9 @@ func TestWorkflowsService(t *testing.T) {
 
 			_, err = svc.FindOne(ctx, createdWfID, ownerID, false)
 			require.Error(t, err)
-			assert.True(t, apperror.IsNotFound(err))
+			var appErr *apperror.AppError
+			require.ErrorAs(t, err, &appErr)
+			assert.Equal(t, 404, appErr.StatusCode)
 		})
 	})
 }

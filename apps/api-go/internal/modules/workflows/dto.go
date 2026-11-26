@@ -112,6 +112,20 @@ func formatTime(t time.Time) string {
 	return t.UTC().Format("2006-01-02T15:04:05.000Z")
 }
 
+func formatTimestamp(ts pgtype.Timestamp) string {
+	if ts.Valid {
+		return ts.Time.UTC().Format("2006-01-02T15:04:05.000Z")
+	}
+	return ""
+}
+
+func pgTextToString(t pgtype.Text) string {
+	if t.Valid {
+		return t.String
+	}
+	return ""
+}
+
 func pgTextToPtr(t pgtype.Text) *string {
 	if t.Valid {
 		return &t.String

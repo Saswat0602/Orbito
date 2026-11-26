@@ -103,6 +103,15 @@ func TestBuildRouter(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), `"totalUsers":`)
 	})
 
+	t.Run("GET /api/workflows requires authentication", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/workflows", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusUnauthorized, rr.Code)
+		assert.Contains(t, rr.Body.String(), "Unauthorized")
+	})
+
 	t.Run("unknown route returns exact NestJS 404 JSON error envelope", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/nonexistent-route", nil)
 		rr := httptest.NewRecorder()

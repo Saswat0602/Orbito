@@ -13,7 +13,7 @@ import (
 type Repository interface {
 	Create(ctx context.Context, workflow sqlc.CreateWorkflowParams, statuses []sqlc.CreateTaskStatusParams) (*sqlc.Workflow, error)
 	FindDetailsByID(ctx context.Context, id uuid.UUID) (*sqlc.GetWorkflowDetailsByIDRow, error)
-	FindStatusesByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]sqlc.GetWorkflowStatusesByWorkflowIDRow, error)
+	FindStatusesByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]sqlc.TaskStatus, error)
 	FindTransitionsByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]sqlc.GetWorkflowTransitionsByWorkflowIDRow, error)
 	FindDefaultByOrgID(ctx context.Context, orgID uuid.UUID) (*sqlc.GetDefaultWorkflowByOrgIDRow, error)
 	ListByOrgID(ctx context.Context, orgID uuid.UUID) ([]sqlc.ListWorkflowsByOrganizationIDRow, error)
@@ -47,7 +47,7 @@ func NewRepository(db *database.DB) Repository {
 
 func (r *pgRepository) Create(ctx context.Context, workflow sqlc.CreateWorkflowParams, statuses []sqlc.CreateTaskStatusParams) (*sqlc.Workflow, error) {
 	var createdWorkflow sqlc.Workflow
-	err := database.WithTx(ctx, r.db, func(txQueries *sqlc.Queries) error {
+	err := r.db.WithTx(ctx, func(txQueries *sqlc.Queries) error {
 		if workflow.IsDefault {
 			if err := txQueries.UnsetDefaultWorkflowsInOrg(ctx, sqlc.UnsetDefaultWorkflowsInOrgParams{
 				OrganizationID: workflow.OrganizationID,
@@ -86,7 +86,7 @@ func (r *pgRepository) FindDetailsByID(ctx context.Context, id uuid.UUID) (*sqlc
 	return &row, nil
 }
 
-func (r *pgRepository) FindStatusesByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]sqlc.GetWorkflowStatusesByWorkflowIDRow, error) {
+func (r *pgRepository) FindStatusesByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]sqlc.TaskStatus, error) {
 	return r.queries.GetWorkflowStatusesByWorkflowID(ctx, workflowID)
 }
 
@@ -116,7 +116,7 @@ func (r *pgRepository) ListAll(ctx context.Context) ([]sqlc.ListAllWorkflowsRow,
 
 func (r *pgRepository) Update(ctx context.Context, id uuid.UUID, orgID uuid.UUID, name *string, desc *string, isDefault *bool, updatedByID uuid.UUID) (*sqlc.Workflow, error) {
 	var updatedWorkflow sqlc.Workflow
-	err := database.WithTx(ctx, r.db, func(txQueries *sqlc.Queries) error {
+	err := r.db.WithTx(ctx, func(txQueries *sqlc.Queries) error {
 		if isDefault != nil && *isDefault {
 			if err := txQueries.UnsetDefaultWorkflowsExcept(ctx, sqlc.UnsetDefaultWorkflowsExceptParams{
 				OrganizationID: orgID,
@@ -156,7 +156,7 @@ func (r *pgRepository) Update(ctx context.Context, id uuid.UUID, orgID uuid.UUID
 
 func (r *pgRepository) SetDefault(ctx context.Context, id uuid.UUID, orgID uuid.UUID, updatedByID uuid.UUID) (*sqlc.Workflow, error) {
 	var updatedWorkflow sqlc.Workflow
-	err := database.WithTx(ctx, r.db, func(txQueries *sqlc.Queries) error {
+	err := r.db.WithTx(ctx, func(txQueries *sqlc.Queries) error {
 		if err := txQueries.UnsetDefaultWorkflowsInOrg(ctx, sqlc.UnsetDefaultWorkflowsInOrgParams{
 			OrganizationID: orgID,
 			UpdatedByID:    pgtype.UUID{Bytes: updatedByID, Valid: true},
