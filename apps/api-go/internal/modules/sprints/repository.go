@@ -163,4 +163,3 @@ func (r *pgRepository) ArchiveByID(ctx context.Context, id uuid.UUID) (int64, er
 func (r *pgRepository) LogActivity(ctx context.Context, arg sqlc.CreateSprintActivityLogParams) error {
 	return r.queries.CreateSprintActivityLog(ctx, arg)
 }
-

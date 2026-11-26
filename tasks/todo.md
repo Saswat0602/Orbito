@@ -785,14 +785,14 @@
 **Description:** Implement the string-based Lexorank calculation engine and endpoints in internal/modules/task_ranks. Calculates lexicographical midpoints between previous and next rank strings to order tasks with zero rebalancing overhead.
 
 **Acceptance criteria:**
-- [ ] Lexorank midpoint calculation produces identical string ranks as NestJS `task-ranks.service.ts`
-- [ ] `GET /api/task-ranks/project/:projectId` and `PATCH /api/task-ranks/:taskId` persist rank positions
-- [ ] Unit tests verify edge cases: first position, last position, collision avoidance
+- [x] Lexorank midpoint calculation produces identical string ranks as NestJS `task-ranks.service.ts`
+- [x] `GET /api/task-ranks/project/:projectId` and `PATCH /api/task-ranks/:taskId` persist rank positions
+- [x] Unit tests verify edge cases: first position, last position, collision avoidance
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_ranks/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_ranks/...`
-- [ ] Manual check: Compute midpoint between rank strings and assert sorted ordering
+- [x] Tests pass: `go test -v ./internal/modules/task_ranks/...`
+- [x] Build succeeds: `go build ./internal/modules/task_ranks/...`
+- [x] Manual check: Compute midpoint between rank strings and assert sorted ordering
 
 **Dependencies:** Task 23
 
@@ -812,14 +812,14 @@
 **Description:** Implement core task lifecycle in internal/modules/tasks: task creation with auto-incremented project key (e.g. 'ORB-142'), slug generation, get by UUID, get by slug, get by key, update, hard delete, and archive.
 
 **Acceptance criteria:**
-- [ ] `POST /api/tasks` assigns next project key atomically and calculates initial Lexorank
-- [ ] `GET /api/tasks/:id`, `GET /api/tasks/slug/:slug`, and `GET /api/tasks/key/:key` return full task details with relations
-- [ ] `DELETE /api/tasks/:id` deletes task with cascading relations in PostgreSQL
+- [x] `POST /api/tasks` assigns next project key atomically and calculates initial Lexorank
+- [x] `GET /api/tasks/:id`, `GET /api/tasks/slug/:slug`, and `GET /api/tasks/key/:key` return full task details with relations
+- [x] `DELETE /api/tasks/:id` deletes task with cascading relations in PostgreSQL
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/tasks/...`
-- [ ] Build succeeds: `go build ./internal/modules/tasks/...`
-- [ ] Manual check: Create task, retrieve by key (e.g. 'ORB-1'), and verify formatted output
+- [x] Tests pass: `go test -v ./internal/modules/tasks/...`
+- [x] Build succeeds: `go build ./internal/modules/tasks/...`
+- [x] Manual check: Create task, retrieve by key (e.g. 'ORB-1'), and verify formatted output
 
 **Dependencies:** Task 29
 
@@ -839,14 +839,14 @@
 **Description:** Implement task query views in internal/modules/tasks: GET /api/tasks (with sanitized search/filter/pagination), GET /api/tasks/grouped (group by status, priority, assignee, sprint), GET /api/tasks/by-status, GET /api/tasks/today, and GET /api/tasks/all-tasks.
 
 **Acceptance criteria:**
-- [ ] List endpoints return standard 5-field pagination envelope `{ tasks, pagination }`
-- [ ] Grouped endpoint aggregates tasks into buckets with counts without N+1 queries
-- [ ] `GET /api/tasks/today` returns tasks assigned to user due today or overdue
+- [x] List endpoints return standard 5-field pagination envelope `{ tasks, pagination }`
+- [x] Grouped endpoint aggregates tasks into buckets with counts without N+1 queries
+- [x] `GET /api/tasks/today` returns tasks assigned to user due today or overdue
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/tasks/list_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/tasks/...`
-- [ ] Manual check: Request grouped tasks by status and verify response schema
+- [x] Tests pass: `go test -v ./internal/modules/tasks/list_test.go`
+- [x] Build succeeds: `go build ./internal/modules/tasks/...`
+- [x] Manual check: Request grouped tasks by status and verify response schema
 
 **Dependencies:** Task 30
 
@@ -863,14 +863,14 @@
 **Description:** Implement high-throughput batch task operations in internal/modules/tasks: POST /api/tasks/bulk-create (batch insert with sequential keys), POST /api/tasks/bulk-delete, POST /api/tasks/bulk-status-update, and POST /api/tasks/bulk-assign within database transactions.
 
 **Acceptance criteria:**
-- [ ] Bulk operations execute inside `WithTx` transaction to prevent partial writes
-- [ ] `POST /api/tasks/bulk-status-update` updates multiple tasks and validates allowed status transitions
-- [ ] `POST /api/tasks/bulk-delete` deletes specified IDs and unlinks references
+- [x] Bulk operations execute inside `WithTx` transaction to prevent partial writes
+- [x] `POST /api/tasks/bulk-status-update` updates multiple tasks and validates allowed status transitions
+- [x] `POST /api/tasks/bulk-delete` deletes specified IDs and unlinks references
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/tasks/bulk_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/tasks/...`
-- [ ] Manual check: Execute bulk status update on 3 tasks and verify status in DB
+- [x] Tests pass: `go test -v ./internal/modules/tasks/bulk_test.go`
+- [x] Build succeeds: `go build ./internal/modules/tasks/...`
+- [x] Manual check: Execute bulk status update on 3 tasks and verify status in DB
 
 **Dependencies:** Task 30
 
@@ -887,14 +887,14 @@
 **Description:** Implement specialized task mutation endpoints in internal/modules/tasks: PATCH /api/tasks/:id/reorder (Lexorank recalculation), PATCH /api/tasks/:id/status (with transition verification), PATCH /api/tasks/:id/assignees, PATCH /api/tasks/:id/unassign, PATCH /api/tasks/:id/priority, and PATCH /api/tasks/:id/due-date.
 
 **Acceptance criteria:**
-- [ ] Reordering recalculates task rank and updates position in kanban column
-- [ ] Status change verifies transition is permitted by workflow status graph
-- [ ] Assignee updates synchronize task_assignees join table
+- [x] Reordering recalculates task rank and updates position in kanban column
+- [x] Status change verifies transition is permitted by workflow status graph
+- [x] Assignee updates synchronize task_assignees join table
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/tasks/reorder_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/tasks/...`
-- [ ] Manual check: Drag and reorder task on kanban board and verify position persistence
+- [x] Tests pass: `go test -v ./internal/modules/tasks/reorder_test.go`
+- [x] Build succeeds: `go build ./internal/modules/tasks/...`
+- [x] Manual check: Drag and reorder task on kanban board and verify position persistence
 
 **Dependencies:** Task 30
 
@@ -911,14 +911,14 @@
 **Description:** Implement recurring tasks lifecycle in internal/modules/tasks: POST /api/tasks/:id/recurrence (configures DAILY, WEEKLY, MONTHLY pattern), POST /api/tasks/:id/complete-occurrence, and the midnight cron job generating upcoming occurrences with 1-day lead time.
 
 **Acceptance criteria:**
-- [ ] `POST /api/tasks/:id/recurrence` creates RecurringTask configuration
-- [ ] `POST /api/tasks/:id/complete-occurrence` marks current task done and generates next occurrence
-- [ ] Midnight scheduler evaluates active recurring tasks and generates due instances
+- [x] `POST /api/tasks/:id/recurrence` creates RecurringTask configuration
+- [x] `POST /api/tasks/:id/complete-occurrence` marks current task done and generates next occurrence
+- [x] Midnight scheduler evaluates active recurring tasks and generates due instances
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/tasks/recurrence_test.go`
-- [ ] Build succeeds: `go build ./internal/modules/tasks/...`
-- [ ] Manual check: Configure weekly recurrence, complete occurrence, and verify next task date
+- [x] Tests pass: `go test -v ./internal/modules/tasks/recurrence_test.go`
+- [x] Build succeeds: `go build ./internal/modules/tasks/...`
+- [x] Manual check: Configure weekly recurrence, complete occurrence, and verify next task date
 
 **Dependencies:** Task 30
 
@@ -935,14 +935,14 @@
 **Description:** Implement task dependency graph in internal/modules/task_dependencies: creating dependencies (BLOCKS, BLOCKED_BY, RELATES_TO), circular dependency cycle detection, listing dependencies by task, and removing dependencies.
 
 **Acceptance criteria:**
-- [ ] `POST /api/task-dependencies` rejects self-dependency and circular dependency loops with 400 Bad Request
-- [ ] `GET /api/task-dependencies/task/:id` returns blockers and dependent tasks
-- [ ] `DELETE /api/task-dependencies/:id` removes dependency link
+- [x] `POST /api/task-dependencies` rejects self-dependency and circular dependency loops with 400 Bad Request
+- [x] `GET /api/task-dependencies/task/:id` returns blockers and dependent tasks
+- [x] `DELETE /api/task-dependencies/:id` removes dependency link
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_dependencies/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_dependencies/...`
-- [ ] Manual check: Attempt to create circular dependency A -> B -> A and assert error returned
+- [x] Tests pass: `go test -v ./internal/modules/task_dependencies/...`
+- [x] Build succeeds: `go build ./internal/modules/task_dependencies/...`
+- [x] Manual check: Attempt to create circular dependency A -> B -> A and assert error returned
 
 **Dependencies:** Task 30
 
@@ -962,14 +962,14 @@
 **Description:** Implement task watchers (subscribers) in internal/modules/task_watchers and label associations in internal/modules/task_label: subscribing/unsubscribing users to task notifications and attaching/detaching labels.
 
 **Acceptance criteria:**
-- [ ] `POST /api/task-watchers` adds watcher; prevents duplicate subscriptions
-- [ ] `GET /api/task-watchers/task/:id` lists active watchers with user details
-- [ ] `POST /api/task-label` links label to task; `DELETE /api/task-label` unlinks
+- [x] `POST /api/task-watchers` adds watcher; prevents duplicate subscriptions
+- [x] `GET /api/task-watchers/task/:id` lists active watchers with user details
+- [x] `POST /api/task-label` links label to task; `DELETE /api/task-label` unlinks
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_watchers/... ./internal/modules/task_label/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_watchers/... ./internal/modules/task_label/...`
-- [ ] Manual check: Subscribe user to task watcher list and verify in watcher list query
+- [x] Tests pass: `go test -v ./internal/modules/task_watchers/... ./internal/modules/task_label/...`
+- [x] Build succeeds: `go build ./internal/modules/task_watchers/... ./internal/modules/task_label/...`
+- [x] Manual check: Subscribe user to task watcher list and verify in watcher list query
 
 **Dependencies:** Task 30
 
@@ -990,14 +990,14 @@
 **Description:** Implement task discussions in internal/modules/task_comments: comment creation, updating, deleting, listing by task, and user `@mention` parsing that automatically triggers in-app notifications for tagged members.
 
 **Acceptance criteria:**
-- [ ] `POST /api/task-comments` creates comment and parses `@name` mentions to notify mentioned users
-- [ ] `GET /api/task-comments/task/:id` returns threaded comments ordered by createdAt ascending
-- [ ] Only comment author or workspace MANAGER/OWNER can edit or delete a comment
+- [x] `POST /api/task-comments` creates comment and parses `@name` mentions to notify mentioned users
+- [x] `GET /api/task-comments/task/:id` returns threaded comments ordered by createdAt ascending
+- [x] Only comment author or workspace MANAGER/OWNER can edit or delete a comment
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_comments/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_comments/...`
-- [ ] Manual check: Post comment with mention and verify notification is created for mentioned user
+- [x] Tests pass: `go test -v ./internal/modules/task_comments/...`
+- [x] Build succeeds: `go build ./internal/modules/task_comments/...`
+- [x] Manual check: Post comment with mention and verify notification is created for mentioned user
 
 **Dependencies:** Task 30
 
@@ -1017,14 +1017,14 @@
 **Description:** Implement task attachment file management in internal/modules/task_attachments: file upload (validating MIME types and MAX_FILE_SIZE), secure download, image preview, storage stats, and unlinking files on delete.
 
 **Acceptance criteria:**
-- [ ] `POST /api/task-attachments/upload/:taskId` handles multipart upload and records attachment row in DB
-- [ ] `GET /api/task-attachments/:id/download` streams file with Content-Disposition attachment header
-- [ ] `GET /api/task-attachments/stats` returns storage usage metrics by file type
+- [x] `POST /api/task-attachments/upload/:taskId` handles multipart upload and records attachment row in DB
+- [x] `GET /api/task-attachments/:id/download` streams file with Content-Disposition attachment header
+- [x] `GET /api/task-attachments/stats` returns storage usage metrics by file type
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_attachments/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_attachments/...`
-- [ ] Manual check: Upload image attachment to task, retrieve preview and download URLs
+- [x] Tests pass: `go test -v ./internal/modules/task_attachments/...`
+- [x] Build succeeds: `go build ./internal/modules/task_attachments/...`
+- [x] Manual check: Upload image attachment to task, retrieve preview and download URLs
 
 **Dependencies:** Task 30
 
@@ -1044,14 +1044,14 @@
 **Description:** Implement time tracking engine in internal/modules/time_entries: starting timer, stopping active timer (calculating exact duration seconds), manual time entry logging, time summary by user/task/project, and IDOR access validation.
 
 **Acceptance criteria:**
-- [ ] `POST /api/time-entries/start` starts timer; automatically stops any existing running timer for user
-- [ ] `POST /api/time-entries/stop` stops timer and writes final duration
-- [ ] IDOR check prevents modifying or deleting another user's time entries without MANAGER role
+- [x] `POST /api/time-entries/start` starts timer; automatically stops any existing running timer for user
+- [x] `POST /api/time-entries/stop` stops timer and writes final duration
+- [x] IDOR check prevents modifying or deleting another user's time entries without MANAGER role
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/time_entries/...`
-- [ ] Build succeeds: `go build ./internal/modules/time_entries/...`
-- [ ] Manual check: Start timer, wait 3 seconds, stop timer, and verify duration recorded is >= 3 seconds
+- [x] Tests pass: `go test -v ./internal/modules/time_entries/...`
+- [x] Build succeeds: `go build ./internal/modules/time_entries/...`
+- [x] Manual check: Start timer, wait 3 seconds, stop timer, and verify duration recorded is >= 3 seconds
 
 **Dependencies:** Task 30
 
@@ -1071,14 +1071,14 @@
 **Description:** Implement the Gantt chart and timeline analytics module in internal/modules/gantt: GET /api/gantt/project/:projectId (tasks with start/due dates, progress, dependencies), GET /api/gantt/sprint/:sprintId, and resource allocation by member.
 
 **Acceptance criteria:**
-- [ ] `GET /api/gantt/project/:projectId` returns tasks formatted for timeline rendering with dependencies
-- [ ] `GET /api/gantt/project/:projectId/resources` aggregates workload distribution across team members
-- [ ] Handles tasks without due dates gracefully without timeline rendering errors
+- [x] `GET /api/gantt/project/:projectId` returns tasks formatted for timeline rendering with dependencies
+- [x] `GET /api/gantt/project/:projectId/resources` aggregates workload distribution across team members
+- [x] Handles tasks without due dates gracefully without timeline rendering errors
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/gantt/...`
-- [ ] Build succeeds: `go build ./internal/modules/gantt/...`
-- [ ] Manual check: Fetch Gantt timeline for project and verify start/due dates format
+- [x] Tests pass: `go test -v ./internal/modules/gantt/...`
+- [x] Build succeeds: `go build ./internal/modules/gantt/...`
+- [x] Manual check: Fetch Gantt timeline for project and verify start/due dates format
 
 **Dependencies:** Task 30
 
@@ -1095,10 +1095,10 @@
 
 ## Checkpoint: After Task 40 — Task Execution Engine Verified
 
-- [ ] Task CRUD, project-scoped sequential keys ('ORB-1'), and Lexorank reordering verified
-- [ ] Kanban grouped queries, today's agenda, and bulk status/delete operations work
-- [ ] Task recurrence cron, dependencies, watchers, comments with mentions, attachments, and timers verified
-- [ ] Review with human before proceeding
+- [x] Task CRUD, project-scoped sequential keys ('ORB-1'), and Lexorank reordering verified
+- [x] Kanban grouped queries, today's agenda, and bulk status/delete operations work
+- [x] Task recurrence cron, dependencies, watchers, comments with mentions, attachments, and timers verified
+- [x] Review with human before proceeding
 
 ---
 

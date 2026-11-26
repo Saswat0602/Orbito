@@ -63,21 +63,21 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Projects, workflows, statuses, labels, and sprints function with exact status transition validation
 
 ### Phase 4: Task Execution Engine & Agile Work Management
-- [ ] Task 29: Task Ranks Module & Lexorank Algorithm (`internal/modules/task_ranks`)
-- [ ] Task 30: Tasks Core CRUD & Slugs (`/api/tasks` create, get by id/slug/key, update, delete, archive)
-- [ ] Task 31: Tasks Listing, Filtering & Grouping (`/api/tasks` list, `/grouped`, `/by-status`, `/today`, `/all-tasks`)
-- [ ] Task 32: Tasks Bulk Operations (`/api/tasks/bulk-create`, `/bulk-delete`, `/bulk-status-update`, `/bulk-assign`)
-- [ ] Task 33: Tasks Reordering & Status Transitions (`/api/tasks/:id/reorder`, `/status`, `/assignees`, `/priority`)
-- [ ] Task 34: Task Recurrence Engine & Cron (`/api/tasks/:id/recurrence`, complete occurrence, daily generation)
-- [ ] Task 35: Task Dependencies Module (`/api/task-dependencies` blocking, blocked-by relations)
-- [ ] Task 36: Task Watchers & Labels Association (`/api/task-watchers`, `/api/task-label`)
-- [ ] Task 37: Task Comments Module (`/api/task-comments` CRUD, user mentions `@name`)
-- [ ] Task 38: Task Attachments Module (`/api/task-attachments` file upload, preview, download, stats)
-- [ ] Task 39: Time Entries Module (`/api/time-entries` timer start/stop, log, summary, IDOR checks)
-- [ ] Task 40: Gantt Module (`/api/gantt` project timeline, sprint schedule, resource allocation)
+- [x] Task 29: Task Ranks Module & Lexorank Algorithm (`internal/modules/task_ranks`)
+- [x] Task 30: Tasks Core CRUD & Slugs (`/api/tasks` create, get by id/slug/key, update, delete, archive)
+- [x] Task 31: Tasks Listing, Filtering & Grouping (`/api/tasks` list, `/grouped`, `/by-status`, `/today`, `/all-tasks`)
+- [x] Task 32: Tasks Bulk Operations (`/api/tasks/bulk-create`, `/bulk-delete`, `/bulk-status-update`, `/bulk-assign`)
+- [x] Task 33: Tasks Reordering & Status Transitions (`/api/tasks/:id/reorder`, `/status`, `/assignees`, `/priority`)
+- [x] Task 34: Task Recurrence Engine & Cron (`/api/tasks/:id/recurrence`, complete occurrence, daily generation)
+- [x] Task 35: Task Dependencies Module (`/api/task-dependencies` blocking, blocked-by relations)
+- [x] Task 36: Task Watchers & Labels Association (`/api/task-watchers`, `/api/task-label`)
+- [x] Task 37: Task Comments Module (`/api/task-comments` CRUD, user mentions `@name`)
+- [x] Task 38: Task Attachments Module (`/api/task-attachments` file upload, preview, download, stats)
+- [x] Task 39: Time Entries Module (`/api/time-entries` timer start/stop, log, summary, IDOR checks)
+- [x] Task 40: Gantt Module (`/api/gantt` project timeline, sprint schedule, resource allocation)
 
 ### Checkpoint: Task Execution Engine Verified
-- [ ] Kanban boards, task detail drawers, list views, bulk actions, reordering, and timers match NestJS responses
+- [x] Kanban boards, task detail drawers, list views, bulk actions, reordering, and timers match NestJS responses
 
 ### Phase 5: Real-Time Collaboration & Audit
 - [ ] Task 41: Real-Time Events Gateway (Socket.IO v4 protocol engine at `/events`, room management)

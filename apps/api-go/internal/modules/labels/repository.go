@@ -188,4 +188,3 @@ func (r *pgRepository) ReplaceTaskLabelsTx(ctx context.Context, taskID, workspac
 func (r *pgRepository) ListLabelsByTaskID(ctx context.Context, taskID uuid.UUID) ([]sqlc.ListLabelsByTaskIDRow, error) {
 	return r.queries.ListLabelsByTaskID(ctx, taskID)
 }
-

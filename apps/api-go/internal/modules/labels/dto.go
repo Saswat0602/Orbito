@@ -146,4 +146,3 @@ func pgUUIDPtr(u pgtype.UUID) *string {
 	}
 	return nil
 }
-

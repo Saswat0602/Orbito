@@ -59,4 +59,3 @@ func mapDetailsRow(r *sqlc.GetLabelDetailsByIDRow, includeOrg bool, taskLabels [
 		Count:         &LabelCount{TaskLabels: r.TaskLabelCount},
 	}
 }
-

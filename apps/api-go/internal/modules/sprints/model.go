@@ -67,4 +67,3 @@ func mapDetailsRow(r *sqlc.GetSprintDetailsByIDRow, tasks []SprintTaskItem) *Spr
 		Count:         &SprintCount{Tasks: r.TaskCount},
 	}
 }
-

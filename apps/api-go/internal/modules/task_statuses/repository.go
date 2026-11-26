@@ -218,4 +218,3 @@ func (r *pgRepository) RestoreByID(ctx context.Context, id, updatedByID uuid.UUI
 		UpdatedByID: pgtype.UUID{Bytes: updatedByID, Valid: true},
 	})
 }
-

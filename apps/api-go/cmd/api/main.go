@@ -20,6 +20,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/admin"
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
+	"github.com/orbito/api-go/internal/modules/gantt"
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/invitations"
 	"github.com/orbito/api-go/internal/modules/labels"
@@ -29,7 +30,15 @@ import (
 	"github.com/orbito/api-go/internal/modules/projects"
 	"github.com/orbito/api-go/internal/modules/settings"
 	"github.com/orbito/api-go/internal/modules/sprints"
+	"github.com/orbito/api-go/internal/modules/task_attachments"
+	"github.com/orbito/api-go/internal/modules/task_comments"
+	"github.com/orbito/api-go/internal/modules/task_dependencies"
+	"github.com/orbito/api-go/internal/modules/task_label"
+	"github.com/orbito/api-go/internal/modules/task_ranks"
 	"github.com/orbito/api-go/internal/modules/task_statuses"
+	"github.com/orbito/api-go/internal/modules/task_watchers"
+	"github.com/orbito/api-go/internal/modules/tasks"
+	"github.com/orbito/api-go/internal/modules/time_entries"
 	"github.com/orbito/api-go/internal/modules/users"
 	"github.com/orbito/api-go/internal/modules/workflows"
 	"github.com/orbito/api-go/internal/modules/workspace_members"
@@ -38,6 +47,7 @@ import (
 	"github.com/orbito/api-go/internal/platform/database"
 	"github.com/orbito/api-go/internal/platform/logger"
 	"github.com/orbito/api-go/internal/platform/mailer"
+	"github.com/orbito/api-go/internal/platform/storage"
 	"github.com/orbito/api-go/internal/shared/apperror"
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
@@ -239,6 +249,92 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	sprintsSvc := sprints.NewService(sprintsRepo, nil)
 	sprintsHandler := sprints.NewHandler(sprintsSvc)
 	r.Mount("/api/sprints", sprints.Routes(sprintsHandler, authMw))
+
+	var storeProvider storage.Provider
+	if localStore, storeErr := storage.NewLocalProvider(cfg.UploadDest); storeErr == nil {
+		storeProvider = localStore
+		r.Get("/uploads/*", func(w http.ResponseWriter, req *http.Request) {
+			key := chi.URLParam(req, "*")
+			if streamErr := localStore.StreamLocal(w, req, key, false); streamErr != nil {
+				httpx.RespondError(w, req, streamErr)
+			}
+		})
+	} else if appLog != nil {
+		appLog.Warn("failed to initialize local storage provider", "err", storeErr)
+	}
+
+	var taskRanksRepo task_ranks.Repository
+	if db != nil {
+		taskRanksRepo = task_ranks.NewRepository(db)
+	}
+	taskRanksSvc := task_ranks.NewService(taskRanksRepo)
+	taskRanksHandler := task_ranks.NewHandler(taskRanksSvc)
+	r.Mount("/api/task-ranks", task_ranks.Routes(taskRanksHandler, authMw))
+
+	var tasksRepo tasks.Repository
+	if db != nil {
+		tasksRepo = tasks.NewRepository(db)
+	}
+	tasksSvc := tasks.NewService(tasksRepo, taskRanksSvc, storeProvider, nil, frontendURL)
+	tasksHandler := tasks.NewHandler(tasksSvc)
+	r.Mount("/api/tasks", tasks.Routes(tasksHandler, authMw))
+	r.Mount("/api/task-shares", tasks.ShareRoutes(tasksHandler, authMw))
+
+	var taskDepsRepo task_dependencies.Repository
+	if db != nil {
+		taskDepsRepo = task_dependencies.NewRepository(db)
+	}
+	taskDepsSvc := task_dependencies.NewService(taskDepsRepo)
+	taskDepsHandler := task_dependencies.NewHandler(taskDepsSvc)
+	r.Mount("/api/task-dependencies", task_dependencies.Routes(taskDepsHandler, authMw))
+
+	var taskWatchersRepo task_watchers.Repository
+	if db != nil {
+		taskWatchersRepo = task_watchers.NewRepository(db)
+	}
+	taskWatchersSvc := task_watchers.NewService(taskWatchersRepo)
+	taskWatchersHandler := task_watchers.NewHandler(taskWatchersSvc)
+	r.Mount("/api/task-watchers", task_watchers.Routes(taskWatchersHandler, authMw))
+
+	var taskLabelRepo task_label.Repository
+	if db != nil {
+		taskLabelRepo = task_label.NewRepository(db)
+	}
+	taskLabelSvc := task_label.NewService(taskLabelRepo)
+	taskLabelHandler := task_label.NewHandler(taskLabelSvc)
+	r.Mount("/api/task-labels", task_label.Routes(taskLabelHandler, authMw))
+
+	var taskCommentsRepo task_comments.Repository
+	if db != nil {
+		taskCommentsRepo = task_comments.NewRepository(db)
+	}
+	taskCommentsSvc := task_comments.NewService(taskCommentsRepo, nil, nil)
+	taskCommentsHandler := task_comments.NewHandler(taskCommentsSvc)
+	r.Mount("/api/task-comments", task_comments.Routes(taskCommentsHandler, authMw))
+
+	var taskAttachmentsRepo task_attachments.Repository
+	if db != nil {
+		taskAttachmentsRepo = task_attachments.NewRepository(db)
+	}
+	taskAttachmentsSvc := task_attachments.NewService(taskAttachmentsRepo, storeProvider)
+	taskAttachmentsHandler := task_attachments.NewHandler(taskAttachmentsSvc)
+	r.Mount("/api/task-attachments", task_attachments.Routes(taskAttachmentsHandler, authMw))
+
+	var timeEntriesRepo time_entries.Repository
+	if db != nil {
+		timeEntriesRepo = time_entries.NewRepository(db)
+	}
+	timeEntriesSvc := time_entries.NewService(timeEntriesRepo)
+	timeEntriesHandler := time_entries.NewHandler(timeEntriesSvc)
+	r.Mount("/api/time-entries", time_entries.Routes(timeEntriesHandler, authMw))
+
+	var ganttRepo gantt.Repository
+	if db != nil {
+		ganttRepo = gantt.NewRepository(db)
+	}
+	ganttSvc := gantt.NewService(ganttRepo)
+	ganttHandler := gantt.NewHandler(ganttSvc)
+	r.Mount("/api/gantt", gantt.Routes(ganttHandler, authMw))
 
 	var adminRepo admin.Repository
 	if db != nil {

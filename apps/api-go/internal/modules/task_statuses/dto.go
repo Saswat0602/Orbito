@@ -147,4 +147,3 @@ func pgTSPtr(ts pgtype.Timestamp) *string {
 	}
 	return nil
 }
-

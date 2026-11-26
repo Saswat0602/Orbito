@@ -24,6 +24,7 @@ func TestBuildRouter(t *testing.T) {
 		JWTRefreshSecret: "test-refresh-secret-at-least-32-chars!",
 		CORSOrigins:      []string{"http://localhost:3001"},
 		MaxFileSize:      10485760,
+		UploadDest:       t.TempDir(),
 	}
 	appLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
 	router := BuildRouter(cfg, nil, appLog)
@@ -112,7 +113,21 @@ func TestBuildRouter(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), "Unauthorized")
 	})
 
-	for _, path := range []string{"/api/task-statuses", "/api/labels", "/api/sprints"} {
+	for _, path := range []string{
+		"/api/task-statuses",
+		"/api/labels",
+		"/api/sprints",
+		"/api/task-ranks/position?taskId=00000000-0000-0000-0000-000000000001&scopeType=PROJECT&scopeId=00000000-0000-0000-0000-000000000002",
+		"/api/tasks",
+		"/api/task-shares/task/00000000-0000-0000-0000-000000000001",
+		"/api/task-dependencies",
+		"/api/task-watchers",
+		"/api/task-labels",
+		"/api/task-comments",
+		"/api/task-attachments",
+		"/api/time-entries",
+		"/api/gantt/project/00000000-0000-0000-0000-000000000001",
+	} {
 		t.Run("GET "+path+" requires authentication", func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, path, nil)
 			rr := httptest.NewRecorder()
