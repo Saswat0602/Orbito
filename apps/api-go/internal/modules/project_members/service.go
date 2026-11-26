@@ -259,13 +259,13 @@ func (s *service) UpdateRole(ctx context.Context, id uuid.UUID, req UpdateProjec
 		return nil, apperror.NotFound("Project member not found")
 	}
 
-	if err := s.checkElevatedAuthority(ctx, existing.ProjectID, currentUserID, isSuperAdmin); err != nil {
-		return nil, err
+	if authErr := s.checkElevatedAuthority(ctx, existing.ProjectID, currentUserID, isSuperAdmin); authErr != nil {
+		return nil, authErr
 	}
 
-	newRole, err := parseMemberRole(&req.Role)
-	if err != nil {
-		return nil, err
+	newRole, roleErr := parseMemberRole(&req.Role)
+	if roleErr != nil {
+		return nil, roleErr
 	}
 
 	if existing.Role == sqlc.RoleOWNER && newRole != sqlc.RoleOWNER {
