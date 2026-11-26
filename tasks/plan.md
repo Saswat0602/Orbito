@@ -54,13 +54,13 @@ This plan specifies the implementation breakdown for building a high-performance
 ### Phase 3: Project Domain & Agile Foundations
 - [x] Task 23: Projects Module (`/api/projects` CRUD, slug/key, visibility, custom task prefixes, stats)
 - [x] Task 24: Project Members Module (`/api/project-members` list, add, role update, remove)
-- [ ] Task 25: Workflows Module (`/api/workflows` CRUD, default workflow generation)
-- [ ] Task 26: Task Statuses Module (`/api/task-statuses` custom status columns, categories, transitions)
-- [ ] Task 27: Labels Module (`/api/labels` global and workspace labels CRUD)
-- [ ] Task 28: Sprints Module (`/api/sprints` planning, active, complete, burndown metrics)
+- [x] Task 25: Workflows Module (`/api/workflows` CRUD, default workflow generation)
+- [x] Task 26: Task Statuses Module (`/api/task-statuses` custom status columns, categories, transitions)
+- [x] Task 27: Labels Module (`/api/labels` global and workspace labels CRUD)
+- [x] Task 28: Sprints Module (`/api/sprints` planning, active, complete, burndown metrics)
 
 ### Checkpoint: Project Domain & Workflows Verified
-- [ ] Projects, workflows, statuses, labels, and sprints function with exact status transition validation
+- [x] Projects, workflows, statuses, labels, and sprints function with exact status transition validation
 
 ### Phase 4: Task Execution Engine & Agile Work Management
 - [ ] Task 29: Task Ranks Module & Lexorank Algorithm (`internal/modules/task_ranks`)

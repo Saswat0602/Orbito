@@ -22,11 +22,14 @@ import (
 	"github.com/orbito/api-go/internal/modules/email"
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/invitations"
+	"github.com/orbito/api-go/internal/modules/labels"
 	"github.com/orbito/api-go/internal/modules/organization_members"
 	"github.com/orbito/api-go/internal/modules/organizations"
 	"github.com/orbito/api-go/internal/modules/project_members"
 	"github.com/orbito/api-go/internal/modules/projects"
 	"github.com/orbito/api-go/internal/modules/settings"
+	"github.com/orbito/api-go/internal/modules/sprints"
+	"github.com/orbito/api-go/internal/modules/task_statuses"
 	"github.com/orbito/api-go/internal/modules/users"
 	"github.com/orbito/api-go/internal/modules/workflows"
 	"github.com/orbito/api-go/internal/modules/workspace_members"
@@ -212,6 +215,30 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	workflowsSvc := workflows.NewService(workflowsRepo)
 	workflowsHandler := workflows.NewHandler(workflowsSvc)
 	r.Mount("/api/workflows", workflows.Routes(workflowsHandler, authMw))
+
+	var taskStatusesRepo task_statuses.Repository
+	if db != nil {
+		taskStatusesRepo = task_statuses.NewRepository(db)
+	}
+	taskStatusesSvc := task_statuses.NewService(taskStatusesRepo)
+	taskStatusesHandler := task_statuses.NewHandler(taskStatusesSvc)
+	r.Mount("/api/task-statuses", task_statuses.Routes(taskStatusesHandler, authMw))
+
+	var labelsRepo labels.Repository
+	if db != nil {
+		labelsRepo = labels.NewRepository(db)
+	}
+	labelsSvc := labels.NewService(labelsRepo)
+	labelsHandler := labels.NewHandler(labelsSvc)
+	r.Mount("/api/labels", labels.Routes(labelsHandler, authMw))
+
+	var sprintsRepo sprints.Repository
+	if db != nil {
+		sprintsRepo = sprints.NewRepository(db)
+	}
+	sprintsSvc := sprints.NewService(sprintsRepo, nil)
+	sprintsHandler := sprints.NewHandler(sprintsSvc)
+	r.Mount("/api/sprints", sprints.Routes(sprintsHandler, authMw))
 
 	var adminRepo admin.Repository
 	if db != nil {

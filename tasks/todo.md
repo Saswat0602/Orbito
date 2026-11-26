@@ -668,14 +668,14 @@
 **Description:** Implement the Workflows module in internal/modules/workflows: workflow CRUD, assigning workflows to projects, and auto-generating standard 4-state workflow (To Do, In Progress, In Review, Done) for new organizations.
 
 **Acceptance criteria:**
-- [ ] `POST /api/workflows` creates custom workflow with initial status nodes
-- [ ] `GET /api/workflows/:id` returns workflow including its task statuses and transitions
-- [ ] Cascade deletes or reassigns task statuses when workflow is deleted
+- [x] `POST /api/workflows` creates custom workflow with initial status nodes
+- [x] `GET /api/workflows/:id` returns workflow including its task statuses and transitions
+- [x] Cascade deletes or reassigns task statuses when workflow is deleted
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/workflows/...`
-- [ ] Build succeeds: `go build ./internal/modules/workflows/...`
-- [ ] Manual check: Create a workflow and verify status nodes are linked in database
+- [x] Tests pass: `go test -v ./internal/modules/workflows/...`
+- [x] Build succeeds: `go build ./internal/modules/workflows/...`
+- [x] Manual check: Create a workflow and verify status nodes are linked in database
 
 **Dependencies:** Task 23
 
@@ -695,14 +695,14 @@
 **Description:** Implement task status columns and status transition rules in internal/modules/task_statuses: status column CRUD, color/category assignment (TODO, IN_PROGRESS, DONE), position ordering, and transition permission checks.
 
 **Acceptance criteria:**
-- [ ] `GET /api/task-statuses/workflow/:workflowId` returns statuses ordered by position
-- [ ] Prevents deleting default status if tasks are currently in that status
-- [ ] Transition validation confirms whether task can move from Status A to Status B
+- [x] `GET /api/task-statuses/workflow/:workflowId` returns statuses ordered by position
+- [x] Prevents deleting default status if tasks are currently in that status
+- [x] Transition validation confirms whether task can move from Status A to Status B
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/task_statuses/...`
-- [ ] Build succeeds: `go build ./internal/modules/task_statuses/...`
-- [ ] Manual check: Create custom status column and reorder positions
+- [x] Tests pass: `go test -v ./internal/modules/task_statuses/...`
+- [x] Build succeeds: `go build ./internal/modules/task_statuses/...`
+- [x] Manual check: Create custom status column and reorder positions
 
 **Dependencies:** Task 25
 
@@ -722,14 +722,14 @@
 **Description:** Implement label taxonomy in internal/modules/labels: creating, updating, listing, and deleting labels at global and workspace scopes with name, color, and description.
 
 **Acceptance criteria:**
-- [ ] `GET /api/labels` returns global and workspace-scoped labels
-- [ ] `POST /api/labels` enforces unique label names within scope
-- [ ] `DELETE /api/labels/:id` removes label and unlinks from associated tasks
+- [x] `GET /api/labels` returns global and workspace-scoped labels
+- [x] `POST /api/labels` enforces unique label names within scope
+- [x] `DELETE /api/labels/:id` removes label and unlinks from associated tasks
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/labels/...`
-- [ ] Build succeeds: `go build ./internal/modules/labels/...`
-- [ ] Manual check: Create a label with color hex and verify listing
+- [x] Tests pass: `go test -v ./internal/modules/labels/...`
+- [x] Build succeeds: `go build ./internal/modules/labels/...`
+- [x] Manual check: Create a label with color hex and verify listing
 
 **Dependencies:** Task 20
 
@@ -749,14 +749,14 @@
 **Description:** Implement Agile sprint management in internal/modules/sprints: sprint CRUD, starting a sprint (enforcing single active sprint per project), completing a sprint (with rollover of unfinished tasks), and calculating burndown chart metrics.
 
 **Acceptance criteria:**
-- [ ] `POST /api/sprints/:id/start` activates sprint and validates start/end dates
-- [ ] `POST /api/sprints/:id/complete` moves incomplete tasks to next sprint or backlog
-- [ ] `GET /api/sprints/:id/burndown` computes ideal vs actual story point burn rate
+- [x] `POST /api/sprints/:id/start` activates sprint and validates start/end dates
+- [x] `POST /api/sprints/:id/complete` moves incomplete tasks to next sprint or backlog
+- [x] `GET /api/sprints/:id/burndown` computes ideal vs actual story point burn rate
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/sprints/...`
-- [ ] Build succeeds: `go build ./internal/modules/sprints/...`
-- [ ] Manual check: Start a sprint, complete it, and verify unfinished tasks rollover to backlog
+- [x] Tests pass: `go test -v ./internal/modules/sprints/...`
+- [x] Build succeeds: `go build ./internal/modules/sprints/...`
+- [x] Manual check: Start a sprint, complete it, and verify unfinished tasks rollover to backlog
 
 **Dependencies:** Task 23
 
@@ -773,10 +773,10 @@
 
 ## Checkpoint: After Task 28 — Project Domain & Agile Foundations Verified
 
-- [ ] Project CRUD, custom task prefixes, and visibility rules functional
-- [ ] Workflows and custom task status columns enforce valid status transitions
-- [ ] Labels and sprints operate with burndown metrics calculation
-- [ ] Review with human before proceeding
+- [x] Project CRUD, custom task prefixes, and visibility rules functional
+- [x] Workflows and custom task status columns enforce valid status transitions
+- [x] Labels and sprints operate with burndown metrics calculation
+- [x] Review with human before proceeding
 
 ---
 

@@ -261,15 +261,15 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `GET` | `/api/workspaces/:workspaceId/jira-sync/projects/:projectKey/statuses` | JWT (Roles: MANAGER, OWNER) | `workspaceId:string, projectKey:string` | `JSON` | `backend/src/modules/jira-sync/jira-workspace.controller.ts` | `apps/api-go/internal/modules/jira-sync/handler.go` | **PENDING** |
 | `POST` | `/api/workspaces/:workspaceId/jira-sync/sync-all` | JWT (Roles: MANAGER, OWNER) | `workspaceId:string` | `JSON` | `backend/src/modules/jira-sync/jira-workspace.controller.ts` | `apps/api-go/internal/modules/jira-sync/handler.go` | **PENDING** |
 | `GET` | `/api/workspaces/:workspaceId/jira-sync/synced-projects` | JWT (Roles: MANAGER, OWNER) | `workspaceId:string` | `JSON` | `backend/src/modules/jira-sync/jira-workspace.controller.ts` | `apps/api-go/internal/modules/jira-sync/handler.go` | **PENDING** |
-| `GET` | `/api/labels` | JWT | `-` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `POST` | `/api/labels` | JWT | `CreateLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `DELETE` | `/api/labels/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `GET` | `/api/labels/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `PATCH` | `/api/labels/:id` | JWT | `UpdateLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `POST` | `/api/labels/assign` | JWT | `AssignLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `POST` | `/api/labels/assign-multiple` | JWT | `AssignMultipleLabelsDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `GET` | `/api/labels/task/:taskId` | JWT | `taskId:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
-| `DELETE` | `/api/labels/task/:taskId/label/:labelId` | JWT | `taskId:string, labelId:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **PENDING** |
+| `GET` | `/api/labels` | JWT | `-` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `POST` | `/api/labels` | JWT | `CreateLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `DELETE` | `/api/labels/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `GET` | `/api/labels/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `PATCH` | `/api/labels/:id` | JWT | `UpdateLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `POST` | `/api/labels/assign` | JWT | `AssignLabelDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `POST` | `/api/labels/assign-multiple` | JWT | `AssignMultipleLabelsDto` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `GET` | `/api/labels/task/:taskId` | JWT | `taskId:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
+| `DELETE` | `/api/labels/task/:taskId/label/:labelId` | JWT | `taskId:string, labelId:string` | `JSON` | `backend/src/modules/labels/labels.controller.ts` | `apps/api-go/internal/modules/labels/handler.go` | **DONE** |
 | `GET` | `/api/notifications` | JWT | `page:string, limit:string` | `JSON` | `backend/src/modules/notifications/notifications.controller.ts` | `apps/api-go/internal/modules/notifications/handler.go` | **PENDING** |
 | `DELETE` | `/api/notifications/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/notifications/notifications.controller.ts` | `apps/api-go/internal/modules/notifications/handler.go` | **PENDING** |
 | `GET` | `/api/notifications/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/notifications/notifications.controller.ts` | `apps/api-go/internal/modules/notifications/handler.go` | **PENDING** |
@@ -363,17 +363,17 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `DELETE` | `/api/settings/:key` | JWT | `key:string` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
 | `GET` | `/api/settings/:key` | JWT | `key:string` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
 | `POST` | `/api/settings/bulk` | JWT | `BulkSetSettingsDto` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
-| `GET` | `/api/sprints` | JWT | `projectId:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `POST` | `/api/sprints` | JWT | `CreateSprintDto` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `DELETE` | `/api/sprints/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `GET` | `/api/sprints/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `PATCH` | `/api/sprints/:id` | JWT | `UpdateSprintDto` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `PATCH` | `/api/sprints/:id/complete` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `PATCH` | `/api/sprints/:id/start` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `PATCH` | `/api/sprints/archive/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `GET` | `/api/sprints/by-slug/:projectSlug/:sprintSlug` | JWT | `projectSlug:string, sprintSlug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `GET` | `/api/sprints/project/:projectId/active` | JWT | `projectId:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
-| `GET` | `/api/sprints/slug` | JWT | `slug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **PENDING** |
+| `GET` | `/api/sprints` | JWT | `projectId:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `POST` | `/api/sprints` | JWT | `CreateSprintDto` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `DELETE` | `/api/sprints/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `GET` | `/api/sprints/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `PATCH` | `/api/sprints/:id` | JWT | `UpdateSprintDto` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `PATCH` | `/api/sprints/:id/complete` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `PATCH` | `/api/sprints/:id/start` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `PATCH` | `/api/sprints/archive/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `GET` | `/api/sprints/by-slug/:projectSlug/:sprintSlug` | JWT | `projectSlug:string, sprintSlug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `GET` | `/api/sprints/project/:projectId/active` | JWT | `projectId:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
+| `GET` | `/api/sprints/slug` | JWT | `slug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
 | `GET` | `/api/s3/presigned-get-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
 | `GET` | `/api/s3/presigned-put-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
 | `GET` | `/api/uploads/:folder/:filename` | Public | `folder:string, filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
@@ -412,16 +412,16 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `POST` | `/api/task-labels/assign-multiple` | JWT | `AssignMultipleTaskLabelsDto` | `JSON` | `backend/src/modules/task-label/task-labels.controller.ts` | `apps/api-go/internal/modules/task-label/handler.go` | **PENDING** |
 | `PATCH` | `/api/task-ranks/:taskId/reorder` | JWT | `ReorderDto` | `JSON` | `backend/src/modules/task-ranks/task-ranks.controller.ts` | `apps/api-go/internal/modules/task-ranks/handler.go` | **PENDING** |
 | `GET` | `/api/task-ranks/rebalance` | JWT | `-` | `JSON` | `backend/src/modules/task-ranks/task-ranks.controller.ts` | `apps/api-go/internal/modules/task-ranks/handler.go` | **PENDING** |
-| `GET` | `/api/task-statuses` | JWT | `-` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `POST` | `/api/task-statuses` | JWT | `CreateTaskStatusDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `DELETE` | `/api/task-statuses/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `GET` | `/api/task-statuses/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `PATCH` | `/api/task-statuses/:id` | JWT | `UpdateTaskStatusDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `PATCH` | `/api/task-statuses/:id/restore` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `GET` | `/api/task-statuses/deleted` | JWT | `-` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `POST` | `/api/task-statuses/from-project` | JWT | `CreateTaskStatusFromProjectDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `PATCH` | `/api/task-statuses/positions` | JWT | `UpdatePositionsDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
-| `GET` | `/api/task-statuses/project` | JWT | `projectId:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task-statuses/handler.go` | **PENDING** |
+| `GET` | `/api/task-statuses` | JWT | `-` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `POST` | `/api/task-statuses` | JWT | `CreateTaskStatusDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `DELETE` | `/api/task-statuses/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `GET` | `/api/task-statuses/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `PATCH` | `/api/task-statuses/:id` | JWT | `UpdateTaskStatusDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `PATCH` | `/api/task-statuses/:id/restore` | JWT | `id:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `GET` | `/api/task-statuses/deleted` | JWT | `-` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `POST` | `/api/task-statuses/from-project` | JWT | `CreateTaskStatusFromProjectDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `PATCH` | `/api/task-statuses/positions` | JWT | `UpdatePositionsDto` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
+| `GET` | `/api/task-statuses/project` | JWT | `projectId:string` | `JSON` | `backend/src/modules/task-statuses/task-statuses.controller.ts` | `apps/api-go/internal/modules/task_statuses/handler.go` | **DONE** |
 | `GET` | `/api/task-watchers` | JWT | `-` | `JSON` | `backend/src/modules/task-watchers/task-watchers.controller.ts` | `apps/api-go/internal/modules/task-watchers/handler.go` | **PENDING** |
 | `POST` | `/api/task-watchers` | JWT | `CreateTaskWatcherDto` | `JSON` | `backend/src/modules/task-watchers/task-watchers.controller.ts` | `apps/api-go/internal/modules/task-watchers/handler.go` | **PENDING** |
 | `DELETE` | `/api/task-watchers/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-watchers/task-watchers.controller.ts` | `apps/api-go/internal/modules/task-watchers/handler.go` | **PENDING** |
@@ -502,14 +502,14 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `GET` | `/api/users/exists` | Public | `-` | `JSON` | `backend/src/modules/users/users.controller.ts` | `apps/api-go/internal/modules/users/handler.go` | **PENDING** |
 | `PATCH` | `/api/users/profile` | JWT | `UpdateUserDto` | `JSON` | `backend/src/modules/users/users.controller.ts` | `apps/api-go/internal/modules/users/handler.go` | **PENDING** |
 | `GET` | `/api/users/status/bulk` | JWT | `userIds:string` | `JSON` | `backend/src/modules/users/users.controller.ts` | `apps/api-go/internal/modules/users/handler.go` | **PENDING** |
-| `GET` | `/api/workflows` | JWT | `-` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `POST` | `/api/workflows` | JWT | `CreateWorkflowDto` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `DELETE` | `/api/workflows/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `GET` | `/api/workflows/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `PATCH` | `/api/workflows/:id` | JWT | `UpdateWorkflowDto` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `PATCH` | `/api/workflows/:id/set-default` | JWT | `body` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `GET` | `/api/workflows/organization/:organizationId/default` | JWT | `organizationId:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
-| `GET` | `/api/workflows/slug` | JWT | `slug:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **PENDING** |
+| `GET` | `/api/workflows` | JWT | `-` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `POST` | `/api/workflows` | JWT | `CreateWorkflowDto` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `DELETE` | `/api/workflows/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `GET` | `/api/workflows/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `PATCH` | `/api/workflows/:id` | JWT | `UpdateWorkflowDto` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `PATCH` | `/api/workflows/:id/set-default` | JWT | `body` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `GET` | `/api/workflows/organization/:organizationId/default` | JWT | `organizationId:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
+| `GET` | `/api/workflows/slug` | JWT | `slug:string` | `JSON` | `backend/src/modules/workflows/workflows.controller.ts` | `apps/api-go/internal/modules/workflows/handler.go` | **DONE** |
 | `GET` | `/api/workspace-members` | JWT | `-` | `JSON` | `backend/src/modules/workspace-members/workspace-members.controller.ts` | `apps/api-go/internal/modules/workspace-members/handler.go` | **PENDING** |
 | `POST` | `/api/workspace-members` | JWT | `CreateWorkspaceMemberDto` | `JSON` | `backend/src/modules/workspace-members/workspace-members.controller.ts` | `apps/api-go/internal/modules/workspace-members/handler.go` | **PENDING** |
 | `DELETE` | `/api/workspace-members/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/workspace-members/workspace-members.controller.ts` | `apps/api-go/internal/modules/workspace-members/handler.go` | **PENDING** |
