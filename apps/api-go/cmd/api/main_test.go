@@ -135,6 +135,9 @@ func TestBuildRouter(t *testing.T) {
 		"/api/s3/presigned-put-url?key=test.png",
 		"/api/search/suggestions?q=au",
 		"/api/search/quick?q=au",
+		"/api/projects/00000000-0000-0000-0000-000000000001/inbox",
+		"/api/email-templates",
+		"/api/ai-chat/config",
 	} {
 		t.Run("GET "+path+" requires authentication", func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, path, nil)
@@ -164,13 +167,49 @@ func TestBuildRouter(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), `"Queue UI Controller is reachable"`)
 	})
 
-	t.Run("POST /api/editor-images/upload and /api/uploads/upload/avatar require auth", func(t *testing.T) {
-		for _, p := range []string{"/api/editor-images/upload", "/api/uploads/upload/avatar"} {
+	t.Run("POST /api/editor-images/upload, /api/uploads/upload/avatar, and /api/tasks/id/comments/cid/send-email require auth", func(t *testing.T) {
+		for _, p := range []string{
+			"/api/editor-images/upload",
+			"/api/uploads/upload/avatar",
+			"/api/tasks/00000000-0000-0000-0000-000000000001/comments/00000000-0000-0000-0000-000000000002/send-email",
+		} {
 			req := httptest.NewRequest(http.MethodPost, p, nil)
 			rr := httptest.NewRecorder()
 			router.ServeHTTP(rr, req)
 			assert.Equal(t, http.StatusUnauthorized, rr.Code)
 		}
+	})
+
+	t.Run("GET /api/email-templates returns seeded default templates with valid JWT", func(t *testing.T) {
+		tokenSvc := auth.NewTokenService(cfg.JWTSecret, cfg.JWTRefreshSecret, 15*time.Minute, 7*24*time.Hour)
+		tok, _ := tokenSvc.MintAccessToken(uuid.New(), "member@orbito.io", "MEMBER")
+
+		req := httptest.NewRequest(http.MethodGet, "/api/email-templates", nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"auto-reply-support"`)
+	})
+
+	t.Run("public unauthenticated routes enforce rate-limit headers and respond cleanly", func(t *testing.T) {
+		for _, p := range []string{
+			"/api/public/workspaces/demo/projects",
+			"/api/public/project-tasks/attachments/00000000-0000-0000-0000-000000000001",
+		} {
+			req := httptest.NewRequest(http.MethodGet, p, nil)
+			rr := httptest.NewRecorder()
+			router.ServeHTTP(rr, req)
+			assert.Equal(t, http.StatusOK, rr.Code)
+			assert.NotEmpty(t, rr.Header().Get("X-RateLimit-Limit"))
+		}
+
+		req := httptest.NewRequest(http.MethodGet, "/api/public/tasks/nonexistent-token", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		assert.Equal(t, http.StatusNotFound, rr.Code)
+		assert.Equal(t, "10", rr.Header().Get("X-RateLimit-Limit"))
 	})
 
 	t.Run("GET /socket.io/ returns Engine.IO v4 open handshake", func(t *testing.T) {

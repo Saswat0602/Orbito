@@ -9,10 +9,13 @@ import (
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
 	"github.com/orbito/api-go/internal/modules/activity_log"
+	"github.com/orbito/api-go/internal/modules/ai_chat"
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/automation"
 	"github.com/orbito/api-go/internal/modules/email"
+	"github.com/orbito/api-go/internal/modules/inbox"
 	"github.com/orbito/api-go/internal/modules/notifications"
+	"github.com/orbito/api-go/internal/modules/public"
 	"github.com/orbito/api-go/internal/modules/scheduler"
 	"github.com/orbito/api-go/internal/modules/settings"
 	"github.com/orbito/api-go/internal/platform/crypto"
@@ -77,6 +80,9 @@ type platformDeps struct {
 	queueRt          *queue.Runtime
 	automationSvc    automation.Service
 	cronSched        *scheduler.Scheduler
+	inboxSvc         inbox.Service
+	aiChatSvc        ai_chat.Service
+	publicSvc        public.Service
 }
 
 func initRepo[T any](db *database.DB, ctor func(*database.DB) T) T {
@@ -138,6 +144,26 @@ func buildPlatformDeps(cfg *config.Config, db *database.DB, appLog *slog.Logger)
 		cronSched = scheduler.New(initRepo(db, scheduler.NewRepository), notifSvc, emailSvc, appLog)
 	}
 
+	var queueEnq inbox.QueueEnqueuer
+	if queueRt != nil {
+		queueEnq = queueRt
+	}
+	inboxSvc := inbox.NewService(initRepo(db, inbox.NewRepository), fieldCrypto, queueEnq, appLog)
+	if db != nil && queueRt != nil {
+		inbox.RegisterProcessor(queueRt, inboxSvc)
+	}
+	if cronSched != nil {
+		cronSched.RegisterJob("*/5 * * * *", "inbox-email-sync", inboxSvc.SyncAllInboxes)
+	}
+
+	aiChatSvc := ai_chat.NewService(initRepo(db, ai_chat.NewRepository), settingsSvc, cfg, appLog)
+
+	var urlResolver public.URLResolver
+	if storageMgr != nil {
+		urlResolver = storageMgr
+	}
+	publicSvc := public.NewService(initRepo(db, public.NewRepository), urlResolver)
+
 	return &platformDeps{
 		cfg: cfg, db: db, appLog: appLog, frontendURL: frontendURL,
 		settingsSvc: settingsSvc, emailSvc: emailSvc,
@@ -153,6 +179,9 @@ func buildPlatformDeps(cfg *config.Config, db *database.DB, appLog *slog.Logger)
 		queueRt:          queueRt,
 		automationSvc:    automationSvc,
 		cronSched:        cronSched,
+		inboxSvc:         inboxSvc,
+		aiChatSvc:        aiChatSvc,
+		publicSvc:        publicSvc,
 	}
 }
 

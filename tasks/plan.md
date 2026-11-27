@@ -94,14 +94,14 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Task 47: Storage & File Management (`/uploads/upload/:folder`, `/uploads/:folder/:filename`, `/s3/presigned-*`)
 - [x] Task 48: Editor Images & Media Assets (`/api/editor-images/upload`)
 - [x] Task 49: Search Module (`/api/search/global`, `/advanced`, `/suggestions`, `/quick`)
-- [ ] Task 50: Project Inbox & Email Sync (`/api/inbox` project email accounts, rules, IMAP processor)
-- [ ] Task 51: Trello Sync Module & Scheduler (`/api/trello-sync` credentials, board import, sync loop)
-- [ ] Task 52: Jira Sync Module (`/api/jira-sync` safe outbound HTTP, credentials, project import, webhook sync)
-- [ ] Task 53: AI Chat Module (`/api/ai-chat` conversations, chat endpoint, tools, test-connection)
-- [ ] Task 54: Public Module (`/api/public` shared tasks, calendar, sprints, public project view)
+- [x] Task 50: Project Inbox & Email Sync (`/api/inbox` project email accounts, rules, IMAP processor)
+- [ ] Task 51: Trello Sync Module & Scheduler (`/api/trello-sync` credentials, board import, sync loop) — deferred per user request
+- [ ] Task 52: Jira Sync Module (`/api/jira-sync` safe outbound HTTP, credentials, project import, webhook sync) — deferred per user request
+- [x] Task 53: AI Chat Module (`/api/ai-chat` conversations, chat endpoint, tools, test-connection)
+- [x] Task 54: Public Module (`/api/public` shared tasks, calendar, sprints, public project view)
 
 ### Checkpoint: Full Platform Feature Parity Verified
-- [ ] Background crons run, files upload and serve, integrations sync, and public shares resolve without authentication
+- [x] Background crons run, files upload and serve, inbox & AI chat integrations work, and public shares resolve without authentication (Trello/Jira sync deferred)
 
 ### Phase 7: Verification, Parity Diffing & Production Readiness
 - [ ] Task 55: Automated Parity Test Harness (Dual HTTP request fuzzer comparing NestJS vs Go responses)

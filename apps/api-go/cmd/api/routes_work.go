@@ -19,9 +19,10 @@ import (
 	"github.com/orbito/api-go/internal/modules/workflows"
 )
 
-func mountWorkRoutes(r chi.Router, d *platformDeps) {
+func mountWorkRoutes(r chi.Router, d *platformDeps) (projectsRouter, tasksRouter chi.Router) {
 	projectsSvc := projects.NewService(initRepo(d.db, projects.NewRepository), d.rbacResolver)
-	r.Mount("/api/projects", projects.Routes(projects.NewHandler(projectsSvc), d.authMw))
+	projectsRouter = projects.Routes(projects.NewHandler(projectsSvc), d.authMw)
+	r.Mount("/api/projects", projectsRouter)
 
 	projMembersSvc := project_members.NewService(initRepo(d.db, project_members.NewRepository), d.rbacResolver)
 	r.Mount("/api/project-members", project_members.Routes(project_members.NewHandler(projMembersSvc), d.authMw))
@@ -49,7 +50,8 @@ func mountWorkRoutes(r chi.Router, d *platformDeps) {
 		tasks.RegisterBulkImportProcessor(d.queueRt, tasksSvc, d.appLog)
 	}
 	tasksHandler := tasks.NewHandler(tasksSvc)
-	r.Mount("/api/tasks", tasks.Routes(tasksHandler, d.authMw))
+	tasksRouter = tasks.Routes(tasksHandler, d.authMw)
+	r.Mount("/api/tasks", tasksRouter)
 	r.Mount("/api/task-shares", tasks.ShareRoutes(tasksHandler, d.authMw))
 
 	depsSvc := task_dependencies.NewService(initRepo(d.db, task_dependencies.NewRepository))
@@ -74,4 +76,5 @@ func mountWorkRoutes(r chi.Router, d *platformDeps) {
 
 	ganttSvc := gantt.NewService(initRepo(d.db, gantt.NewRepository))
 	r.Mount("/api/gantt", gantt.Routes(gantt.NewHandler(ganttSvc), d.authMw))
+	return projectsRouter, tasksRouter
 }

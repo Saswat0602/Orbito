@@ -21,6 +21,12 @@ type EmailSender interface {
 	SendEmail(ctx context.Context, dto email.SendEmailDTO) error
 }
 
+type scheduledJob struct {
+	spec string
+	name string
+	fn   func(context.Context)
+}
+
 // Scheduler registers and executes Orbito background cron schedules.
 type Scheduler struct {
 	cron      *cron.Cron
@@ -31,8 +37,19 @@ type Scheduler struct {
 	nowFunc   func() time.Time
 	mu        sync.Mutex
 	started   bool
+	extraJobs []scheduledJob
 	baseCtx   context.Context
 	cancelCtx context.CancelFunc
+}
+
+// RegisterJob appends a periodic background job before Start is called.
+func (s *Scheduler) RegisterJob(spec, name string, fn func(context.Context)) {
+	if fn == nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.extraJobs = append(s.extraJobs, scheduledJob{spec: spec, name: name, fn: fn})
 }
 
 // New constructs a Scheduler with standard 5-field cron parsing.
@@ -59,11 +76,7 @@ func (s *Scheduler) Start() error {
 	}
 	s.baseCtx, s.cancelCtx = context.WithCancel(context.Background())
 
-	jobs := []struct {
-		spec string
-		name string
-		fn   func(context.Context)
-	}{
+	jobs := []scheduledJob{
 		{"0 * * * *", "due-date-reminders", s.CheckDueDateReminders},
 		{"0 9 * * *", "overdue-tasks", s.CheckOverdueTasks},
 		{"0 9 * * 1", "weekly-summaries", s.SendWeeklySummaries},
@@ -72,6 +85,7 @@ func (s *Scheduler) Start() error {
 		{"0 0 * * 0", "generate-analytics", s.GenerateAnalytics},
 		{"0 0 * * *", "generate-recurring-tasks", s.GenerateUpcomingRecurringTasks},
 	}
+	jobs = append(jobs, s.extraJobs...)
 
 	for _, j := range jobs {
 		jobFn := j.fn

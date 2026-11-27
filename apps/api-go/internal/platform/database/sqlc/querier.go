@@ -70,6 +70,7 @@ type Querier interface {
 	ClearUserDefaultOrgIfMatches(ctx context.Context, arg ClearUserDefaultOrgIfMatchesParams) error
 	ClearUserDefaultOrganization(ctx context.Context, defaultOrganizationID pgtype.UUID) error
 	CompleteActiveSprintsForCron(ctx context.Context, endDate pgtype.Timestamp) (int64, error)
+	CopyMessageAttachmentsToTask(ctx context.Context, arg CopyMessageAttachmentsToTaskParams) error
 	CountAllWorkflowStatuses(ctx context.Context, workflowID uuid.UUID) (int64, error)
 	CountGlobalSetting(ctx context.Context, key string) (int64, error)
 	CountNotificationsByUserOrgDetailed(ctx context.Context, arg CountNotificationsByUserOrgDetailedParams) (int64, error)
@@ -89,6 +90,8 @@ type Querier interface {
 	CountProjectsByOrganization(ctx context.Context, arg CountProjectsByOrganizationParams) (int64, error)
 	CountProjectsForUser(ctx context.Context, arg CountProjectsForUserParams) (int64, error)
 	CountProjectsUsingWorkflow(ctx context.Context, workflowID uuid.UUID) (int64, error)
+	CountPublicProjectTasks(ctx context.Context, arg CountPublicProjectTasksParams) (int64, error)
+	CountPublicTaskActivities(ctx context.Context, id uuid.UUID) (int64, error)
 	CountRecentTaskAttachments(ctx context.Context, arg CountRecentTaskAttachmentsParams) (int64, error)
 	CountSuperAdmins(ctx context.Context) (int64, error)
 	CountTaskActivities(ctx context.Context, entityID uuid.UUID) (int64, error)
@@ -113,7 +116,10 @@ type Querier interface {
 	CountWorkspaceTasks(ctx context.Context, workspaceID uuid.UUID) (int64, error)
 	CreateActivityLogRecord(ctx context.Context, arg CreateActivityLogRecordParams) (ActivityLog, error)
 	CreateAutomationRule(ctx context.Context, arg CreateAutomationRuleParams) (uuid.UUID, error)
+	CreateConversationRecord(ctx context.Context, arg CreateConversationRecordParams) (Conversation, error)
+	CreateEmailSyncLog(ctx context.Context, arg CreateEmailSyncLogParams) (EmailSyncLog, error)
 	CreateGlobalSetting(ctx context.Context, arg CreateGlobalSettingParams) (Setting, error)
+	CreateInboxRuleRecord(ctx context.Context, arg CreateInboxRuleRecordParams) (InboxRule, error)
 	CreateInitialSprint(ctx context.Context, arg CreateInitialSprintParams) (Sprint, error)
 	CreateInvitation(ctx context.Context, arg CreateInvitationParams) (Invitation, error)
 	CreateLabelRecord(ctx context.Context, arg CreateLabelRecordParams) (uuid.UUID, error)
@@ -122,6 +128,7 @@ type Querier interface {
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateOrganizationMember(ctx context.Context, arg CreateOrganizationMemberParams) (OrganizationMember, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
+	CreateProjectInboxRecord(ctx context.Context, arg CreateProjectInboxRecordParams) (ProjectInbox, error)
 	CreateProjectMemberDirect(ctx context.Context, arg CreateProjectMemberDirectParams) (ProjectMember, error)
 	CreateProjectMemberRecord(ctx context.Context, arg CreateProjectMemberRecordParams) (ProjectMember, error)
 	CreatePublicTaskShare(ctx context.Context, arg CreatePublicTaskShareParams) (PublicTaskShare, error)
@@ -149,9 +156,13 @@ type Querier interface {
 	DecrementStatusPositionsAfterDelete(ctx context.Context, arg DecrementStatusPositionsAfterDeleteParams) error
 	DeleteAllTaskLabelsByTaskID(ctx context.Context, taskID uuid.UUID) error
 	DeleteAutomationRuleByID(ctx context.Context, id uuid.UUID) (int64, error)
+	DeleteConversationByIDAndUser(ctx context.Context, arg DeleteConversationByIDAndUserParams) (int64, error)
+	DeleteConversationBySessionIDAndUser(ctx context.Context, arg DeleteConversationBySessionIDAndUserParams) (int64, error)
 	DeleteGlobalSetting(ctx context.Context, key string) error
+	DeleteInboxRuleByID(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteLabelByID(ctx context.Context, id uuid.UUID) (int64, error)
+	DeleteMessagesByConversationID(ctx context.Context, conversationID uuid.UUID) error
 	DeleteMultipleNotificationsForUser(ctx context.Context, arg DeleteMultipleNotificationsForUserParams) (int64, error)
 	DeleteNotificationForUser(ctx context.Context, arg DeleteNotificationForUserParams) (int64, error)
 	DeleteOldActivityLogsForCron(ctx context.Context, createdAt pgtype.Timestamp) (int64, error)
@@ -184,11 +195,13 @@ type Querier interface {
 	DeleteWorkspaceMemberByID(ctx context.Context, id uuid.UUID) error
 	ExpirePendingEntityInvitations(ctx context.Context, arg ExpirePendingEntityInvitationsParams) error
 	FindExistingOccurrenceTaskForCron(ctx context.Context, arg FindExistingOccurrenceTaskForCronParams) (uuid.UUID, error)
+	FindInboxMessageByMessageID(ctx context.Context, arg FindInboxMessageByMessageIDParams) (uuid.UUID, error)
 	FindInvitationByToken(ctx context.Context, token string) (FindInvitationByTokenRow, error)
 	FindLabelsInWorkspaceByIDs(ctx context.Context, arg FindLabelsInWorkspaceByIDsParams) ([]uuid.UUID, error)
 	FindMentionedUsers(ctx context.Context, arg FindMentionedUsersParams) ([]FindMentionedUsersRow, error)
 	FindPendingInvitation(ctx context.Context, arg FindPendingInvitationParams) (Invitation, error)
 	FindSoftDeletedTaskStatus(ctx context.Context, arg FindSoftDeletedTaskStatusParams) (TaskStatus, error)
+	FindTaskByEmailThreadID(ctx context.Context, emailThreadID pgtype.Text) (FindTaskByEmailThreadIDRow, error)
 	FindTaskForTaskLabel(ctx context.Context, arg FindTaskForTaskLabelParams) (FindTaskForTaskLabelRow, error)
 	FindTaskIDForDependency(ctx context.Context, arg FindTaskIDForDependencyParams) (uuid.UUID, error)
 	FindTaskWatcherByTaskAndUser(ctx context.Context, arg FindTaskWatcherByTaskAndUserParams) (FindTaskWatcherByTaskAndUserRow, error)
@@ -203,18 +216,26 @@ type Querier interface {
 	GetAutomationRuleStatsRow(ctx context.Context, ruleID uuid.UUID) (GetAutomationRuleStatsRowRow, error)
 	GetCommentAuthorBrief(ctx context.Context, id uuid.UUID) (GetCommentAuthorBriefRow, error)
 	GetCommentBasicByID(ctx context.Context, id uuid.UUID) (GetCommentBasicByIDRow, error)
+	GetCommentEmailReplyContext(ctx context.Context, id uuid.UUID) (GetCommentEmailReplyContextRow, error)
+	GetConversationByIDAndUser(ctx context.Context, arg GetConversationByIDAndUserParams) (Conversation, error)
+	GetConversationBySessionID(ctx context.Context, sessionID string) (Conversation, error)
 	GetDashboardStatsCounts(ctx context.Context, since pgtype.Timestamp) (GetDashboardStatsCountsRow, error)
 	GetDefaultSprintForProject(ctx context.Context, projectID uuid.UUID) (uuid.UUID, error)
 	GetDefaultWorkflowByOrgID(ctx context.Context, organizationID uuid.UUID) (GetDefaultWorkflowByOrgIDRow, error)
 	GetDefaultWorkflowForOrg(ctx context.Context, organizationID uuid.UUID) (Workflow, error)
+	GetEmailAccountByID(ctx context.Context, id uuid.UUID) (EmailAccount, error)
+	GetEmailAccountByInboxID(ctx context.Context, projectInboxID uuid.UUID) (EmailAccount, error)
+	GetEmailAccountSyncDetailsByProjectID(ctx context.Context, projectID uuid.UUID) (GetEmailAccountSyncDetailsByProjectIDRow, error)
 	GetEntityInvitations(ctx context.Context, arg GetEntityInvitationsParams) ([]GetEntityInvitationsRow, error)
 	GetFirstStatusInWorkflow(ctx context.Context, workflowID uuid.UUID) (uuid.UUID, error)
 	GetGlobalSettingByKey(ctx context.Context, key string) (Setting, error)
+	GetInboxMessageDetailByID(ctx context.Context, id uuid.UUID) (GetInboxMessageDetailByIDRow, error)
 	GetInvitationByID(ctx context.Context, id uuid.UUID) (GetInvitationByIDRow, error)
 	GetInvitationByToken(ctx context.Context, token string) (GetInvitationByTokenRow, error)
 	GetLabelDetailsByID(ctx context.Context, arg GetLabelDetailsByIDParams) (GetLabelDetailsByIDRow, error)
 	GetLabelWorkspaceCheck(ctx context.Context, arg GetLabelWorkspaceCheckParams) (GetLabelWorkspaceCheckRow, error)
 	GetLabelWorkspaceForTaskLabel(ctx context.Context, arg GetLabelWorkspaceForTaskLabelParams) (GetLabelWorkspaceForTaskLabelRow, error)
+	GetLastTaskNumberByProjectForInbox(ctx context.Context, projectID uuid.UUID) (int32, error)
 	GetLastTaskNumberInProjectForCron(ctx context.Context, projectID uuid.UUID) (int32, error)
 	GetMaxTaskNumberForProject(ctx context.Context, projectID uuid.UUID) (int32, error)
 	GetMaxTaskRankSingleScope(ctx context.Context, arg GetMaxTaskRankSingleScopeParams) (float64, error)
@@ -245,9 +266,12 @@ type Querier interface {
 	GetProjectAccessInfoForSprint(ctx context.Context, arg GetProjectAccessInfoForSprintParams) (GetProjectAccessInfoForSprintRow, error)
 	GetProjectAccessInfoForSprintBySlug(ctx context.Context, arg GetProjectAccessInfoForSprintBySlugParams) (GetProjectAccessInfoForSprintBySlugRow, error)
 	GetProjectBasicForGantt(ctx context.Context, id uuid.UUID) (GetProjectBasicForGanttRow, error)
+	GetProjectByIDForInbox(ctx context.Context, id uuid.UUID) (GetProjectByIDForInboxRow, error)
 	GetProjectByIDRow(ctx context.Context, id uuid.UUID) (GetProjectByIDRowRow, error)
 	GetProjectByKeyRow(ctx context.Context, arg GetProjectByKeyRowParams) (GetProjectByKeyRowRow, error)
 	GetProjectBySlugRow(ctx context.Context, slug string) (GetProjectBySlugRowRow, error)
+	GetProjectInboxByEmailAddress(ctx context.Context, emailAddress pgtype.Text) (GetProjectInboxByEmailAddressRow, error)
+	GetProjectInboxByProjectID(ctx context.Context, projectID uuid.UUID) (GetProjectInboxByProjectIDRow, error)
 	GetProjectInboxForTaskDetail(ctx context.Context, projectID uuid.UUID) (GetProjectInboxForTaskDetailRow, error)
 	GetProjectMemberByID(ctx context.Context, id uuid.UUID) (GetProjectMemberByIDRow, error)
 	GetProjectMemberByUserAndProject(ctx context.Context, arg GetProjectMemberByUserAndProjectParams) (GetProjectMemberByUserAndProjectRow, error)
@@ -258,6 +282,13 @@ type Querier interface {
 	GetProjectWithWorkspaceAndOrg(ctx context.Context, id uuid.UUID) (GetProjectWithWorkspaceAndOrgRow, error)
 	GetProjectWorkflowForStatusCreate(ctx context.Context, id uuid.UUID) (GetProjectWorkflowForStatusCreateRow, error)
 	GetProjectWorkspaceForLabel(ctx context.Context, arg GetProjectWorkspaceForLabelParams) (GetProjectWorkspaceForLabelRow, error)
+	GetPublicProjectBySlugOnly(ctx context.Context, slug string) (GetPublicProjectBySlugOnlyRow, error)
+	GetPublicProjectBySlugs(ctx context.Context, arg GetPublicProjectBySlugsParams) (GetPublicProjectBySlugsRow, error)
+	GetPublicProjectKPIs(ctx context.Context, projectID uuid.UUID) (GetPublicProjectKPIsRow, error)
+	GetPublicShareAttachmentByID(ctx context.Context, arg GetPublicShareAttachmentByIDParams) (GetPublicShareAttachmentByIDRow, error)
+	GetPublicSharedTaskByToken(ctx context.Context, token string) (GetPublicSharedTaskByTokenRow, error)
+	GetPublicSprintByID(ctx context.Context, arg GetPublicSprintByIDParams) (GetPublicSprintByIDRow, error)
+	GetPublicTaskByIDOrSlug(ctx context.Context, arg GetPublicTaskByIDOrSlugParams) (GetPublicTaskByIDOrSlugRow, error)
 	GetPublicUserByID(ctx context.Context, id uuid.UUID) (GetPublicUserByIDRow, error)
 	GetPublicUserByUsername(ctx context.Context, lower string) (GetPublicUserByUsernameRow, error)
 	GetRecurringTaskConfigByTaskID(ctx context.Context, taskID uuid.UUID) (RecurringTask, error)
@@ -314,10 +345,14 @@ type Querier interface {
 	HasActiveSprintInProject(ctx context.Context, arg HasActiveSprintInProjectParams) (bool, error)
 	IncrementAutomationRuleExecution(ctx context.Context, id uuid.UUID) error
 	IncrementRecurringOccurrence(ctx context.Context, arg IncrementRecurringOccurrenceParams) error
+	InsertChatMessageRecord(ctx context.Context, arg InsertChatMessageRecordParams) (ChatMessage, error)
+	InsertCommentFromEmailMessage(ctx context.Context, arg InsertCommentFromEmailMessageParams) (uuid.UUID, error)
+	InsertInboxMessageRecord(ctx context.Context, arg InsertInboxMessageRecordParams) (InboxMessage, error)
 	InsertRecurringOccurrenceTaskForCron(ctx context.Context, arg InsertRecurringOccurrenceTaskForCronParams) (uuid.UUID, error)
 	InsertTaskAssignee(ctx context.Context, arg InsertTaskAssigneeParams) error
 	InsertTaskAssigneeForAutomation(ctx context.Context, arg InsertTaskAssigneeForAutomationParams) error
 	InsertTaskCommentForAutomation(ctx context.Context, arg InsertTaskCommentForAutomationParams) (InsertTaskCommentForAutomationRow, error)
+	InsertTaskFromInboxMessage(ctx context.Context, arg InsertTaskFromInboxMessageParams) (InsertTaskFromInboxMessageRow, error)
 	InsertTaskLabelForAutomation(ctx context.Context, arg InsertTaskLabelForAutomationParams) error
 	InsertTaskLabelWithAudit(ctx context.Context, arg InsertTaskLabelWithAuditParams) error
 	InsertTaskRankSkipConflict(ctx context.Context, arg InsertTaskRankSkipConflictParams) error
@@ -335,13 +370,19 @@ type Querier interface {
 	ListArchivedWorkspaces(ctx context.Context, organizationID uuid.UUID) ([]Workspace, error)
 	ListAutomationRulesFiltered(ctx context.Context, arg ListAutomationRulesFilteredParams) ([]ListAutomationRulesFilteredRow, error)
 	ListBlockingIDsForTask(ctx context.Context, dependentTaskID uuid.UUID) ([]uuid.UUID, error)
+	ListChatMessagesBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ChatMessage, error)
+	ListChatMessagesByConversationID(ctx context.Context, arg ListChatMessagesByConversationIDParams) ([]ChatMessage, error)
+	ListConversationsByUserID(ctx context.Context, userID uuid.UUID) ([]Conversation, error)
 	ListDeletedTaskStatuses(ctx context.Context, workflowID pgtype.UUID) ([]ListDeletedTaskStatusesRow, error)
 	ListDependenciesTaskBlocks(ctx context.Context, blockingTaskID uuid.UUID) ([]ListDependenciesTaskBlocksRow, error)
 	ListDependenciesTaskDependsOn(ctx context.Context, dependentTaskID uuid.UUID) ([]ListDependenciesTaskDependsOnRow, error)
 	ListFromTransitionsForStatus(ctx context.Context, fromStatusID uuid.UUID) ([]ListFromTransitionsForStatusRow, error)
 	ListGlobalSettings(ctx context.Context, dollar_1 string) ([]Setting, error)
+	ListInboxMessagesFiltered(ctx context.Context, arg ListInboxMessagesFilteredParams) ([]ListInboxMessagesFilteredRow, error)
+	ListInboxRulesByInboxID(ctx context.Context, projectInboxID uuid.UUID) ([]InboxRule, error)
 	ListLabelsByTaskID(ctx context.Context, taskID uuid.UUID) ([]ListLabelsByTaskIDRow, error)
 	ListLabelsByWorkspaceID(ctx context.Context, workspaceID uuid.UUID) ([]ListLabelsByWorkspaceIDRow, error)
+	ListMessageAttachmentsBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ListMessageAttachmentsBatchRow, error)
 	ListNotificationsByUserOrgDetailed(ctx context.Context, arg ListNotificationsByUserOrgDetailedParams) ([]ListNotificationsByUserOrgDetailedRow, error)
 	ListOrganizationActivitiesForStats(ctx context.Context, arg ListOrganizationActivitiesForStatsParams) ([]ListOrganizationActivitiesForStatsRow, error)
 	ListOrganizationActivityComprehensive(ctx context.Context, arg ListOrganizationActivityComprehensiveParams) ([]ListOrganizationActivityComprehensiveRow, error)
@@ -355,6 +396,21 @@ type Querier interface {
 	ListProjectSlugsStartingWith(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
 	ListProjectsByOrganization(ctx context.Context, arg ListProjectsByOrganizationParams) ([]ListProjectsByOrganizationRow, error)
 	ListProjectsForUser(ctx context.Context, arg ListProjectsForUserParams) ([]ListProjectsForUserRow, error)
+	ListPublicCalendarTasks(ctx context.Context, arg ListPublicCalendarTasksParams) ([]ListPublicCalendarTasksRow, error)
+	ListPublicProjectSprintVelocity(ctx context.Context, projectID uuid.UUID) ([]ListPublicProjectSprintVelocityRow, error)
+	ListPublicProjectSprints(ctx context.Context, projectID uuid.UUID) ([]ListPublicProjectSprintsRow, error)
+	ListPublicProjectStatusesByWorkflow(ctx context.Context, workflowID uuid.UUID) ([]ListPublicProjectStatusesByWorkflowRow, error)
+	ListPublicProjectTaskCountsByPriority(ctx context.Context, projectID uuid.UUID) ([]ListPublicProjectTaskCountsByPriorityRow, error)
+	ListPublicProjectTaskCountsByStatus(ctx context.Context, arg ListPublicProjectTaskCountsByStatusParams) ([]ListPublicProjectTaskCountsByStatusRow, error)
+	ListPublicProjectTaskCountsByType(ctx context.Context, projectID uuid.UUID) ([]ListPublicProjectTaskCountsByTypeRow, error)
+	ListPublicProjectTasks(ctx context.Context, arg ListPublicProjectTasksParams) ([]ListPublicProjectTasksRow, error)
+	ListPublicSprintTasks(ctx context.Context, arg ListPublicSprintTasksParams) ([]ListPublicSprintTasksRow, error)
+	ListPublicSubtasksBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ListPublicSubtasksBatchRow, error)
+	ListPublicTaskActivities(ctx context.Context, arg ListPublicTaskActivitiesParams) ([]ListPublicTaskActivitiesRow, error)
+	ListPublicTaskAssigneesBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ListPublicTaskAssigneesBatchRow, error)
+	ListPublicTaskAttachments(ctx context.Context, taskID uuid.UUID) ([]ListPublicTaskAttachmentsRow, error)
+	ListPublicTaskComments(ctx context.Context, taskID uuid.UUID) ([]ListPublicTaskCommentsRow, error)
+	ListPublicTaskLabelsBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ListPublicTaskLabelsBatchRow, error)
 	ListRecurringTasksByProjectID(ctx context.Context, projectID uuid.UUID) ([]ListRecurringTasksByProjectIDRow, error)
 	ListRelatedProjectInvitations(ctx context.Context, arg ListRelatedProjectInvitationsParams) ([]Invitation, error)
 	ListRepliesByParentIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]ListRepliesByParentIDsRow, error)
@@ -365,6 +421,7 @@ type Querier interface {
 	ListSprintTasksBySprintID(ctx context.Context, sprintID pgtype.UUID) ([]ListSprintTasksBySprintIDRow, error)
 	ListSprintsFiltered(ctx context.Context, arg ListSprintsFilteredParams) ([]ListSprintsFilteredRow, error)
 	ListSprintsForGanttByProject(ctx context.Context, projectID uuid.UUID) ([]ListSprintsForGanttByProjectRow, error)
+	ListSyncEnabledEmailAccounts(ctx context.Context) ([]ListSyncEnabledEmailAccountsRow, error)
 	ListTaskActivities(ctx context.Context, arg ListTaskActivitiesParams) ([]ListTaskActivitiesRow, error)
 	ListTaskAssigneeUserIDsForCron(ctx context.Context, taskID uuid.UUID) ([]uuid.UUID, error)
 	ListTaskAssigneesBatch(ctx context.Context, dollar_1 []uuid.UUID) ([]ListTaskAssigneesBatchRow, error)
@@ -409,17 +466,21 @@ type Querier interface {
 	ListWorkspaceActivityOptimized(ctx context.Context, arg ListWorkspaceActivityOptimizedParams) ([]ListWorkspaceActivityOptimizedRow, error)
 	ListWorkspaceMembersDetails(ctx context.Context, workspaceID uuid.UUID) ([]ListWorkspaceMembersDetailsRow, error)
 	ListWorkspaceMembersPaginated(ctx context.Context, arg ListWorkspaceMembersPaginatedParams) ([]ListWorkspaceMembersPaginatedRow, error)
+	ListWorkspacePublicProjects(ctx context.Context, slug string) ([]ListWorkspacePublicProjectsRow, error)
 	ListWorkspaceTree(ctx context.Context, organizationID uuid.UUID) ([]ListWorkspaceTreeRow, error)
 	ListWorkspaceValidLabelIDs(ctx context.Context, arg ListWorkspaceValidLabelIDsParams) ([]uuid.UUID, error)
 	ListWorkspacesForUser(ctx context.Context, arg ListWorkspacesForUserParams) ([]ListWorkspacesForUserRow, error)
 	LockProjectRowForTaskNumber(ctx context.Context, id uuid.UUID) (LockProjectRowForTaskNumberRow, error)
 	MarkAllNotificationsAsRead(ctx context.Context, arg MarkAllNotificationsAsReadParams) (int64, error)
+	MarkCommentSentAsEmail(ctx context.Context, arg MarkCommentSentAsEmailParams) error
+	MarkInboxMessageConverted(ctx context.Context, arg MarkInboxMessageConvertedParams) error
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) (int64, error)
 	PingDatabase(ctx context.Context) (int32, error)
 	ProjectMembersRoleStats(ctx context.Context, projectID uuid.UUID) ([]ProjectMembersRoleStatsRow, error)
 	ProjectTaskPriorityStats(ctx context.Context, projectID uuid.UUID) ([]ProjectTaskPriorityStatsRow, error)
 	ProjectTaskStatusStats(ctx context.Context, projectID uuid.UUID) ([]ProjectTaskStatusStatsRow, error)
 	RemoveTaskLabel(ctx context.Context, arg RemoveTaskLabelParams) (int64, error)
+	RenameConversationByIDAndUser(ctx context.Context, arg RenameConversationByIDAndUserParams) (Conversation, error)
 	ResendInvitation(ctx context.Context, arg ResendInvitationParams) (Invitation, error)
 	ResolveActivityProjectByIDOrSlug(ctx context.Context, arg ResolveActivityProjectByIDOrSlugParams) (ResolveActivityProjectByIDOrSlugRow, error)
 	ResolveActivityTaskByIDOrSlug(ctx context.Context, arg ResolveActivityTaskByIDOrSlugParams) (ResolveActivityTaskByIDOrSlugRow, error)
@@ -444,19 +505,25 @@ type Querier interface {
 	SoftDeleteTaskStatusByID(ctx context.Context, arg SoftDeleteTaskStatusByIDParams) error
 	StopActiveTimerByID(ctx context.Context, arg StopActiveTimerByIDParams) (uuid.UUID, error)
 	ToggleAutomationRuleStatus(ctx context.Context, id uuid.UUID) (AutomationRule, error)
+	TouchConversationUpdatedAt(ctx context.Context, id uuid.UUID) error
 	TransferOrganizationOwner(ctx context.Context, arg TransferOrganizationOwnerParams) error
 	UnarchiveProject(ctx context.Context, arg UnarchiveProjectParams) error
 	UnarchiveWorkspace(ctx context.Context, arg UnarchiveWorkspaceParams) error
 	UnsetDefaultWorkflowsExcept(ctx context.Context, arg UnsetDefaultWorkflowsExceptParams) error
 	UnsetDefaultWorkflowsInOrg(ctx context.Context, arg UnsetDefaultWorkflowsInOrgParams) error
 	UpdateAutomationRuleByID(ctx context.Context, arg UpdateAutomationRuleByIDParams) (int64, error)
+	UpdateEmailAccountSyncState(ctx context.Context, arg UpdateEmailAccountSyncStateParams) error
 	UpdateGlobalSettingByID(ctx context.Context, arg UpdateGlobalSettingByIDParams) (Setting, error)
+	UpdateInboxEmailAddressByID(ctx context.Context, arg UpdateInboxEmailAddressByIDParams) error
+	UpdateInboxMessageStatusByID(ctx context.Context, arg UpdateInboxMessageStatusByIDParams) (InboxMessage, error)
+	UpdateInboxRuleByID(ctx context.Context, arg UpdateInboxRuleByIDParams) (InboxRule, error)
 	UpdateInvitationStatus(ctx context.Context, arg UpdateInvitationStatusParams) error
 	UpdateLabelByID(ctx context.Context, arg UpdateLabelByIDParams) (uuid.UUID, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateOrganizationMemberRole(ctx context.Context, arg UpdateOrganizationMemberRoleParams) error
 	UpdateOrganizationMemberRoleByID(ctx context.Context, arg UpdateOrganizationMemberRoleByIDParams) (OrganizationMember, error)
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
+	UpdateProjectInboxRecord(ctx context.Context, arg UpdateProjectInboxRecordParams) (ProjectInbox, error)
 	UpdateProjectMemberRoleByID(ctx context.Context, arg UpdateProjectMemberRoleByIDParams) (ProjectMember, error)
 	UpdateRecurringTaskConfigByID(ctx context.Context, arg UpdateRecurringTaskConfigByIDParams) (RecurringTask, error)
 	UpdateSprintByID(ctx context.Context, arg UpdateSprintByIDParams) (uuid.UUID, error)
@@ -480,6 +547,7 @@ type Querier interface {
 	UpdateWorkflowDetails(ctx context.Context, arg UpdateWorkflowDetailsParams) (Workflow, error)
 	UpdateWorkspace(ctx context.Context, arg UpdateWorkspaceParams) (Workspace, error)
 	UpdateWorkspaceMemberRoleByID(ctx context.Context, arg UpdateWorkspaceMemberRoleByIDParams) (WorkspaceMember, error)
+	UpsertEmailAccountForInbox(ctx context.Context, arg UpsertEmailAccountForInboxParams) (EmailAccount, error)
 	UpsertTaskRank(ctx context.Context, arg UpsertTaskRankParams) error
 	UpsertUserSetting(ctx context.Context, arg UpsertUserSettingParams) (Setting, error)
 	UpsertWorkspaceLabel(ctx context.Context, arg UpsertWorkspaceLabelParams) error

@@ -6,8 +6,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Routes configures and returns an HTTP handler for projects endpoints.
-func Routes(h *Handler, authMw func(http.Handler) http.Handler) http.Handler {
+// Routes configures and returns a Chi router for projects endpoints.
+func Routes(h *Handler, authMw func(http.Handler) http.Handler) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(authMw)

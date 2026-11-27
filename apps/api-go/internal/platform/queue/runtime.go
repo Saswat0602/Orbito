@@ -20,10 +20,14 @@ const (
 	QueueAutomation = "automation"
 	// QueueBulkTaskImport is the background queue name for bulk task imports.
 	QueueBulkTaskImport = "bulk-task-import"
+	// QueueEmailSync is the background queue name for project inbox IMAP synchronization.
+	QueueEmailSync = "email-sync"
 	// TaskExecuteAutomationRule is the task type handled by the automation processor.
 	TaskExecuteAutomationRule = "automation:execute-rule"
 	// TaskBulkImportTasks is the task type handled by the bulk task import processor.
 	TaskBulkImportTasks = "tasks:bulk-import"
+	// TaskSyncProjectInbox is the task type handled by the project inbox email sync processor.
+	TaskSyncProjectInbox = "inbox:sync-project"
 
 	defaultInMemoryBuffer = 256
 )

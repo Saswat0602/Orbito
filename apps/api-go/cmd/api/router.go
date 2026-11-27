@@ -56,8 +56,9 @@ func buildRouterWithDeps(cfg *config.Config, db *database.DB, appLog *slog.Logge
 
 	mountCoreRoutes(r, deps)
 	mountTenancyRoutes(r, deps)
-	mountWorkRoutes(r, deps)
+	projectsRouter, tasksRouter := mountWorkRoutes(r, deps)
 	mountAsyncRoutes(r, deps)
+	mountIntegrationRoutes(r, projectsRouter, tasksRouter, deps)
 
 	return r, deps
 }

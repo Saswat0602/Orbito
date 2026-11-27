@@ -1351,14 +1351,14 @@
 **Description:** Implement email inbox integration in internal/modules/inbox: configuring email accounts for projects, inbox routing rules (sender filter, subject regex, action), message listing, and the IMAP sync background processor converting incoming emails into task comments.
 
 **Acceptance criteria:**
-- [ ] `POST /api/inbox/accounts` creates encrypted IMAP account credentials in EmailAccount table
-- [ ] Inbox rules evaluate incoming message attributes and execute mapped actions (create task / add comment)
-- [ ] `POST /api/inbox/sync/:id` manually triggers sync; cron checks every 5 minutes
+- [x] `POST /api/inbox/accounts` creates encrypted IMAP account credentials in EmailAccount table
+- [x] Inbox rules evaluate incoming message attributes and execute mapped actions (create task / add comment)
+- [x] `POST /api/inbox/sync/:id` manually triggers sync; cron checks every 5 minutes
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/inbox/...`
-- [ ] Build succeeds: `go build ./internal/modules/inbox/...`
-- [ ] Manual check: Query inbox accounts and verify encrypted credentials are not leaked in plaintext
+- [x] Tests pass: `go test -v ./internal/modules/inbox/...`
+- [x] Build succeeds: `go build ./internal/modules/inbox/...`
+- [x] Manual check: Query inbox accounts and verify encrypted credentials are not leaked in plaintext
 
 **Dependencies:** Task 30
 
@@ -1431,14 +1431,14 @@
 **Description:** Implement the conversational AI assistant in internal/modules/ai_chat: conversation CRUD, chat completion handler calling OpenAI/Anthropic/OpenRouter via safe HTTP client, system prompts with app guide, and task description generator.
 
 **Acceptance criteria:**
-- [ ] `GET /api/ai-chat/conversations` and `POST /api/ai-chat/conversations` manage chat threads
-- [ ] `POST /api/ai-chat/chat` streams or returns assistant responses and executes tool calls
-- [ ] `POST /api/ai-chat/generate-description` generates structured task description from title
+- [x] `GET /api/ai-chat/conversations` and `POST /api/ai-chat/conversations` manage chat threads
+- [x] `POST /api/ai-chat/chat` streams or returns assistant responses and executes tool calls
+- [x] `POST /api/ai-chat/generate-description` generates structured task description from title
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/ai_chat/...`
-- [ ] Build succeeds: `go build ./internal/modules/ai_chat/...`
-- [ ] Manual check: Call test-connection with mock API key and verify response shape
+- [x] Tests pass: `go test -v ./internal/modules/ai_chat/...`
+- [x] Build succeeds: `go build ./internal/modules/ai_chat/...`
+- [x] Manual check: Call test-connection with mock API key and verify response shape
 
 **Dependencies:** Task 30
 
@@ -1458,14 +1458,14 @@
 **Description:** Implement public unauthenticated shared routes in internal/modules/public: public task share by token, public shared calendar, public project kanban board, and public sprint overview.
 
 **Acceptance criteria:**
-- [ ] All `/api/public/*` routes allow access without Authorization header or cookies
-- [ ] `GET /api/public/tasks/:taskId` and `GET /api/public/tasks/key/:slug` return task details if public share exists
-- [ ] `GET /api/public/:workspaceSlug/projects/:projectSlug/taskskanban` returns tasks for public projects
+- [x] All `/api/public/*` routes allow access without Authorization header or cookies
+- [x] `GET /api/public/tasks/:taskId` and `GET /api/public/tasks/key/:slug` return task details if public share exists
+- [x] `GET /api/public/:workspaceSlug/projects/:projectSlug/taskskanban` returns tasks for public projects
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/public/...`
-- [ ] Build succeeds: `go build ./internal/modules/public/...`
-- [ ] Manual check: Access public task endpoint via unauthenticated curl request and verify 200 OK
+- [x] Tests pass: `go test -v ./internal/modules/public/...`
+- [x] Build succeeds: `go build ./internal/modules/public/...`
+- [x] Manual check: Access public task endpoint via unauthenticated curl request and verify 200 OK
 
 **Dependencies:** Task 30
 
@@ -1482,9 +1482,9 @@
 
 ## Checkpoint: After Task 54 — Async Workers, Integrations & Public Access Verified
 
-- [ ] Redis queue workers process background import and automation jobs
-- [ ] Scheduled cron jobs execute reminders, overdue alerts, and midnight task occurrences
-- [ ] Avatar uploads, editor images, search, Trello/Jira sync, AI assistant, and public links functional
+- [x] Redis queue workers process background import, automation, and email-sync jobs
+- [x] Scheduled cron jobs execute reminders, overdue alerts, midnight task occurrences, and 5-minute inbox polls
+- [x] Avatar uploads, editor images, search, project inbox, AI assistant, and public links functional (Trello/Jira sync deferred per user request)
 - [ ] Review with human before proceeding
 
 ---

@@ -7,7 +7,7 @@ import (
 )
 
 // Routes registers all task endpoints matching NestJS TasksController.
-func Routes(h *Handler, authMw func(http.Handler) http.Handler) http.Handler {
+func Routes(h *Handler, authMw func(http.Handler) http.Handler) chi.Router {
 	r := chi.NewRouter()
 	r.Use(authMw)
 
