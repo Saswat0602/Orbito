@@ -418,3 +418,4 @@ func (s *service) GetResourceAllocation(ctx context.Context, projectID uuid.UUID
 	}
 	return out, nil
 }
+

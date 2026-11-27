@@ -22,3 +22,4 @@ func Routes(h *Handler, authMw func(http.Handler) http.Handler) http.Handler {
 
 	return r
 }
+

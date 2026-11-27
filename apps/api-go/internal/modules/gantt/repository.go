@@ -80,3 +80,4 @@ func (r *pgRepository) ListDependenciesByProject(ctx context.Context, projectID 
 func (r *pgRepository) ListResourceTasks(ctx context.Context, projectID uuid.UUID) ([]sqlc.ListResourceTasksForProjectGanttRow, error) {
 	return r.queries.ListResourceTasksForProjectGantt(ctx, projectID)
 }
+

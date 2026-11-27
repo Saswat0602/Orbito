@@ -103,3 +103,4 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	}
 	httpx.RespondJSON(w, http.StatusOK, res)
 }
+

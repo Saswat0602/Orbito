@@ -120,3 +120,4 @@ func TestTaskRanksHandler_Routes(t *testing.T) {
 	router.ServeHTTP(rr2, badReq)
 	assert.Equal(t, http.StatusBadRequest, rr2.Code)
 }
+

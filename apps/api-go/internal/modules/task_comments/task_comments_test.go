@@ -174,3 +174,4 @@ func TestTaskComments_SanitizeEditAuthAndRateLimit(t *testing.T) {
 	router.ServeHTTP(rr21, req21)
 	assert.Equal(t, http.StatusTooManyRequests, rr21.Code)
 }
+

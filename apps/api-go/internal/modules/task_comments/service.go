@@ -449,3 +449,4 @@ func (s *service) Remove(ctx context.Context, id, userID uuid.UUID) error {
 	}
 	return nil
 }
+

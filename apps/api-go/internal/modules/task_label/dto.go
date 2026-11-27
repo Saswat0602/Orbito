@@ -89,3 +89,4 @@ func mapPairRow(r sqlc.GetTaskLabelPairDetailsRow) AssignmentResponse {
 		},
 	}
 }
+

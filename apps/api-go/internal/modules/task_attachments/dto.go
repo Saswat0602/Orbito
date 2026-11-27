@@ -235,3 +235,4 @@ func mapListRow(r sqlc.ListTaskAttachmentDetailsByTaskIDRow, includeTask bool) A
 	}
 	return resp
 }
+

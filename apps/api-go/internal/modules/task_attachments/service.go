@@ -298,3 +298,4 @@ func (s *service) Remove(ctx context.Context, id, userID uuid.UUID) (*Attachment
 	resp := mapDetailRow(detail, false)
 	return &resp, nil
 }
+
