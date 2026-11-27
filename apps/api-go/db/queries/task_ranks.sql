@@ -101,3 +101,4 @@ INSERT INTO "task_ranks" (id, task_id, scope_type, scope_id, view_type, rank)
 VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (task_id, scope_type, scope_id, view_type)
 DO UPDATE SET rank = EXCLUDED.rank;
+

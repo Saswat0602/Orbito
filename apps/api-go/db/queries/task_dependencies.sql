@@ -86,3 +86,4 @@ DELETE FROM "task_dependencies" WHERE id = $1;
 -- name: DeleteTaskDependencyByPair :execrows
 DELETE FROM "task_dependencies"
 WHERE dependent_task_id = $1 AND blocking_task_id = $2;
+

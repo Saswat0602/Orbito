@@ -130,3 +130,4 @@ WHERE (sqlc.narg(user_id)::uuid IS NULL OR user_id = sqlc.narg(user_id))
 GROUP BY task_id
 ORDER BY watch_count DESC
 LIMIT 10;
+

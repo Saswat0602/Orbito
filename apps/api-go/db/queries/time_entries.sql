@@ -91,3 +91,4 @@ RETURNING id;
 
 -- name: DeleteTimeEntryByID :execrows
 DELETE FROM "time_entries" WHERE id = $1;
+

@@ -307,3 +307,4 @@ UPDATE "public_task_shares" SET revoked_at = CURRENT_TIMESTAMP WHERE id = $1;
 
 -- name: BulkDeleteTasksByIDs :execrows
 DELETE FROM "tasks" WHERE id = ANY($1::uuid[]);
+

@@ -56,3 +56,4 @@ WHERE t.project_id = $1
   AND t.start_date IS NOT NULL
   AND t.due_date IS NOT NULL
   AND EXISTS (SELECT 1 FROM "task_assignees" ta WHERE ta.task_id = t.id);
+

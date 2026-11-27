@@ -109,3 +109,4 @@ RETURNING id;
 
 -- name: DeleteTaskCommentByID :execrows
 DELETE FROM "task_comments" WHERE id = $1;
+

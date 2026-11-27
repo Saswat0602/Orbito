@@ -184,3 +184,4 @@ func mapRecurrenceModel(rt *sqlc.RecurringTask) *RecurrenceResponse {
 		IsActive:          rt.IsActive,
 	}
 }
+
