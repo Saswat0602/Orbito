@@ -270,4 +270,3 @@ func (h *Handler) GetActiveTimer(w http.ResponseWriter, r *http.Request) {
 	}
 	httpx.RespondJSON(w, http.StatusOK, res)
 }
-

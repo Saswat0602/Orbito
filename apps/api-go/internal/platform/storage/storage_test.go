@@ -49,4 +49,3 @@ func TestLocalProvider_SaveStreamDeleteAndTraversal(t *testing.T) {
 	err = p.StreamLocal(httptest.NewRecorder(), req, res.Key, true)
 	require.Error(t, err)
 }
-

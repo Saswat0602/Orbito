@@ -14,14 +14,26 @@ import (
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
 
+// PresenceChecker reports live WebSocket online state and last-seen timestamps.
+type PresenceChecker interface {
+	IsUserOnline(userID string) bool
+	GetUserLastSeen(userID string) (string, bool)
+}
+
 // Service provides business logic for user management, directory, and status operations.
 type Service struct {
-	repo Repository
+	repo     Repository
+	presence PresenceChecker
 }
 
 // NewService constructs a new users service.
 func NewService(repo Repository) *Service {
 	return &Service{repo: repo}
+}
+
+// SetPresenceChecker attaches a live presence tracker (e.g., WebSocket gateway).
+func (s *Service) SetPresenceChecker(pc PresenceChecker) {
+	s.presence = pc
 }
 
 // CheckUsersExist checks if any users exist in the system.
@@ -282,13 +294,23 @@ func (s *Service) Remove(ctx context.Context, id, deletedBy uuid.UUID, requester
 
 // GetOnlineStatus returns online state for user.
 func (s *Service) GetOnlineStatus(ctx context.Context, id uuid.UUID) OnlineStatusDTO {
-	user, err := s.repo.GetUserByID(ctx, id)
-	lastSeen := time.Now().UTC().Format(httpx.ISO8601Format)
-	if err == nil && user != nil && user.LastLoginAt.Valid {
-		lastSeen = user.LastLoginAt.Time.Format(httpx.ISO8601Format)
+	isOnline := false
+	var lastSeen string
+	if s.presence != nil {
+		isOnline = s.presence.IsUserOnline(id.String())
+		if ts, ok := s.presence.GetUserLastSeen(id.String()); ok && ts != "" {
+			lastSeen = ts
+		}
+	}
+	if lastSeen == "" {
+		user, err := s.repo.GetUserByID(ctx, id)
+		lastSeen = time.Now().UTC().Format(httpx.ISO8601Format)
+		if err == nil && user != nil && user.LastLoginAt.Valid {
+			lastSeen = user.LastLoginAt.Time.UTC().Format(httpx.ISO8601Format)
+		}
 	}
 	return OnlineStatusDTO{
-		IsOnline: false,
+		IsOnline: isOnline,
 		LastSeen: &lastSeen,
 	}
 }

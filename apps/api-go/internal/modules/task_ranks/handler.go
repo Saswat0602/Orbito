@@ -41,4 +41,3 @@ func (h *Handler) RebalanceAll(w http.ResponseWriter, _ *http.Request) {
 		Message: "Rebalance utility would go here",
 	})
 }
-

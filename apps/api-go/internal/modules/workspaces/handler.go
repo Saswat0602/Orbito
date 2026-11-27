@@ -1,7 +1,9 @@
 package workspaces
 
 import (
+	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -10,14 +12,23 @@ import (
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
 
+// RecentActivityProvider retrieves optimized workspace activity feeds.
+type RecentActivityProvider func(ctx context.Context, workspaceID uuid.UUID, limit, page int) (any, error)
+
 // Handler processes HTTP requests for workspaces endpoints.
 type Handler struct {
-	service Service
+	service        Service
+	recentActivity RecentActivityProvider
 }
 
 // NewHandler constructs a workspaces HTTP handler.
 func NewHandler(svc Service) *Handler {
 	return &Handler{service: svc}
+}
+
+// SetRecentActivityProvider wires the workspace recent activity feed provider.
+func (h *Handler) SetRecentActivityProvider(fn RecentActivityProvider) {
+	h.recentActivity = fn
 }
 
 // Create handles POST /api/workspaces.
@@ -321,5 +332,52 @@ func (h *Handler) GetCharts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	httpx.RespondJSON(w, http.StatusOK, res)
+}
+
+// GetRecentActivity handles GET /api/workspaces/recent/{workspaceId}.
+func (h *Handler) GetRecentActivity(w http.ResponseWriter, r *http.Request) {
+	wsID, err := uuid.Parse(chi.URLParam(r, "workspaceId"))
+	if err != nil {
+		httpx.RespondError(w, r, apperror.BadRequest("Invalid workspace ID"))
+		return
+	}
+
+	limit := 10
+	if raw := r.URL.Query().Get("limit"); raw != "" {
+		if parsed, pErr := strconv.Atoi(raw); pErr == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
+	page := 1
+	if raw := r.URL.Query().Get("page"); raw != "" {
+		if parsed, pErr := strconv.Atoi(raw); pErr == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	if h.recentActivity == nil {
+		httpx.RespondJSON(w, http.StatusOK, map[string]any{
+			"activities": []any{},
+			"pagination": map[string]any{
+				"currentPage": page,
+				"totalPages":  0,
+				"totalCount":  0,
+				"hasNextPage": false,
+				"hasPrevPage": false,
+			},
+		})
+		return
+	}
+
+	res, err := h.recentActivity(r.Context(), wsID, limit, page)
+	if err != nil {
+		httpx.RespondError(w, r, err)
+		return
+	}
 	httpx.RespondJSON(w, http.StatusOK, res)
 }

@@ -114,4 +114,3 @@ func (r *pgRepository) CountRecent(ctx context.Context, taskID uuid.UUID, since 
 func (r *pgRepository) DeleteByID(ctx context.Context, id uuid.UUID) (int64, error) {
 	return r.queries.DeleteTaskAttachmentByID(ctx, id)
 }
-

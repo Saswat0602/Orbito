@@ -58,4 +58,3 @@ func ShareRoutes(h *Handler, authMw func(http.Handler) http.Handler) http.Handle
 
 	return r
 }
-

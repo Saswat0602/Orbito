@@ -177,4 +177,3 @@ func TestTaskAttachments_UploadPreviewDownloadDelete(t *testing.T) {
 	router.ServeHTTP(rrDel, reqDel)
 	assert.Equal(t, http.StatusNoContent, rrDel.Code)
 }
-

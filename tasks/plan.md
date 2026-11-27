@@ -80,13 +80,13 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Kanban boards, task detail drawers, list views, bulk actions, reordering, and timers match NestJS responses
 
 ### Phase 5: Real-Time Collaboration & Audit
-- [ ] Task 41: Real-Time Events Gateway (Socket.IO v4 protocol engine at `/events`, room management)
-- [ ] Task 42: WebSocket Event Dispatcher & Presence (`user:online`, `typing`, `task:created/updated`, etc.)
-- [ ] Task 43: Notifications Module (`/api/notifications` list, unread count, mark-read, delete)
-- [ ] Task 44: Activity Log Module (`/api/activity-log` audit trail capture, project & org stats)
+- [x] Task 41: Real-Time Events Gateway (Socket.IO v4 protocol engine at `/events`, room management)
+- [x] Task 42: WebSocket Event Dispatcher & Presence (`user:online`, `typing`, `task:created/updated`, etc.)
+- [x] Task 43: Notifications Module (`/api/notifications` list, unread count, mark-read, delete)
+- [x] Task 44: Activity Log Module (`/api/activity-log` audit trail capture, project & org stats)
 
 ### Checkpoint: Real-Time & Event Dispatching Verified
-- [ ] Frontend establishes live WebSocket connection, receives real-time room broadcasts and notifications
+- [x] Frontend establishes live WebSocket connection, receives real-time room broadcasts and notifications
 
 ### Phase 6: Async Workers, Storage, Integrations & Public Access
 - [ ] Task 45: Queue Engine & Background Processors (`asynq`/Redis worker runtime, `bulk-task-import`, `automation`)

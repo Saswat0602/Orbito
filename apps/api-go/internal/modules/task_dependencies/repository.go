@@ -131,4 +131,3 @@ func (r *pgRepository) DeleteByPair(ctx context.Context, dependentTaskID, blocki
 		BlockingTaskID:  blockingTaskID,
 	})
 }
-

@@ -168,4 +168,3 @@ func TestTimeEntries_StartStopTimerAndSummary(t *testing.T) {
 	router.ServeHTTP(rrStop, reqStop)
 	assert.Equal(t, http.StatusOK, rrStop.Code)
 }
-

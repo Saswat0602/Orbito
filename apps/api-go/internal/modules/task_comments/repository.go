@@ -126,4 +126,3 @@ func (r *pgRepository) UpdateContent(ctx context.Context, id uuid.UUID, content 
 func (r *pgRepository) DeleteByID(ctx context.Context, id uuid.UUID) (int64, error) {
 	return r.queries.DeleteTaskCommentByID(ctx, id)
 }
-

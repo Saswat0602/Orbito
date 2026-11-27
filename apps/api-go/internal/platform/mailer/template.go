@@ -44,6 +44,21 @@ func RenderTemplate(template string, data map[string]any) string {
 		content = fmt.Sprintf("<p>You have been invited to join <strong>%s</strong> on Orbito.</p><p><a href=\"%s\" style=\"display:inline-block;padding:10px 20px;background:#18181b;color:#fff;text-decoration:none;border-radius:4px;\">Accept Invitation</a></p>",
 			html.EscapeString(workspaceName), html.EscapeString(inviteLink))
 
+	case "mention":
+		mentioner := getString(data, "mentioner.name", "A teammate")
+		taskTitle := getString(data, "entity.title", "a task")
+		textSnippet := getString(data, "textContent", "")
+		entityURL := getString(data, "entityUrl", "#")
+		title = fmt.Sprintf("You were mentioned in task: %s", taskTitle)
+		content = fmt.Sprintf("<p><strong>%s</strong> mentioned you in a comment on <strong>%s</strong>.</p>",
+			html.EscapeString(mentioner), html.EscapeString(taskTitle))
+		if textSnippet != "" {
+			content += fmt.Sprintf("<blockquote style=\"border-left:2px solid #3f3f46;padding-left:12px;color:#d4d4d8;\">%s</blockquote>",
+				html.EscapeString(textSnippet))
+		}
+		content += fmt.Sprintf("<p><a href=\"%s\" style=\"display:inline-block;padding:10px 20px;background:#18181b;color:#fff;text-decoration:none;border-radius:4px;\">View Task</a></p>",
+			html.EscapeString(entityURL))
+
 	default:
 		msg := getString(data, "message", "You have a new notification from Orbito.")
 		content = fmt.Sprintf("<p>%s</p>", html.EscapeString(msg))

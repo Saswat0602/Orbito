@@ -1,6 +1,8 @@
 package tasks
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"github.com/orbito/api-go/internal/middleware"
 	"github.com/orbito/api-go/internal/platform/database/sqlc"
@@ -12,6 +14,27 @@ type EventEmitter interface {
 	EmitTaskCreated(projectID string, payload any)
 	EmitTaskUpdated(projectID, taskID string, payload any)
 	EmitTaskDeleted(projectID, taskID string)
+}
+
+// ExtendedEventEmitter optionally broadcasts granular task status and assignment events.
+type ExtendedEventEmitter interface {
+	EmitTaskStatusChanged(projectID, taskID string, statusChange any)
+	EmitTaskAssigned(projectID, taskID string, assignment any)
+}
+
+// ActivityLogger records audit trail entries for task mutations.
+type ActivityLogger interface {
+	LogTaskCreated(ctx context.Context, taskID, title, key string, newValue any, userID uuid.UUID) error
+	LogTaskUpdated(ctx context.Context, taskID, title string, oldValue, newValue any, userID uuid.UUID) error
+	LogTaskStatusChanged(ctx context.Context, taskID, title, oldStatus, newStatus string, userID uuid.UUID) error
+	LogTaskAssigned(ctx context.Context, taskID, title, assigneeID string, userID uuid.UUID) error
+	LogTaskDeleted(ctx context.Context, taskID, title string, oldValue any, userID uuid.UUID) error
+}
+
+// TaskNotifier dispatches notifications on task assignments and status changes.
+type TaskNotifier interface {
+	NotifyTaskAssigned(ctx context.Context, taskID uuid.UUID, assigneeIDs []uuid.UUID, assignedBy uuid.UUID) error
+	NotifyTaskStatusChanged(ctx context.Context, taskID uuid.UUID, oldStatus, newStatus string, changedBy uuid.UUID) error
 }
 
 type effectiveAccess struct {
@@ -184,4 +207,3 @@ func mapRecurrenceModel(rt *sqlc.RecurringTask) *RecurrenceResponse {
 		IsActive:          rt.IsActive,
 	}
 }
-

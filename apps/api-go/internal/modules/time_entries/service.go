@@ -29,13 +29,27 @@ type Service interface {
 	GetActiveTimer(ctx context.Context, targetUserID uuid.UUID, caller CallerContext) (*EntryResponse, error)
 }
 
+// EventEmitter broadcasts real-time timer lifecycle events.
+type EventEmitter interface {
+	EmitTimeEntryStarted(projectID, taskID string, timeEntry any)
+	EmitTimeEntryStopped(projectID, taskID string, timeEntry any)
+}
+
 type service struct {
-	repo Repository
+	repo    Repository
+	emitter EventEmitter
 }
 
 // NewService constructs a time_entries service.
 func NewService(repo Repository) Service {
 	return &service{repo: repo}
+}
+
+// AttachEventEmitter wires an optional real-time event emitter onto a time_entries service.
+func AttachEventEmitter(svc Service, emitter EventEmitter) {
+	if s, ok := svc.(*service); ok {
+		s.emitter = emitter
+	}
 }
 
 func parseTimeISO(raw *string) (*time.Time, error) {
@@ -411,6 +425,9 @@ func (s *service) StartTimer(ctx context.Context, req StartTimerRequest, caller 
 	resp := mapDetailRow(detail, false, false)
 	resp.Task.Project = nil
 	resp.User.Avatar = nil
+	if s.emitter != nil {
+		s.emitter.EmitTimeEntryStarted(taskRow.ProjectID.String(), taskID.String(), resp)
+	}
 	return &StartTimerResponse{
 		Message:     "Timer started successfully",
 		ActiveTimer: &resp,
@@ -437,6 +454,9 @@ func (s *service) StopTimer(ctx context.Context, req StopTimerRequest, caller Ca
 		return nil, apperror.Internal("Failed to load stopped timer")
 	}
 	resp := mapDetailRow(detail, false, false)
+	if s.emitter != nil && resp.Task != nil && resp.Task.Project != nil {
+		s.emitter.EmitTimeEntryStopped(resp.Task.Project.ID, resp.TaskID, resp)
+	}
 	return &resp, nil
 }
 
