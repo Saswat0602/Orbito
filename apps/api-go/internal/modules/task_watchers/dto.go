@@ -285,3 +285,4 @@ func mapUserWatchedTaskRow(r sqlc.ListWatchedTasksByUserRow) WatcherResponse {
 		},
 	}
 }
+

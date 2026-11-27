@@ -326,3 +326,4 @@ func (s *service) GetDependencyStats(ctx context.Context, projectID uuid.UUID) (
 		CriticalPath:      []string{},
 	}, nil
 }
+

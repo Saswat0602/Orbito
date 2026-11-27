@@ -231,3 +231,4 @@ func mapFilteredRow(r sqlc.ListTimeEntriesFilteredRow) EntryResponse {
 		},
 	}
 }
+
