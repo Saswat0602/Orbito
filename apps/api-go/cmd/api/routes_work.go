@@ -36,6 +36,7 @@ func mountWorkRoutes(r chi.Router, d *platformDeps) {
 	r.Mount("/api/labels", labels.Routes(labels.NewHandler(labelsSvc), d.authMw))
 
 	sprintsSvc := sprints.NewService(initRepo(d.db, sprints.NewRepository), d.eventsGW)
+	sprints.AttachPhase6Hooks(sprintsSvc, d.automationSvc)
 	r.Mount("/api/sprints", sprints.Routes(sprints.NewHandler(sprintsSvc), d.authMw))
 
 	taskRanksSvc := task_ranks.NewService(initRepo(d.db, task_ranks.NewRepository))
@@ -43,6 +44,10 @@ func mountWorkRoutes(r chi.Router, d *platformDeps) {
 
 	tasksSvc := tasks.NewService(initRepo(d.db, tasks.NewRepository), taskRanksSvc, d.storeProvider, d.eventsGW, d.frontendURL)
 	tasks.AttachPhase5Hooks(tasksSvc, d.activitySvc, d.notificationsSvc)
+	tasks.AttachPhase6Hooks(tasksSvc, d.automationSvc)
+	if d.db != nil && d.queueRt != nil {
+		tasks.RegisterBulkImportProcessor(d.queueRt, tasksSvc, d.appLog)
+	}
 	tasksHandler := tasks.NewHandler(tasksSvc)
 	r.Mount("/api/tasks", tasks.Routes(tasksHandler, d.authMw))
 	r.Mount("/api/task-shares", tasks.ShareRoutes(tasksHandler, d.authMw))
@@ -57,6 +62,7 @@ func mountWorkRoutes(r chi.Router, d *platformDeps) {
 	r.Mount("/api/task-labels", task_label.Routes(task_label.NewHandler(taskLabelSvc), d.authMw))
 
 	commentsSvc := task_comments.NewService(initRepo(d.db, task_comments.NewRepository), d.eventsGW, d.commentHooks)
+	task_comments.AttachPhase6Hooks(commentsSvc, d.automationSvc)
 	r.Mount("/api/task-comments", task_comments.Routes(task_comments.NewHandler(commentsSvc), d.authMw))
 
 	attachSvc := task_attachments.NewService(initRepo(d.db, task_attachments.NewRepository), d.storeProvider)

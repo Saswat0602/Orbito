@@ -60,6 +60,7 @@ type service struct {
 	emitter     EventEmitter
 	activity    ActivityLogger
 	notifier    TaskNotifier
+	automation  AutomationTrigger
 	frontendURL string
 }
 
@@ -79,6 +80,13 @@ func AttachPhase5Hooks(svc Service, activity ActivityLogger, notifier TaskNotifi
 	if s, ok := svc.(*service); ok {
 		s.activity = activity
 		s.notifier = notifier
+	}
+}
+
+// AttachPhase6Hooks attaches optional automation triggers onto the tasks service.
+func AttachPhase6Hooks(svc Service, automation AutomationTrigger) {
+	if s, ok := svc.(*service); ok {
+		s.automation = automation
 	}
 }
 
@@ -252,6 +260,14 @@ func (s *service) Create(ctx context.Context, req CreateTaskRequest, userID uuid
 	if s.notifier != nil && len(in.AssigneeIDs) > 0 {
 		_ = s.notifier.NotifyTaskAssigned(ctx, createdID, in.AssigneeIDs, userID)
 	}
+	if s.automation != nil {
+		s.automation.HandleTaskCreated(ctx, createdID, in.ProjectID, map[string]any{
+			"id":        res.ID,
+			"type":      res.Type,
+			"priority":  res.Priority,
+			"projectId": res.ProjectID,
+		}, &userID)
+	}
 	return res, nil
 }
 
@@ -313,6 +329,14 @@ func (s *service) CreateWithAttachments(ctx context.Context, req CreateTaskReque
 	}
 	if s.notifier != nil && len(in.AssigneeIDs) > 0 {
 		_ = s.notifier.NotifyTaskAssigned(ctx, createdID, in.AssigneeIDs, userID)
+	}
+	if s.automation != nil {
+		s.automation.HandleTaskCreated(ctx, createdID, in.ProjectID, map[string]any{
+			"id":        res.ID,
+			"type":      res.Type,
+			"priority":  res.Priority,
+			"projectId": res.ProjectID,
+		}, &userID)
 	}
 	return res, nil
 }
@@ -624,6 +648,22 @@ func (s *service) Update(ctx context.Context, idOrSlug string, req UpdateTaskReq
 		}
 		if assigneeUUIDs != nil && len(*assigneeUUIDs) > 0 {
 			_ = s.notifier.NotifyTaskAssigned(ctx, taskRow.ID, *assigneeUUIDs, userID)
+		}
+	}
+	if s.automation != nil {
+		switch {
+		case req.StatusID != nil && newStatusName != "" && newStatusName != oldStatusName:
+			s.automation.HandleTaskStatusChanged(ctx, taskRow.ID, taskRow.ProjectID, map[string]any{
+				"oldStatus": oldStatusName,
+				"newStatus": newStatusName,
+				"statusId":  *req.StatusID,
+			}, userID)
+		case assigneeUUIDs != nil && len(*assigneeUUIDs) > 0:
+			s.automation.HandleTaskAssigned(ctx, taskRow.ID, taskRow.ProjectID, (*assigneeUUIDs)[0].String(), userID)
+		default:
+			s.automation.HandleTaskUpdated(ctx, taskRow.ID, taskRow.ProjectID, map[string]any{
+				"title": res.Title,
+			}, userID)
 		}
 	}
 	return res, nil

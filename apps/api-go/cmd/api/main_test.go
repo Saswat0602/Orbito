@@ -131,6 +131,10 @@ func TestBuildRouter(t *testing.T) {
 		"/api/activity-logs",
 		"/api/activity-log",
 		"/api/workspaces/recent/00000000-0000-0000-0000-000000000001",
+		"/api/automation/rules",
+		"/api/s3/presigned-put-url?key=test.png",
+		"/api/search/suggestions?q=au",
+		"/api/search/quick?q=au",
 	} {
 		t.Run("GET "+path+" requires authentication", func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, path, nil)
@@ -141,6 +145,33 @@ func TestBuildRouter(t *testing.T) {
 			assert.Contains(t, rr.Body.String(), "Unauthorized")
 		})
 	}
+
+	t.Run("GET /api/health/queue returns queue runtime status", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/health/queue", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"queues"`)
+	})
+
+	t.Run("GET /api/queues/test returns reachable status", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/queues/test", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"Queue UI Controller is reachable"`)
+	})
+
+	t.Run("POST /api/editor-images/upload and /api/uploads/upload/avatar require auth", func(t *testing.T) {
+		for _, p := range []string{"/api/editor-images/upload", "/api/uploads/upload/avatar"} {
+			req := httptest.NewRequest(http.MethodPost, p, nil)
+			rr := httptest.NewRecorder()
+			router.ServeHTTP(rr, req)
+			assert.Equal(t, http.StatusUnauthorized, rr.Code)
+		}
+	})
 
 	t.Run("GET /socket.io/ returns Engine.IO v4 open handshake", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/socket.io/?EIO=4&transport=polling", nil)

@@ -89,11 +89,11 @@ This plan specifies the implementation breakdown for building a high-performance
 - [x] Frontend establishes live WebSocket connection, receives real-time room broadcasts and notifications
 
 ### Phase 6: Async Workers, Storage, Integrations & Public Access
-- [ ] Task 45: Queue Engine & Background Processors (`asynq`/Redis worker runtime, `bulk-task-import`, `automation`)
-- [ ] Task 46: Scheduled Jobs Engine (Robfig cron: hourly reminders, 9am overdue alerts, midnight recurring tasks)
-- [ ] Task 47: Storage & File Management (`/uploads/upload/:folder`, `/uploads/:folder/:filename`, `/s3/presigned-*`)
-- [ ] Task 48: Editor Images & Media Assets (`/api/editor-images/upload`)
-- [ ] Task 49: Search Module (`/api/search/global`, `/advanced`, `/suggestions`, `/quick`)
+- [x] Task 45: Queue Engine & Background Processors (`asynq`/Redis worker runtime, `bulk-task-import`, `automation`)
+- [x] Task 46: Scheduled Jobs Engine (Robfig cron: hourly reminders, 9am overdue alerts, midnight recurring tasks)
+- [x] Task 47: Storage & File Management (`/uploads/upload/:folder`, `/uploads/:folder/:filename`, `/s3/presigned-*`)
+- [x] Task 48: Editor Images & Media Assets (`/api/editor-images/upload`)
+- [x] Task 49: Search Module (`/api/search/global`, `/advanced`, `/suggestions`, `/quick`)
 - [ ] Task 50: Project Inbox & Email Sync (`/api/inbox` project email accounts, rules, IMAP processor)
 - [ ] Task 51: Trello Sync Module & Scheduler (`/api/trello-sync` credentials, board import, sync loop)
 - [ ] Task 52: Jira Sync Module (`/api/jira-sync` safe outbound HTTP, credentials, project import, webhook sync)

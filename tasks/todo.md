@@ -1220,14 +1220,14 @@
 **Description:** Implement asynchronous background job processing in internal/platform/queue using hibiken/asynq and Redis. Implements workers for `bulk-task-import` (batch task creation from jobs) and `automation` (rule evaluation).
 
 **Acceptance criteria:**
-- [ ] Asynq worker connects to Redis and processes tasks concurrently up to MAX_CONCURRENT_JOBS
-- [ ] `bulk-task-import` processor ingests items, creates tasks, and emits completion event
-- [ ] `automation` processor evaluates trigger conditions and executes configured actions
+- [x] Asynq worker connects to Redis and processes tasks concurrently up to MAX_CONCURRENT_JOBS
+- [x] `bulk-task-import` processor ingests items, creates tasks, and emits completion event
+- [x] `automation` processor evaluates trigger conditions and executes configured actions
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/queue/...`
-- [ ] Build succeeds: `go build ./internal/platform/queue/...`
-- [ ] Manual check: Enqueue bulk import job and verify worker picks up and processes tasks
+- [x] Tests pass: `go test -v ./internal/platform/queue/...`
+- [x] Build succeeds: `go build ./internal/platform/queue/...`
+- [x] Manual check: Enqueue bulk import job and verify worker picks up and processes tasks
 
 **Dependencies:** Task 30
 
@@ -1246,14 +1246,14 @@
 **Description:** Implement scheduled cron runner in internal/modules/scheduler using robfig/cron/v3. Registers exact cron expressions: hourly due date reminders, daily 9 AM overdue alerts, Monday 9 AM sprint summaries, midnight overdue reconciliation, and cleanup tasks.
 
 **Acceptance criteria:**
-- [ ] Scheduler boots with application and registers all 8 cron schedules
-- [ ] Hourly reminder scanner finds tasks due within 24h and triggers email/in-app alert
-- [ ] 9 AM scanner detects overdue tasks and dispatches alerts to assignees
+- [x] Scheduler boots with application and registers all 8 cron schedules
+- [x] Hourly reminder scanner finds tasks due within 24h and triggers email/in-app alert
+- [x] 9 AM scanner detects overdue tasks and dispatches alerts to assignees
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/scheduler/...`
-- [ ] Build succeeds: `go build ./internal/modules/scheduler/...`
-- [ ] Manual check: Trigger reminder scanner function manually in test and assert email dispatch
+- [x] Tests pass: `go test -v ./internal/modules/scheduler/...`
+- [x] Build succeeds: `go build ./internal/modules/scheduler/...`
+- [x] Manual check: Trigger reminder scanner function manually in test and assert email dispatch
 
 **Dependencies:** Task 34, Task 9
 
@@ -1272,14 +1272,14 @@
 **Description:** Implement file storage service in internal/platform/storage and internal/modules/storage_files: avatar uploads (locked to 'avatar' folder with 50MB MAX_AVATAR_SIZE limit), serving uploaded files from disk, and AWS S3 presigned PUT/GET URL generator.
 
 **Acceptance criteria:**
-- [ ] `POST /uploads/upload/:folder` strictly allows only 'avatar' folder; rejects other paths with 400
-- [ ] `GET /uploads/:folder/:filename` serves file with correct Content-Type and security headers
-- [ ] `GET /s3/presigned-put-url` generates valid presigned S3 upload URL
+- [x] `POST /uploads/upload/:folder` strictly allows only 'avatar' folder; rejects other paths with 400
+- [x] `GET /uploads/:folder/:filename` serves file with correct Content-Type and security headers
+- [x] `GET /s3/presigned-put-url` generates valid presigned S3 upload URL
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/storage/... ./internal/modules/storage_files/...`
-- [ ] Build succeeds: `go build ./internal/modules/storage_files/...`
-- [ ] Manual check: Upload avatar image via curl and download through GET /uploads/avatar/:filename
+- [x] Tests pass: `go test -v ./internal/platform/storage/... ./internal/modules/storage_files/...`
+- [x] Build succeeds: `go build ./internal/modules/storage_files/...`
+- [x] Manual check: Upload avatar image via curl and download through GET /uploads/avatar/:filename
 
 **Dependencies:** Task 6
 
@@ -1299,14 +1299,14 @@
 **Description:** Implement rich text editor image upload handler in internal/modules/editor_images: handles image upload up to MAX_EDITOR_IMAGE_SIZE (5MB), validates image MIME types, persists file to editor-images folder, and creates MediaAsset record in DB.
 
 **Acceptance criteria:**
-- [ ] `POST /api/editor-images/upload` accepts image (jpeg, png, gif, webp) and stores in editor-images destination
-- [ ] Returns `{ url: '/uploads/editor-images/filename', id: '...' }` matching frontend editor expectations
-- [ ] Rejects non-image files or payloads exceeding 5MB
+- [x] `POST /api/editor-images/upload` accepts image (jpeg, png, gif, webp) and stores in editor-images destination
+- [x] Returns `{ url: '/uploads/editor-images/filename', id: '...' }` matching frontend editor expectations
+- [x] Rejects non-image files or payloads exceeding 5MB
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/editor_images/...`
-- [ ] Build succeeds: `go build ./internal/modules/editor_images/...`
-- [ ] Manual check: Upload editor image and verify file exists on disk and MediaAsset row exists in DB
+- [x] Tests pass: `go test -v ./internal/modules/editor_images/...`
+- [x] Build succeeds: `go build ./internal/modules/editor_images/...`
+- [x] Manual check: Upload editor image and verify file exists on disk and MediaAsset row exists in DB
 
 **Dependencies:** Task 47
 
@@ -1324,14 +1324,14 @@
 **Description:** Implement global search and suggestion engine in internal/modules/search: POST /api/search/global (searches across tasks, projects, workspaces, members), POST /api/search/advanced (multi-criteria filtering), GET /api/search/suggestions, and GET /api/search/quick.
 
 **Acceptance criteria:**
-- [ ] `POST /api/search/global` executes parameterized multi-table search scoped to user tenant permissions
-- [ ] `GET /api/search/quick` returns instant matching task and project results for ⌘K palette
-- [ ] Sanitizes search query string to prevent SQL injection
+- [x] `POST /api/search/global` executes parameterized multi-table search scoped to user tenant permissions
+- [x] `GET /api/search/quick` returns instant matching task and project results for ⌘K palette
+- [x] Sanitizes search query string to prevent SQL injection
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/search/...`
-- [ ] Build succeeds: `go build ./internal/modules/search/...`
-- [ ] Manual check: Search for task title in global search and verify matching items returned
+- [x] Tests pass: `go test -v ./internal/modules/search/...`
+- [x] Build succeeds: `go build ./internal/modules/search/...`
+- [x] Manual check: Search for task title in global search and verify matching items returned
 
 **Dependencies:** Task 30
 

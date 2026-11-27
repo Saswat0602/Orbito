@@ -1,6 +1,8 @@
 package sprints
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"github.com/orbito/api-go/internal/platform/database/sqlc"
 )
@@ -10,6 +12,11 @@ import (
 type EventEmitter interface {
 	EmitSprintStarted(projectID string, payload any)
 	EmitSprintCompleted(projectID string, payload any)
+}
+
+// AutomationTrigger dispatches background automation rules on sprint lifecycle events.
+type AutomationTrigger interface {
+	HandleSprintEvent(ctx context.Context, triggerType string, projectID uuid.UUID, sprintData map[string]any, userID uuid.UUID)
 }
 
 func mapDetailsRow(r *sqlc.GetSprintDetailsByIDRow, tasks []SprintTaskItem) *SprintResponse {

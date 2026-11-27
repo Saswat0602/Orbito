@@ -31,13 +31,21 @@ type Service interface {
 }
 
 type service struct {
-	repo    Repository
-	emitter EventEmitter
+	repo       Repository
+	emitter    EventEmitter
+	automation AutomationTrigger
 }
 
 // NewService constructs a sprints service. emitter is optional and may be nil.
 func NewService(repo Repository, emitter EventEmitter) Service {
 	return &service{repo: repo, emitter: emitter}
+}
+
+// AttachPhase6Hooks attaches optional automation triggers onto the sprints service.
+func AttachPhase6Hooks(svc Service, automation AutomationTrigger) {
+	if s, ok := svc.(*service); ok {
+		s.automation = automation
+	}
 }
 
 type projectAccess struct {
@@ -687,6 +695,11 @@ func (s *service) StartSprint(ctx context.Context, id, userID uuid.UUID, isSuper
 	if s.emitter != nil {
 		s.emitter.EmitSprintStarted(current.ProjectID.String(), updated)
 	}
+	if s.automation != nil {
+		s.automation.HandleSprintEvent(ctx, "SPRINT_STARTED", current.ProjectID, map[string]any{
+			"id": updated.ID, "name": updated.Name, "status": updated.Status,
+		}, userID)
+	}
 	return updated, nil
 }
 
@@ -706,6 +719,11 @@ func (s *service) CompleteSprint(ctx context.Context, id, userID uuid.UUID, isSu
 	}
 	if s.emitter != nil {
 		s.emitter.EmitSprintCompleted(current.ProjectID.String(), updated)
+	}
+	if s.automation != nil {
+		s.automation.HandleSprintEvent(ctx, "SPRINT_COMPLETED", current.ProjectID, map[string]any{
+			"id": updated.ID, "name": updated.Name, "status": updated.Status,
+		}, userID)
 	}
 	return updated, nil
 }

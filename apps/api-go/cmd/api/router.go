@@ -9,18 +9,18 @@ import (
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
 	"github.com/orbito/api-go/internal/platform/database"
-	"github.com/orbito/api-go/internal/platform/events"
 	"github.com/orbito/api-go/internal/shared/apperror"
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
 
 // BuildRouter constructs the Chi router with all ingress middleware, global error handlers, and routes.
 func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.Router {
-	r, _ := buildRouterWithGateway(cfg, db, appLog)
+	r, deps := buildRouterWithDeps(cfg, db, appLog)
+	defer deps.Close()
 	return r
 }
 
-func buildRouterWithGateway(cfg *config.Config, db *database.DB, appLog *slog.Logger) (chi.Router, *events.Gateway) {
+func buildRouterWithDeps(cfg *config.Config, db *database.DB, appLog *slog.Logger) (chi.Router, *platformDeps) {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -46,9 +46,9 @@ func buildRouterWithGateway(cfg *config.Config, db *database.DB, appLog *slog.Lo
 	r.Handle("/socket.io", deps.eventsGW)
 	r.Handle("/socket.io/*", deps.eventsGW)
 
-	if deps.localStore != nil {
+	if deps.storageMgr != nil {
 		r.Get("/uploads/*", func(w http.ResponseWriter, req *http.Request) {
-			if err := deps.localStore.StreamLocal(w, req, chi.URLParam(req, "*"), false); err != nil {
+			if err := deps.storageMgr.Stream(w, req, chi.URLParam(req, "*"), false); err != nil {
 				httpx.RespondError(w, req, err)
 			}
 		})
@@ -57,6 +57,7 @@ func buildRouterWithGateway(cfg *config.Config, db *database.DB, appLog *slog.Lo
 	mountCoreRoutes(r, deps)
 	mountTenancyRoutes(r, deps)
 	mountWorkRoutes(r, deps)
+	mountAsyncRoutes(r, deps)
 
-	return r, deps.eventsGW
+	return r, deps
 }

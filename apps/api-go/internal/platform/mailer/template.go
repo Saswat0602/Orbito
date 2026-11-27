@@ -59,6 +59,27 @@ func RenderTemplate(template string, data map[string]any) string {
 		content += fmt.Sprintf("<p><a href=\"%s\" style=\"display:inline-block;padding:10px 20px;background:#18181b;color:#fff;text-decoration:none;border-radius:4px;\">View Task</a></p>",
 			html.EscapeString(entityURL))
 
+	case "due-date-reminder":
+		taskTitle := getString(data, "taskTitle", "Upcoming task")
+		dueDate := getString(data, "dueDate", "")
+		title = fmt.Sprintf("Task Due Soon: %s", taskTitle)
+		content = fmt.Sprintf("<p>Your task <strong>%s</strong> is due soon (%s).</p>",
+			html.EscapeString(taskTitle), html.EscapeString(dueDate))
+
+	case "task-overdue":
+		assigneeName := getString(data, "assigneeName", "there")
+		taskCount := getString(data, "taskCount", "1")
+		title = fmt.Sprintf("Overdue Tasks Reminder (%s)", taskCount)
+		content = fmt.Sprintf("<p>Hi %s,</p><p>You currently have <strong>%s</strong> overdue task(s) in Orbito that need attention.</p>",
+			html.EscapeString(assigneeName), html.EscapeString(taskCount))
+
+	case "weekly-summary":
+		userName := getString(data, "userName", "there")
+		weekStart := getString(data, "weekStart", "")
+		title = "Weekly Task Summary"
+		content = fmt.Sprintf("<p>Hi %s,</p><p>Here is your weekly activity digest starting %s.</p>",
+			html.EscapeString(userName), html.EscapeString(weekStart))
+
 	default:
 		msg := getString(data, "message", "You have a new notification from Orbito.")
 		content = fmt.Sprintf("<p>%s</p>", html.EscapeString(msg))

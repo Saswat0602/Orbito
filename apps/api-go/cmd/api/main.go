@@ -69,8 +69,11 @@ func main() {
 		}
 	}
 
-	router, eventsGW := buildRouterWithGateway(cfg, db, appLogger)
-	defer eventsGW.Close()
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+
+	router, deps := buildRouterWithDeps(cfg, db, appLogger)
+	deps.StartBackground(serverCtx)
+	defer deps.Close()
 
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	server := &http.Server{
@@ -81,8 +84,6 @@ func main() {
 		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

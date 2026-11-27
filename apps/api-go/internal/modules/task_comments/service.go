@@ -21,6 +21,11 @@ type NotificationHooks interface {
 	OnCommentUpdated(ctx context.Context, commentID, taskID, authorID uuid.UUID, oldContent, newContent string)
 }
 
+// AutomationTrigger dispatches background automation rules on comment creation.
+type AutomationTrigger interface {
+	HandleCommentAdded(ctx context.Context, taskID, projectID uuid.UUID, commentData map[string]any, userID uuid.UUID)
+}
+
 // Service defines business operations for task comments.
 type Service interface {
 	Create(ctx context.Context, req CreateRequest, userID uuid.UUID) (*CommentResponse, error)
@@ -34,14 +39,22 @@ type Service interface {
 }
 
 type service struct {
-	repo     Repository
-	events   EventEmitter
-	notifier NotificationHooks
+	repo       Repository
+	events     EventEmitter
+	notifier   NotificationHooks
+	automation AutomationTrigger
 }
 
 // NewService constructs a task_comments service.
 func NewService(repo Repository, events EventEmitter, notifier NotificationHooks) Service {
 	return &service{repo: repo, events: events, notifier: notifier}
+}
+
+// AttachPhase6Hooks attaches optional automation triggers onto task comments.
+func AttachPhase6Hooks(svc Service, automation AutomationTrigger) {
+	if s, ok := svc.(*service); ok {
+		s.automation = automation
+	}
 }
 
 func (s *service) checkAccess(ctx context.Context, userID uuid.UUID, taskIdentifier string) (*sqlc.CheckCommentAccessTaskAndUserRow, error) {
@@ -153,6 +166,12 @@ func (s *service) Create(ctx context.Context, req CreateRequest, userID uuid.UUI
 	}
 	if s.events != nil {
 		s.events.EmitCommentAdded(acc.ProjectID.String(), acc.TaskID.String(), resp)
+	}
+	if s.automation != nil {
+		s.automation.HandleCommentAdded(ctx, acc.TaskID, acc.ProjectID, map[string]any{
+			"commentId": resp.ID,
+			"content":   resp.Content,
+		}, userID)
 	}
 	return &resp, nil
 }

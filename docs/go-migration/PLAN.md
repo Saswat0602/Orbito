@@ -200,14 +200,14 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `POST` | `/api/auth/setup` | Public | `SetupAdminDto` | `JSON` | `backend/src/modules/auth/auth.controller.ts` | `apps/api-go/internal/modules/auth/handler.go` | **PENDING** |
 | `GET` | `/api/auth/setup/required` | Public | `-` | `JSON` | `backend/src/modules/auth/auth.controller.ts` | `apps/api-go/internal/modules/auth/handler.go` | **PENDING** |
 | `GET` | `/api/auth/verify-reset-token/:token` | Public | `token:string` | `JSON` | `backend/src/modules/auth/auth.controller.ts` | `apps/api-go/internal/modules/auth/handler.go` | **PENDING** |
-| `GET` | `/api/automation/rules` | JWT | `-` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `POST` | `/api/automation/rules` | JWT | `CreateAutomationRuleDto` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `DELETE` | `/api/automation/rules/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `GET` | `/api/automation/rules/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `PATCH` | `/api/automation/rules/:id` | JWT | `Partial<CreateAutomationRuleDto>` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `GET` | `/api/automation/rules/:id/stats` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `PATCH` | `/api/automation/rules/:id/toggle` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **PENDING** |
-| `POST` | `/api/editor-images/upload` | JWT | `-` | `JSON` | `backend/src/modules/editor-images/editor-images.controller.ts` | `apps/api-go/internal/modules/editor-images/handler.go` | **PENDING** |
+| `GET` | `/api/automation/rules` | JWT | `-` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `POST` | `/api/automation/rules` | JWT | `CreateAutomationRuleDto` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `DELETE` | `/api/automation/rules/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `GET` | `/api/automation/rules/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `PATCH` | `/api/automation/rules/:id` | JWT | `Partial<CreateAutomationRuleDto>` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `GET` | `/api/automation/rules/:id/stats` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `PATCH` | `/api/automation/rules/:id/toggle` | JWT | `id:string` | `JSON` | `backend/src/modules/automation/automation.controller.ts` | `apps/api-go/internal/modules/automation/handler.go` | **DONE** |
+| `POST` | `/api/editor-images/upload` | JWT | `-` | `JSON` | `backend/src/modules/editor-images/editor-images.controller.ts` | `apps/api-go/internal/modules/editor-images/handler.go` | **DONE** |
 | `GET` | `/api/email/queue/stats` | JWT | `-` | `JSON` | `backend/src/modules/email/email.controller.ts` | `apps/api-go/internal/modules/email/handler.go` | **PENDING** |
 | `POST` | `/api/email/send` | JWT | `SendEmailDto` | `JSON` | `backend/src/modules/email/email.controller.ts` | `apps/api-go/internal/modules/email/handler.go` | **PENDING** |
 | `POST` | `/api/email/send-bulk` | JWT | `BulkEmailDto` | `JSON` | `backend/src/modules/email/email.controller.ts` | `apps/api-go/internal/modules/email/handler.go` | **PENDING** |
@@ -351,13 +351,13 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `GET` | `/api/public/workspaces/:workspaceSlug/projects/:projectSlug/sprints` | JWT | `workspaceSlug:string, projectSlug:string` | `JSON` | `backend/src/modules/public/controllers/public-sprints.controller.ts` | `apps/api-go/internal/modules/public/handler.go` | **PENDING** |
 | `GET` | `/api/public/workspaces/:workspaceSlug/projects/:projectSlug/sprints/:sprintId` | JWT | `workspaceSlug:string, projectSlug:string, sprintId:string` | `JSON` | `backend/src/modules/public/controllers/public-sprints.controller.ts` | `apps/api-go/internal/modules/public/handler.go` | **PENDING** |
 | `GET` | `/api/public/workspaces/:workspaceSlug/projects/:projectSlug/sprints/:sprintId/tasks` | JWT | `workspaceSlug:string, projectSlug:string, sprintId:string` | `JSON` | `backend/src/modules/public/controllers/public-sprints.controller.ts` | `apps/api-go/internal/modules/public/handler.go` | **PENDING** |
-| `GET` | `/api/health/queue` | JWT | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-health.controller.ts` | `apps/api-go/internal/modules/queue/handler.go` | **PENDING** |
-| `GET` | `/api/queues/health` | JWT | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-ui.controller.ts` | `apps/api-go/internal/modules/queue/handler.go` | **PENDING** |
-| `GET` | `/api/queues/test` | JWT | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-ui.controller.ts` | `apps/api-go/internal/modules/queue/handler.go` | **PENDING** |
-| `POST` | `/api/search/advanced` | JWT | `AdvancedSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **PENDING** |
-| `POST` | `/api/search/global` | JWT | `GlobalSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **PENDING** |
-| `GET` | `/api/search/quick` | JWT | `searchDto:GlobalSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **PENDING** |
-| `GET` | `/api/search/suggestions` | JWT | `query:string` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **PENDING** |
+| `GET` | `/api/health/queue` | Public | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-health.controller.ts` | `apps/api-go/internal/platform/queue/handlers.go` | **DONE** |
+| `GET` | `/api/queues/health` | Public | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-ui.controller.ts` | `apps/api-go/internal/platform/queue/handlers.go` | **DONE** |
+| `GET` | `/api/queues/test` | Public | `-` | `JSON` | `backend/src/modules/queue/controllers/queue-ui.controller.ts` | `apps/api-go/internal/platform/queue/handlers.go` | **DONE** |
+| `POST` | `/api/search/advanced` | JWT | `AdvancedSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **DONE** |
+| `POST` | `/api/search/global` | JWT | `GlobalSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **DONE** |
+| `GET` | `/api/search/quick` | JWT | `searchDto:GlobalSearchDto` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **DONE** |
+| `GET` | `/api/search/suggestions` | JWT | `query:string` | `JSON` | `backend/src/modules/search/search.controller.ts` | `apps/api-go/internal/modules/search/handler.go` | **DONE** |
 | `GET` | `/api/settings` | JWT | `-` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
 | `POST` | `/api/settings` | JWT | `SetSettingDto` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
 | `DELETE` | `/api/settings/:key` | JWT | `key:string` | `JSON` | `backend/src/modules/settings/settings.controller.ts` | `apps/api-go/internal/modules/settings/handler.go` | **PENDING** |
@@ -374,12 +374,12 @@ Below is the complete inventory of all **386 endpoints** across all 39 modules i
 | `GET` | `/api/sprints/by-slug/:projectSlug/:sprintSlug` | JWT | `projectSlug:string, sprintSlug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
 | `GET` | `/api/sprints/project/:projectId/active` | JWT | `projectId:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
 | `GET` | `/api/sprints/slug` | JWT | `slug:string` | `JSON` | `backend/src/modules/sprints/sprints.controller.ts` | `apps/api-go/internal/modules/sprints/handler.go` | **DONE** |
-| `GET` | `/api/s3/presigned-get-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
-| `GET` | `/api/s3/presigned-put-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
-| `GET` | `/api/uploads/:folder/:filename` | Public | `folder:string, filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
-| `GET` | `/api/uploads/editor-images/:filename` | Public | `filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
-| `GET` | `/api/uploads/tasks/:taskId/:filename` | Public | `taskId:string, filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
-| `POST` | `/api/uploads/upload/:folder` | JWT | `folder:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage/handler.go` | **PENDING** |
+| `GET` | `/api/s3/presigned-get-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage_files/s3_handler.go` | **DONE** |
+| `GET` | `/api/s3/presigned-put-url` | JWT | `key:string` | `JSON` | `backend/src/modules/storage/s3.controller.ts` | `apps/api-go/internal/modules/storage_files/s3_handler.go` | **DONE** |
+| `GET` | `/api/uploads/:folder/:filename` | Public | `folder:string, filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage_files/handler.go` | **DONE** |
+| `GET` | `/api/uploads/editor-images/:filename` | Public | `filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage_files/handler.go` | **DONE** |
+| `GET` | `/api/uploads/tasks/:taskId/:filename` | Public | `taskId:string, filename:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage_files/handler.go` | **DONE** |
+| `POST` | `/api/uploads/upload/:folder` | JWT | `folder:string` | `JSON` | `backend/src/modules/storage/files.controller.ts` | `apps/api-go/internal/modules/storage_files/handler.go` | **DONE** |
 | `GET` | `/api/task-attachments` | JWT | `taskId:string` | `JSON` | `backend/src/modules/task-attachments/task-attachments.controller.ts` | `apps/api-go/internal/modules/task-attachments/handler.go` | **PENDING** |
 | `DELETE` | `/api/task-attachments/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-attachments/task-attachments.controller.ts` | `apps/api-go/internal/modules/task-attachments/handler.go` | **PENDING** |
 | `GET` | `/api/task-attachments/:id` | JWT | `id:string` | `JSON` | `backend/src/modules/task-attachments/task-attachments.controller.ts` | `apps/api-go/internal/modules/task-attachments/handler.go` | **PENDING** |

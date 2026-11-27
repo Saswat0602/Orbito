@@ -37,6 +37,14 @@ type TaskNotifier interface {
 	NotifyTaskStatusChanged(ctx context.Context, taskID uuid.UUID, oldStatus, newStatus string, changedBy uuid.UUID) error
 }
 
+// AutomationTrigger dispatches background automation rules on task lifecycle events.
+type AutomationTrigger interface {
+	HandleTaskCreated(ctx context.Context, taskID, projectID uuid.UUID, taskData map[string]any, reporterID *uuid.UUID)
+	HandleTaskUpdated(ctx context.Context, taskID, projectID uuid.UUID, updates map[string]any, userID uuid.UUID)
+	HandleTaskStatusChanged(ctx context.Context, taskID, projectID uuid.UUID, statusChange map[string]any, userID uuid.UUID)
+	HandleTaskAssigned(ctx context.Context, taskID, projectID uuid.UUID, assigneeID string, userID uuid.UUID)
+}
+
 type effectiveAccess struct {
 	role         middleware.Role
 	isSuperAdmin bool
