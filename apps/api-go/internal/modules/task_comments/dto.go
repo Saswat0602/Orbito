@@ -275,4 +275,3 @@ func mapTopLevelDescRow(r sqlc.ListTopLevelTaskCommentsDescRow, replies []ReplyR
 		Count:   &ReplyCount{Replies: r.ReplyCount},
 	}
 }
-

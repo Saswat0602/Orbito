@@ -15,8 +15,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/orbito/api-go/internal/config"
 	"github.com/orbito/api-go/internal/middleware"
+	"github.com/orbito/api-go/internal/modules/activity_log"
 	"github.com/orbito/api-go/internal/modules/admin"
 	"github.com/orbito/api-go/internal/modules/auth"
 	"github.com/orbito/api-go/internal/modules/email"
@@ -24,6 +26,7 @@ import (
 	"github.com/orbito/api-go/internal/modules/health"
 	"github.com/orbito/api-go/internal/modules/invitations"
 	"github.com/orbito/api-go/internal/modules/labels"
+	"github.com/orbito/api-go/internal/modules/notifications"
 	"github.com/orbito/api-go/internal/modules/organization_members"
 	"github.com/orbito/api-go/internal/modules/organizations"
 	"github.com/orbito/api-go/internal/modules/project_members"
@@ -45,12 +48,30 @@ import (
 	"github.com/orbito/api-go/internal/modules/workspaces"
 	"github.com/orbito/api-go/internal/platform/crypto"
 	"github.com/orbito/api-go/internal/platform/database"
+	"github.com/orbito/api-go/internal/platform/events"
 	"github.com/orbito/api-go/internal/platform/logger"
 	"github.com/orbito/api-go/internal/platform/mailer"
 	"github.com/orbito/api-go/internal/platform/storage"
 	"github.com/orbito/api-go/internal/shared/apperror"
 	"github.com/orbito/api-go/internal/shared/httpx"
 )
+
+type notifEmailAdapter struct {
+	emailSvc *email.Service
+}
+
+func (a *notifEmailAdapter) SendAsync(to, subject, template string, data map[string]any) {
+	if a.emailSvc == nil {
+		return
+	}
+	_ = a.emailSvc.SendEmail(context.Background(), email.SendEmailDTO{
+		To:       to,
+		Subject:  subject,
+		Template: template,
+		Data:     data,
+		Priority: "HIGH",
+	})
+}
 
 func loadDotEnv() {
 	paths := []string{".env", "../../backend/.env", "../backend/.env", "backend/.env"}
@@ -82,6 +103,11 @@ func loadDotEnv() {
 
 // BuildRouter constructs the Chi router with all ingress middleware, global error handlers, and routes.
 func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.Router {
+	r, _ := buildRouterWithGateway(cfg, db, appLog)
+	return r
+}
+
+func buildRouterWithGateway(cfg *config.Config, db *database.DB, appLog *slog.Logger) (chi.Router, *events.Gateway) {
 	r := chi.NewRouter()
 
 	// Ingress middleware pipeline
@@ -148,6 +174,25 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	authHandler := auth.NewHandler(authSvc, cfg.JWTSecret, cfg.IsProduction(), frontendURL)
 	authMw := middleware.RequireAuth(tokenSvc, userChecker)
 
+	eventsGW := events.NewGateway(tokenSvc, userChecker, cfg.CORSOrigins, appLog)
+	r.Handle("/socket.io", eventsGW)
+	r.Handle("/socket.io/*", eventsGW)
+
+	var activityRepo activity_log.Repository
+	if db != nil {
+		activityRepo = activity_log.NewRepository(db)
+	}
+	activitySvc := activity_log.NewService(activityRepo)
+	activityHandler := activity_log.NewHandler(activitySvc)
+
+	var notificationsRepo notifications.Repository
+	if db != nil {
+		notificationsRepo = notifications.NewRepository(db)
+	}
+	notificationsSvc := notifications.NewService(notificationsRepo, eventsGW)
+	notificationsHandler := notifications.NewHandler(notificationsSvc)
+	commentHooks := notifications.NewCommentHooks(notificationsSvc, notificationsRepo, &notifEmailAdapter{emailSvc: emailSvc}, frontendURL)
+
 	r.Mount("/api/auth", auth.Routes(authHandler, authMw))
 	r.Mount("/api/settings", settings.Routes(settingsHandler, authMw))
 	r.Mount("/api/email", email.Routes(emailHandler, authMw))
@@ -157,6 +202,7 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 		usersRepo = users.NewRepository(db)
 	}
 	usersSvc := users.NewService(usersRepo)
+	usersSvc.SetPresenceChecker(eventsGW)
 	usersHandler := users.NewHandler(usersSvc)
 	r.Mount("/api/users", users.Routes(usersHandler, authMw))
 
@@ -184,6 +230,9 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	wsChartsSvc := workspaces.NewChartsService(wsRepo)
 	wsSvc := workspaces.NewService(wsRepo, wsChartsSvc)
 	wsHandler := workspaces.NewHandler(wsSvc)
+	wsHandler.SetRecentActivityProvider(func(ctx context.Context, workspaceID uuid.UUID, limit, page int) (any, error) {
+		return activitySvc.GetRecentActivityByWorkspaceOptimized(ctx, workspaceID, limit, page)
+	})
 	r.Mount("/api/workspaces", workspaces.Routes(wsHandler, authMw, rbacResolver))
 
 	var wsMembersRepo workspace_members.Repository
@@ -246,7 +295,7 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	if db != nil {
 		sprintsRepo = sprints.NewRepository(db)
 	}
-	sprintsSvc := sprints.NewService(sprintsRepo, nil)
+	sprintsSvc := sprints.NewService(sprintsRepo, eventsGW)
 	sprintsHandler := sprints.NewHandler(sprintsSvc)
 	r.Mount("/api/sprints", sprints.Routes(sprintsHandler, authMw))
 
@@ -275,7 +324,8 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	if db != nil {
 		tasksRepo = tasks.NewRepository(db)
 	}
-	tasksSvc := tasks.NewService(tasksRepo, taskRanksSvc, storeProvider, nil, frontendURL)
+	tasksSvc := tasks.NewService(tasksRepo, taskRanksSvc, storeProvider, eventsGW, frontendURL)
+	tasks.AttachPhase5Hooks(tasksSvc, activitySvc, notificationsSvc)
 	tasksHandler := tasks.NewHandler(tasksSvc)
 	r.Mount("/api/tasks", tasks.Routes(tasksHandler, authMw))
 	r.Mount("/api/task-shares", tasks.ShareRoutes(tasksHandler, authMw))
@@ -308,7 +358,7 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	if db != nil {
 		taskCommentsRepo = task_comments.NewRepository(db)
 	}
-	taskCommentsSvc := task_comments.NewService(taskCommentsRepo, nil, nil)
+	taskCommentsSvc := task_comments.NewService(taskCommentsRepo, eventsGW, commentHooks)
 	taskCommentsHandler := task_comments.NewHandler(taskCommentsSvc)
 	r.Mount("/api/task-comments", task_comments.Routes(taskCommentsHandler, authMw))
 
@@ -325,6 +375,7 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 		timeEntriesRepo = time_entries.NewRepository(db)
 	}
 	timeEntriesSvc := time_entries.NewService(timeEntriesRepo)
+	time_entries.AttachEventEmitter(timeEntriesSvc, eventsGW)
 	timeEntriesHandler := time_entries.NewHandler(timeEntriesSvc)
 	r.Mount("/api/time-entries", time_entries.Routes(timeEntriesHandler, authMw))
 
@@ -336,6 +387,10 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	ganttHandler := gantt.NewHandler(ganttSvc)
 	r.Mount("/api/gantt", gantt.Routes(ganttHandler, authMw))
 
+	r.Mount("/api/notifications", notifications.Routes(notificationsHandler, authMw))
+	r.Mount("/api/activity-logs", activity_log.Routes(activityHandler, authMw))
+	r.Mount("/api/activity-log", activity_log.Routes(activityHandler, authMw))
+
 	var adminRepo admin.Repository
 	if db != nil {
 		adminRepo = admin.NewRepository(db)
@@ -344,7 +399,7 @@ func BuildRouter(cfg *config.Config, db *database.DB, appLog *slog.Logger) chi.R
 	adminHandler := admin.NewHandler(adminSvc)
 	r.Mount("/api/admin", admin.Routes(adminHandler, authMw))
 
-	return r
+	return r, eventsGW
 }
 
 func main() {
@@ -369,7 +424,8 @@ func main() {
 		}
 	}
 
-	router := BuildRouter(cfg, db, appLogger)
+	router, eventsGW := buildRouterWithGateway(cfg, db, appLogger)
+	defer eventsGW.Close()
 
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	server := &http.Server{

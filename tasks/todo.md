@@ -1107,14 +1107,14 @@
 **Description:** Implement the Socket.IO v4 protocol server in internal/platform/events mounting at /events. Authenticates client handshake using JWT token (auth, query, or cookie), validates ACTIVE account state, tracks connected sockets, and joins user/org/workspace/project/task rooms.
 
 **Acceptance criteria:**
-- [ ] Socket.IO connection handshake succeeds at `/events` namespace with valid JWT
-- [ ] Rejects unauthenticated connections or inactive users with 'Authentication token required'
-- [ ] Handles client events: `join:organization`, `leave:organization`, `join:workspace`, `join:project`, `join:task`
+- [x] Socket.IO connection handshake succeeds at `/events` namespace with valid JWT
+- [x] Rejects unauthenticated connections or inactive users with 'Authentication token required'
+- [x] Handles client events: `join:organization`, `leave:organization`, `join:workspace`, `join:project`, `join:task`
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/events/...`
-- [ ] Build succeeds: `go build ./internal/platform/events/...`
-- [ ] Manual check: Connect with Socket.IO test client, verify connected event and room subscription
+- [x] Tests pass: `go test -v ./internal/platform/events/...`
+- [x] Build succeeds: `go build ./internal/platform/events/...`
+- [x] Manual check: Connect with Socket.IO test client, verify connected event and room subscription
 
 **Dependencies:** Task 10
 
@@ -1132,20 +1132,20 @@
 **Description:** Implement event dispatching bridge connecting Go services to the Events Gateway. Emits presence events (`user:online`, `user:offline`), typing indicators, and domain mutations (`task:created`, `task:updated`, `comment:added`, `notification`) to target rooms.
 
 **Acceptance criteria:**
-- [ ] Emits `user:online` to all users when first socket connects; emits `user:offline` when last disconnects
-- [ ] Emits `task:updated` to `project:{id}` and `task:{id}` rooms on task changes
-- [ ] Broadcast methods are thread-safe and non-blocking
+- [x] Emits `user:online` to all users when first socket connects; emits `user:offline` when last disconnects
+- [x] Emits `task:updated` to `project:{id}` and `task:{id}` rooms on task changes
+- [x] Broadcast methods are thread-safe and non-blocking
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/platform/events/broadcast_test.go`
-- [ ] Build succeeds: `go build ./internal/platform/events/...`
-- [ ] Manual check: Trigger task status update via HTTP and verify WebSocket client in room receives event
+- [x] Tests pass: `go test -v ./internal/platform/events/...`
+- [x] Build succeeds: `go build ./internal/platform/events/...`
+- [x] Manual check: Trigger task status update via HTTP and verify WebSocket client in room receives event
 
 **Dependencies:** Task 41
 
 **Files likely touched:**
 - `apps/api-go/internal/platform/events/broadcast.go`
-- `apps/api-go/internal/platform/events/events.go`
+- `apps/api-go/internal/platform/events/protocol.go`
 
 **Estimated scope:** Small: 1-2 files
 
@@ -1156,14 +1156,14 @@
 **Description:** Implement the Notification Center in internal/modules/notifications: creating notifications, listing notifications with filtering by category, unread badge counter, marking as read (single and mark-all), and deleting notifications.
 
 **Acceptance criteria:**
-- [ ] `GET /api/notifications` returns user notifications with pagination and unread status
-- [ ] `GET /api/notifications/unread-count` returns accurate count of unread items
-- [ ] `PATCH /api/notifications/mark-all-read` marks all unread notifications read for authenticated user
+- [x] `GET /api/notifications` returns user notifications with pagination and unread status
+- [x] `GET /api/notifications/unread-count` returns accurate count of unread items
+- [x] `PATCH /api/notifications/mark-all-read` marks all unread notifications read for authenticated user
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/notifications/...`
-- [ ] Build succeeds: `go build ./internal/modules/notifications/...`
-- [ ] Manual check: Trigger notification creation and verify unread-count increments
+- [x] Tests pass: `go test -v ./internal/modules/notifications/...`
+- [x] Build succeeds: `go build ./internal/modules/notifications/...`
+- [x] Manual check: Trigger notification creation and verify unread-count increments
 
 **Dependencies:** Task 42
 
@@ -1173,6 +1173,7 @@
 - `apps/api-go/internal/modules/notifications/repository.go`
 - `apps/api-go/internal/modules/notifications/routes.go`
 - `apps/api-go/internal/modules/notifications/dto.go`
+- `apps/api-go/internal/modules/notifications/comment_hooks.go`
 
 **Estimated scope:** Large: 5-8 files
 
@@ -1183,14 +1184,14 @@
 **Description:** Implement audit logging in internal/modules/activity_log: recording entity actions (CREATE, UPDATE, DELETE, STATUS_CHANGE) with old/new state, listing project activities, and aggregating organization activity statistics.
 
 **Acceptance criteria:**
-- [ ] `GET /api/project/:projectId` returns activity history ordered by timestamp descending
-- [ ] `GET /api/organization/:organizationId/stats` aggregates activity metrics by type
-- [ ] Audit capture records actor ID, entity ID, action type, and JSON metadata changes
+- [x] `GET /api/project/:projectId` returns activity history ordered by timestamp descending
+- [x] `GET /api/organization/:organizationId/stats` aggregates activity metrics by type
+- [x] Audit capture records actor ID, entity ID, action type, and JSON metadata changes
 
 **Verification:**
-- [ ] Tests pass: `go test -v ./internal/modules/activity_log/...`
-- [ ] Build succeeds: `go build ./internal/modules/activity_log/...`
-- [ ] Manual check: Fetch project activities and verify recorded action descriptions
+- [x] Tests pass: `go test -v ./internal/modules/activity_log/...`
+- [x] Build succeeds: `go build ./internal/modules/activity_log/...`
+- [x] Manual check: Fetch project activities and verify recorded action descriptions
 
 **Dependencies:** Task 42
 
@@ -1207,10 +1208,10 @@
 
 ## Checkpoint: After Task 44 — Real-Time Collaboration & Audit Verified
 
-- [ ] Socket.IO connection at `/events` succeeds and joins user/project/task rooms
-- [ ] Mutations broadcast real-time events (`task:updated`, `comment:added`, `notification`) to connected clients
-- [ ] Activity log accurately records entity mutations with before/after state
-- [ ] Review with human before proceeding
+- [x] Socket.IO connection at `/events` succeeds and joins user/project/task rooms
+- [x] Mutations broadcast real-time events (`task:updated`, `comment:added`, `notification`) to connected clients
+- [x] Activity log accurately records entity mutations with before/after state
+- [x] Review with human before proceeding
 
 ---
 

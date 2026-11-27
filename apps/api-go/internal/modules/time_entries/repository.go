@@ -161,4 +161,3 @@ func (r *pgRepository) StopTimer(ctx context.Context, id uuid.UUID, endTime time
 func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) (int64, error) {
 	return r.queries.DeleteTimeEntryByID(ctx, id)
 }
-

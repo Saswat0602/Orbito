@@ -104,4 +104,3 @@ func (s *service) RevokeShare(ctx context.Context, shareID uuid.UUID, userID uui
 	}
 	return nil
 }
-

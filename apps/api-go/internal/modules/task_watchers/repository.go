@@ -175,4 +175,3 @@ func (r *pgRepository) GetStatsCounts(ctx context.Context, since time.Time, task
 func (r *pgRepository) GroupMostWatched(ctx context.Context, userID *uuid.UUID) ([]sqlc.GroupMostWatchedTasksRow, error) {
 	return r.queries.GroupMostWatchedTasks(ctx, optUUID(userID))
 }
-

@@ -140,4 +140,3 @@ func TestGantt_ProjectCriticalPathAndResources(t *testing.T) {
 	assert.Equal(t, 2.0, alloc[0].Workload)
 	assert.Equal(t, 2.0, alloc[1].Workload)
 }
-

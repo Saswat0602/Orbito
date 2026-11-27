@@ -127,6 +127,10 @@ func TestBuildRouter(t *testing.T) {
 		"/api/task-attachments",
 		"/api/time-entries",
 		"/api/gantt/project/00000000-0000-0000-0000-000000000001",
+		"/api/notifications",
+		"/api/activity-logs",
+		"/api/activity-log",
+		"/api/workspaces/recent/00000000-0000-0000-0000-000000000001",
 	} {
 		t.Run("GET "+path+" requires authentication", func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, path, nil)
@@ -137,6 +141,15 @@ func TestBuildRouter(t *testing.T) {
 			assert.Contains(t, rr.Body.String(), "Unauthorized")
 		})
 	}
+
+	t.Run("GET /socket.io/ returns Engine.IO v4 open handshake", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/socket.io/?EIO=4&transport=polling", nil)
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Contains(t, rr.Body.String(), `"upgrades":["websocket"]`)
+	})
 
 	t.Run("unknown route returns exact NestJS 404 JSON error envelope", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/nonexistent-route", nil)

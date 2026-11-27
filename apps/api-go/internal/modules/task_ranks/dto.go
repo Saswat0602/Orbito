@@ -13,4 +13,3 @@ type ReorderRequest struct {
 type RebalanceMessageResponse struct {
 	Message string `json:"message"`
 }
-

@@ -176,4 +176,3 @@ func (s *service) Remove(ctx context.Context, taskIdentifier string, labelID, us
 	resp := mapPairRow(*pair)
 	return &resp, nil
 }
-

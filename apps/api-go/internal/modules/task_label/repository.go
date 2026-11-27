@@ -180,4 +180,3 @@ func (r *pgRepository) DeletePair(ctx context.Context, taskID, labelID uuid.UUID
 		LabelID: labelID,
 	})
 }
-

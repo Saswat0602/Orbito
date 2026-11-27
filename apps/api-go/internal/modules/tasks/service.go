@@ -58,6 +58,8 @@ type service struct {
 	rankSvc     task_ranks.Service
 	storage     storage.Provider
 	emitter     EventEmitter
+	activity    ActivityLogger
+	notifier    TaskNotifier
 	frontendURL string
 }
 
@@ -69,6 +71,14 @@ func NewService(repo Repository, rankSvc task_ranks.Service, stor storage.Provid
 		storage:     stor,
 		emitter:     emitter,
 		frontendURL: frontendURL,
+	}
+}
+
+// AttachPhase5Hooks attaches optional activity logging and notification dispatchers.
+func AttachPhase5Hooks(svc Service, activity ActivityLogger, notifier TaskNotifier) {
+	if s, ok := svc.(*service); ok {
+		s.activity = activity
+		s.notifier = notifier
 	}
 }
 
@@ -236,6 +246,12 @@ func (s *service) Create(ctx context.Context, req CreateTaskRequest, userID uuid
 	if s.emitter != nil {
 		s.emitter.EmitTaskCreated(res.ProjectID, res)
 	}
+	if s.activity != nil {
+		_ = s.activity.LogTaskCreated(ctx, res.ID, res.Title, res.Slug, res, userID)
+	}
+	if s.notifier != nil && len(in.AssigneeIDs) > 0 {
+		_ = s.notifier.NotifyTaskAssigned(ctx, createdID, in.AssigneeIDs, userID)
+	}
 	return res, nil
 }
 
@@ -291,6 +307,12 @@ func (s *service) CreateWithAttachments(ctx context.Context, req CreateTaskReque
 	}
 	if s.emitter != nil {
 		s.emitter.EmitTaskCreated(res.ProjectID, res)
+	}
+	if s.activity != nil {
+		_ = s.activity.LogTaskCreated(ctx, res.ID, res.Title, res.Slug, res, userID)
+	}
+	if s.notifier != nil && len(in.AssigneeIDs) > 0 {
+		_ = s.notifier.NotifyTaskAssigned(ctx, createdID, in.AssigneeIDs, userID)
 	}
 	return res, nil
 }
@@ -494,12 +516,17 @@ func (s *service) Update(ctx context.Context, idOrSlug string, req UpdateTaskReq
 		params.AllowEmailReplies = pgtype.Bool{Bool: *req.AllowEmailReplies, Valid: true}
 	}
 
+	var oldStatusName, newStatusName string
 	if req.StatusID != nil {
+		if oldSt, oldErr := s.repo.GetStatusByID(ctx, taskRow.StatusID); oldErr == nil {
+			oldStatusName = oldSt.Name
+		}
 		sid := uuid.MustParse(*req.StatusID)
 		st, stErr := s.repo.GetStatusByID(ctx, sid)
 		if stErr != nil {
 			return nil, apperror.NotFound("Task status not found")
 		}
+		newStatusName = st.Name
 		params.StatusID = pgtype.UUID{Bytes: sid, Valid: true}
 		if st.Category == sqlc.StatusCategoryDONE {
 			params.CompletedAt = pgtype.Timestamp{Time: time.Now().UTC(), Valid: true}
@@ -566,6 +593,38 @@ func (s *service) Update(ctx context.Context, idOrSlug string, req UpdateTaskReq
 	}
 	if s.emitter != nil {
 		s.emitter.EmitTaskUpdated(res.ProjectID, res.ID, res)
+		if ext, ok := s.emitter.(ExtendedEventEmitter); ok {
+			if req.StatusID != nil && newStatusName != "" && newStatusName != oldStatusName {
+				ext.EmitTaskStatusChanged(res.ProjectID, res.ID, map[string]any{
+					"oldStatus": oldStatusName,
+					"newStatus": newStatusName,
+					"statusId":  *req.StatusID,
+				})
+			}
+			if assigneeUUIDs != nil && len(*assigneeUUIDs) > 0 {
+				ext.EmitTaskAssigned(res.ProjectID, res.ID, map[string]any{
+					"assigneeId": (*assigneeUUIDs)[0].String(),
+				})
+			}
+		}
+	}
+	if s.activity != nil {
+		switch {
+		case req.StatusID != nil && newStatusName != "":
+			_ = s.activity.LogTaskStatusChanged(ctx, res.ID, res.Title, oldStatusName, newStatusName, userID)
+		case assigneeUUIDs != nil && len(*assigneeUUIDs) > 0:
+			_ = s.activity.LogTaskAssigned(ctx, res.ID, res.Title, (*assigneeUUIDs)[0].String(), userID)
+		default:
+			_ = s.activity.LogTaskUpdated(ctx, res.ID, res.Title, nil, res, userID)
+		}
+	}
+	if s.notifier != nil {
+		if req.StatusID != nil && newStatusName != "" && newStatusName != oldStatusName {
+			_ = s.notifier.NotifyTaskStatusChanged(ctx, taskRow.ID, oldStatusName, newStatusName, userID)
+		}
+		if assigneeUUIDs != nil && len(*assigneeUUIDs) > 0 {
+			_ = s.notifier.NotifyTaskAssigned(ctx, taskRow.ID, *assigneeUUIDs, userID)
+		}
 	}
 	return res, nil
 }
@@ -624,6 +683,9 @@ func (s *service) Remove(ctx context.Context, idOrSlug string, userID uuid.UUID,
 	}
 	if s.emitter != nil {
 		s.emitter.EmitTaskDeleted(existing.ProjectID, existing.ID)
+	}
+	if s.activity != nil {
+		_ = s.activity.LogTaskDeleted(ctx, existing.ID, existing.Title, existing, userID)
 	}
 	return existing, nil
 }

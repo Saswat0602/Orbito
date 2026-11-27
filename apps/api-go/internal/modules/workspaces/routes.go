@@ -24,6 +24,7 @@ func Routes(h *Handler, authMw func(http.Handler) http.Handler, rbacResolver mid
 	// Workspace lifecycle operations
 	r.Patch("/archive/{id}", h.Archive)
 	r.Patch("/unarchive/{id}", h.Unarchive)
+	r.With(middleware.RequireWorkspaceRole(rbacResolver, middleware.RoleViewer, "workspaceId")).Get("/recent/{workspaceId}", h.GetRecentActivity)
 
 	// Scoped workspace operations
 	r.Route("/{id}", func(r chi.Router) {
